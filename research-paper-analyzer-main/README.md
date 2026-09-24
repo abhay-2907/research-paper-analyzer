@@ -1,6 +1,6 @@
 # Research Paper Analyzer
 
-Live Demo: [Try the app here](https://piyushsingghh-research-paper-analyzer-srcappinterface-2n1fyy.streamlit.app/))
+Live Demo: [Try the app here](https://AbhaySinghYadav-research-paper-analyzer-srcappinterface-2n1fyy.streamlit.app/))
 
 An AI-powered research paper analysis tool, which allows users to upload any research paper in PDF format or choose from attached set of arXiv research papers, and ask natural language questions about them.
 
