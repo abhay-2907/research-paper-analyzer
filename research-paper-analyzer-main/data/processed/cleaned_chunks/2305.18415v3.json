@@ -1,0 +1,653 @@
+[
+  {
+    "paper_id": "2305.18415v3",
+    "title": "Geometric Algebra Transformer",
+    "page_num": 1,
+    "chunk_id": "2305.18415v3_page1_chunk1",
+    "text": "Geometric Algebra Transformer Johann Brehmer∗ Pim de Haan∗ Sönke Behrends Taco Cohen Qualcomm AI Research† {jbrehmer, pim, sbehrend, tacos}@qti.qualcomm.com Abstract Problems involving geometric data arise in physics, chemistry, robotics, computer vision, and many other fields. Such data can take numerous forms, for instance points, direction vectors, translations, or rotations, but to date there is no single architecture that can be applied to such a wide variety of geometric types while respecting their symmetries. In this paper we introduce the Geometric Algebra Transformer (GATr), a general-purpose architecture for geometric data. GATr represents inputs, outputs, and hidden states in the projective geometric (or Clifford) algebra, which offers an efficient 16-dimensional vector-space representation of common geometric objects as well as operators acting on them. GATr is equivariant with respect to E(3), the symmetry group of 3D Euclidean space. As a Transformer, GATr is versatile, efficient, and scalable. We demonstrate GATr in problems from n-body modeling to wall-shear-stress estimation on large arterial meshes to robotic motion planning. GATr consistently outperforms both non-geometric and equivariant baselines in terms of error, data efficiency, and scalability. 1 Introduction From molecular dynamics to astrophysics, from material design to robotics, fields across science and engineering deal with geometric data"
+  },
+  {
+    "paper_id": "2305.18415v3",
+    "title": "Geometric Algebra Transformer",
+    "page_num": 1,
+    "chunk_id": "2305.18415v3_page1_chunk2",
+    "text": "n-body modeling to wall-shear-stress estimation on large arterial meshes to robotic motion planning. GATr consistently outperforms both non-geometric and equivariant baselines in terms of error, data efficiency, and scalability. 1 Introduction From molecular dynamics to astrophysics, from material design to robotics, fields across science and engineering deal with geometric data such as positions, shapes, orientations, or directions. The geometric nature of data provides a rich structure: a notion of common operations between geometric types (computing distances between points, applying rotations to orientations, etc.), a well-defined behaviour of data under transformations of a system, and the independence of certain properties of coordinate system choices. When learning from geometric data, incorporating this rich structure into the architecture has the potential to improve the performance. With this goal, we introduce the Geometric Algebra Transformer (GATr), a general-purpose network architecture for geometric data. GATr brings together three key ideas. Geometric algebra: To naturally describe both geometric objects as well as their transformations in three-dimensional space, GATr represents data as multivectors of the projective geometric algebra G3,0,1. Geometric (or Clifford) algebra is an principled yet practical mathematical framework for geometrical computations. The particular algebra G3,0,1 extends the vector space R3 to 16-dimensional multivectors, which can"
+  },
+  {
+    "paper_id": "2305.18415v3",
+    "title": "Geometric Algebra Transformer",
+    "page_num": 1,
+    "chunk_id": "2305.18415v3_page1_chunk3",
+    "text": "both geometric objects as well as their transformations in three-dimensional space, GATr represents data as multivectors of the projective geometric algebra G3,0,1. Geometric (or Clifford) algebra is an principled yet practical mathematical framework for geometrical computations. The particular algebra G3,0,1 extends the vector space R3 to 16-dimensional multivectors, which can natively represent various geometric types and E(3) poses. Unlike the O(3) representations popular in geometric deep learning, this algebra can represent data that is not invariant to translations, such as absolute positions. Equivariance: GATr is equivariant with respect to E(3), the symmetry group of three-dimensional space. To this end, we develop several new E(3)-equivariant primitives mapping between multivectors, including equivariant linear maps, an attention mechanism, nonlinearities, and normalization layers. ∗Equal contribution. †Qualcomm AI Research is an initiative of Qualcomm Technologies, Inc. 37th Conference on Neural Information Processing Systems (NeurIPS 2023). arXiv:2305.18415v3 [cs.LG] 20 Nov 2023"
+  },
+  {
+    "paper_id": "2305.18415v3",
+    "title": "Geometric Algebra Transformer",
+    "page_num": 2,
+    "chunk_id": "2305.18415v3_page2_chunk1",
+    "text": "Transformer: Due to its favorable scaling properties, expressiveness, trainability, and versatility, the Transformer architecture [50] has become the de-facto standard for a wide range of problems. GATr is based on the Transformer architecture, in particular on dot-product attention, and inherits these benefits. GATr thus combines two lines of research: the representation of geometric objects with geometric algebra [17, 18, 38], popular in computer graphics and physics and recently gaining traction in deep learning [5, 41, 46], and the encoding of symmetries through equivariant deep learning [12]. The result—to the best of our knowledge the first E(3)-equivariant architecture with internal geometric algebra representations3—is a versatile network for problems involving geometric data. We demonstrate GATr in three problems from entirely different fields. In an n-body modelling task, we compare GATr to various baselines. We turn towards the task of predicting the wall shear stress in human arteries, demonstrating that GATr scales to realistic problems with meshes of thousands of nodes. Finally, experiment with robotic motion planning, using GATr as the backbone of an E(3)- invariant diffusion model. In all cases, GATr substantially outperforms both non-geometric and equivariant baselines. Our implementation of GATr is available at https://github.com/qualcomm-ai-research/ geometric-algebra-transformer. 2 Background Geometric algebra We"
+  },
+  {
+    "paper_id": "2305.18415v3",
+    "title": "Geometric Algebra Transformer",
+    "page_num": 2,
+    "chunk_id": "2305.18415v3_page2_chunk2",
+    "text": "realistic problems with meshes of thousands of nodes. Finally, experiment with robotic motion planning, using GATr as the backbone of an E(3)- invariant diffusion model. In all cases, GATr substantially outperforms both non-geometric and equivariant baselines. Our implementation of GATr is available at https://github.com/qualcomm-ai-research/ geometric-algebra-transformer. 2 Background Geometric algebra We begin with a brief overview of geometric algebra (GA); for more detail, see e. g. Refs. [17, 18, 38, 41]. Whereas a plain vector space like R3 allows us to take linear combinations of elements x and y (vectors), a geometric algebra additionally has a bilinear associative operation: the geometric product, denoted simply by xy. By multiplying vectors, one obtains so-called multivectors, which can represent both geometrical objects and operators. Like vectors, multivectors have a notion of direction as well as magnitude and orientation (sign), and can be linearly combined. Multivectors can be expanded on a multivector basis, consisting of products of basis vectors. For example, in a 3D GA with orthogonal basis e1, e2, e3, a general multivector takes the form x = xs + x1e1 + x2e2 + x3e3 + x12e1e2 + x13e1e3 + x23e2e3 + x123e1e2e3, (1) with real coefficients (xs, x1, . . . , x123)"
+  },
+  {
+    "paper_id": "2305.18415v3",
+    "title": "Geometric Algebra Transformer",
+    "page_num": 2,
+    "chunk_id": "2305.18415v3_page2_chunk3",
+    "text": "products of basis vectors. For example, in a 3D GA with orthogonal basis e1, e2, e3, a general multivector takes the form x = xs + x1e1 + x2e2 + x3e3 + x12e1e2 + x13e1e3 + x23e2e3 + x123e1e2e3, (1) with real coefficients (xs, x1, . . . , x123) ∈R8. Thus, similar to how a complex number a + bi is a sum of a real scalar and an imaginary number,4 a general multivector is a sum of different kinds of elements. These are characterized by their dimensionality (grade), such as scalars (grade 0), vectors ei (grade 1), bivectors eiej (grade 2), all the way up to the pseudoscalar e1 · · · ed (grade d). The geometric product is characterized by the fundamental equation vv = ⟨v, v⟩, where ⟨·, ·⟩is an inner product. In other words, we require that the square of a vector is its squared norm. In an orthogonal basis, where ⟨ei, ej⟩∝δij, one can deduce that the geometric product of two different basis vectors is antisymmetric: eiej = −ejei5. Since reordering only produces a sign flip, we only get one basis multivector per unordered subset of basis vectors, and so the total dimensionality of"
+  },
+  {
+    "paper_id": "2305.18415v3",
+    "title": "Geometric Algebra Transformer",
+    "page_num": 2,
+    "chunk_id": "2305.18415v3_page2_chunk4",
+    "text": "norm. In an orthogonal basis, where ⟨ei, ej⟩∝δij, one can deduce that the geometric product of two different basis vectors is antisymmetric: eiej = −ejei5. Since reordering only produces a sign flip, we only get one basis multivector per unordered subset of basis vectors, and so the total dimensionality of a GA is Pd i=0 \u0000d k \u0001 = 2d. Moreover, using bilinearity and the fundamental equation one can compute the geometric product of arbitrary multivectors. The symmetric and antisymmetric parts of the geometric product are called the interior and exterior (wedge) product. For vectors x and y, these are defined as ⟨x, y⟩= (xy + yx)/2 and x ∧y ≡ (xy −yx)/2. The former is indeed equal to the inner product used to define the GA, whereas the latter is new notation. Whereas the inner product computes the similarity, the exterior product constructs a multivector (called a blade) representing the weighted and oriented subspace spanned by the vectors. Both operations can be extended to general multivectors [18]. The final primitive of the GA that we will require is the dualization operator x 7→x∗. It acts on basis elements by swapping “empty” and “full” dimensions, e. g. sending e1 7→e23."
+  },
+  {
+    "paper_id": "2305.18415v3",
+    "title": "Geometric Algebra Transformer",
+    "page_num": 2,
+    "chunk_id": "2305.18415v3_page2_chunk5",
+    "text": "the weighted and oriented subspace spanned by the vectors. Both operations can be extended to general multivectors [18]. The final primitive of the GA that we will require is the dualization operator x 7→x∗. It acts on basis elements by swapping “empty” and “full” dimensions, e. g. sending e1 7→e23. 3Concurrently to our work, a similar network architecture was studied by Ruhe et al. [40]; we comment on similarities and differences in Sec. 5. 4Indeed the imaginary unit i can be thought of as the bivector e1e2 in a 2D GA. 5The antisymmetry can be derived by using v2 = ⟨v, v⟩to show that eiej +ejei = (ei +ej)2 −e2 i −e2 j = 0. 2"
+  },
+  {
+    "paper_id": "2305.18415v3",
+    "title": "Geometric Algebra Transformer",
+    "page_num": 3,
+    "chunk_id": "2305.18415v3_page3_chunk1",
+    "text": "Object / operator Scalar Vector Bivector Trivector PS 1 e0 ei e0i eij e0ij e123 e0123 Scalar λ ∈R λ 0 0 0 0 0 0 0 Plane w/ normal n ∈R3, origin shift d ∈R 0 d n 0 0 0 0 0 Line w/ direction n ∈R3, orthogonal shift s ∈R3 0 0 0 s n 0 0 0 Point p ∈R3 0 0 0 0 0 p 1 0 Pseudoscalar µ ∈R 0 0 0 0 0 0 0 µ Reflection through plane w/ normal n ∈R3, origin shift d ∈R 0 d n 0 0 0 0 0 Translation t ∈R3 1 0 0 1 2t 0 0 0 0 Rotation expressed as quaternion q ∈R4 q0 0 0 0 qi 0 0 0 Point reflection through p ∈R3 0 0 0 0 0 p 1 0 Table 1: Embeddings of common geometric objects and transformations into the projective geometric algebra G3,0,1. The columns show different components of the multivectors with the corresponding basis elements, with i, j ∈{1, 2, 3}, j ̸= i, i.e. ij ∈{12, 13, 23}. For simplicity, we fix gauge ambiguities (the weight of the multivectors) and leave out signs (which depend"
+  },
+  {
+    "paper_id": "2305.18415v3",
+    "title": "Geometric Algebra Transformer",
+    "page_num": 3,
+    "chunk_id": "2305.18415v3_page3_chunk2",
+    "text": "into the projective geometric algebra G3,0,1. The columns show different components of the multivectors with the corresponding basis elements, with i, j ∈{1, 2, 3}, j ̸= i, i.e. ij ∈{12, 13, 23}. For simplicity, we fix gauge ambiguities (the weight of the multivectors) and leave out signs (which depend on the ordering of indices in the basis elements). Projective geometric algebra In order to represent three-dimensional objects as well as arbitrary rotations and translations acting on them, the 3D GA is not enough: as it turns out, its multivectors can only represent linear subspaces passing through the origin as well as rotations around it. A common trick to expand the range of objects and operators is to embed the space of interest (e.g. R3) into a higher dimensional space whose multivectors represent more general objects and operators in the original space. In this paper we work with the projective geometric algebra G3,0,1 [17, 38, 41]. Here one adds a fourth homogeneous coordinate x0e0 to the vector space, yielding a 24 = 16-dimensional geometric algebra. The metric of G3,0,1 is such that e2 0 = 0 and e2 i = 1 for i = 1, 2, 3. As we will"
+  },
+  {
+    "paper_id": "2305.18415v3",
+    "title": "Geometric Algebra Transformer",
+    "page_num": 3,
+    "chunk_id": "2305.18415v3_page3_chunk3",
+    "text": "geometric algebra G3,0,1 [17, 38, 41]. Here one adds a fourth homogeneous coordinate x0e0 to the vector space, yielding a 24 = 16-dimensional geometric algebra. The metric of G3,0,1 is such that e2 0 = 0 and e2 i = 1 for i = 1, 2, 3. As we will explain in the following, in this setup the 16-dimensional multivectors can represent 3D points, lines, and planes, which need not pass through the origin, and arbitrary rotations, reflections, and translations in R3. Representing transformations In geometric algebra, a vector u can act as an operator, reflecting other elements in the hyperplane orthogonal to u. Since any orthogonal transformation is equal to a sequence of reflections, this allows us to express any such transformation as a geometric product of (unit) vectors, called a (unit) versor u = u1 · · · uk. Furthermore, since the product of unit versors is a unit versor, and unit vectors are their own inverse (u2 = 1), these form a group called the Pin group associated with the metric. Similarly, products of an even number of reflections form the Spin group. In the projective geometric algebra G3,0,1, these are the double cover6 of E(3) and"
+  },
+  {
+    "paper_id": "2305.18415v3",
+    "title": "Geometric Algebra Transformer",
+    "page_num": 3,
+    "chunk_id": "2305.18415v3_page3_chunk4",
+    "text": "unit versor, and unit vectors are their own inverse (u2 = 1), these form a group called the Pin group associated with the metric. Similarly, products of an even number of reflections form the Spin group. In the projective geometric algebra G3,0,1, these are the double cover6 of E(3) and SE(3), respectively. We can thus represent any rotation, translation, and mirroring—the symmetries of three- dimensional space—as G3,0,1 multivectors. In order to apply a versor u to an arbitrary element x, one uses the sandwich product: ρu(x) = \u001auxu−1 if u is even uˆxu−1 if u is odd (2) Here ˆx is the grade involution, which flips the sign of odd-grade elements such as vectors and trivectors, while leaving even-grade elements unchanged. Equation 2 thus gives us a linear action (i. e. group representation) of the Pin and Spin groups on the 2d-dimensional space of multivectors. The sandwich product is grade-preserving, so this representation splits into a direct sum of represen- tations on each grade. Representing 3D objects Following Refs. [17, 38, 41], we represent planes with vectors, and re- quire that the intersection of two geometric objects is given by the wedge product of their representa- tions. Lines (the intersection"
+  },
+  {
+    "paper_id": "2305.18415v3",
+    "title": "Geometric Algebra Transformer",
+    "page_num": 3,
+    "chunk_id": "2305.18415v3_page3_chunk5",
+    "text": "so this representation splits into a direct sum of represen- tations on each grade. Representing 3D objects Following Refs. [17, 38, 41], we represent planes with vectors, and re- quire that the intersection of two geometric objects is given by the wedge product of their representa- tions. Lines (the intersection of two planes) are thus represented as bivectors, points (the intersection of three planes) as trivectors. This leads to a duality between objects and operators, where objects are represented like transformations that leave them invariant. Table 1 provides a dictionary of these embeddings. It is easy to check that this representation is consistent with using the sandwich product for transformations. 6This means that for each element of E(3) there are two elements of Pin(3, 0, 1), e. g. both the vector v and −v represent the same reflection. 3"
+  },
+  {
+    "paper_id": "2305.18415v3",
+    "title": "Geometric Algebra Transformer",
+    "page_num": 4,
+    "chunk_id": "2305.18415v3_page4_chunk1",
+    "text": "Equivariance We construct network layers that are equivariant with respect to E(3), or equivalently its double cover Pin(3, 0, 1). A function f : G3,0,1 →G3,0,1 is Pin(3, 0, 1)-equivariant with respect to the representation ρ (or Pin(3, 0, 1)-equivariant for short) if f(ρu(x)) = ρu(f(x)) (3) for any u ∈Pin(3, 0, 1) and x ∈G3,0,1, where ρu(x) is the sandwich product defined in Eq. (2). 3 The Geometric Algebra Transformer 3.1 Design principles and architecture overview Geometric inductive bias through geometric algebra representations GATr is designed to provide a strong inductive bias for geometric data. It should be able to represent different geometric objects and their transformations, for instance points, lines, planes, translations, rotations, and so on. In addition, it should be able to represent common interactions between these types with few layers, and be able to identify them from little data (while maintaining the low bias of large transformer models). Examples of such common patterns include computing the relative distances between points, applying geometric transformations to objects, or computing the intersections of planes and lines. Following a body of research in computer graphics, we propose that geometric algebra gives us a language that is well-suited to this task."
+  },
+  {
+    "paper_id": "2305.18415v3",
+    "title": "Geometric Algebra Transformer",
+    "page_num": 4,
+    "chunk_id": "2305.18415v3_page4_chunk2",
+    "text": "transformer models). Examples of such common patterns include computing the relative distances between points, applying geometric transformations to objects, or computing the intersections of planes and lines. Following a body of research in computer graphics, we propose that geometric algebra gives us a language that is well-suited to this task. We use the projective geometric algebra G3,0,1 and use the plane-based representation of geometric structure outlined in the previous section. Symmetry awareness through E(3) equivariance Our architecture should respect the symmetries of 3D space. Therefore we design GATr to be equivariant with respect to the symmetry group E(3) of translations, rotations, and reflections. Note that the projective geometric algebra naturally offers a faithful representation of E(3), including translations. We can thus represent objects that transform arbitrarily under E(3), including with respect to translations of the inputs. This is in stark contrast with most E(3)-equivariant architectures, which only use O(3) representations and whose features only transform under rotation and are invariant under translations—and hence can not represent absolute positions like GATr can. Those architectures must handle points in hand-crafted ways, like by canonicalizing w. r. t. the center of mass or by treating the difference between points as a translation-invariant vector."
+  },
+  {
+    "paper_id": "2305.18415v3",
+    "title": "Geometric Algebra Transformer",
+    "page_num": 4,
+    "chunk_id": "2305.18415v3_page4_chunk3",
+    "text": "and whose features only transform under rotation and are invariant under translations—and hence can not represent absolute positions like GATr can. Those architectures must handle points in hand-crafted ways, like by canonicalizing w. r. t. the center of mass or by treating the difference between points as a translation-invariant vector. Many systems will not exhibit the full E(3) symmetry group. The direction of gravity, for instance, often breaks it down to the smaller E(2) group. To maximize the versatility of GATr, we choose to develop a E(3)-equivariant architecture and to include symmetry-breaking as part of the network inputs, similar to how position embeddings break permutation equivariance in transformers. Scalability and flexibility through dot-product attention Finally, GATr should be expressive, easy to train, efficient, and scalable to large systems. It should also be as flexible as possible, supporting variable geometric inputs and both static scenes and time series. These desiderata motivate us to implement GATr as a transformer [50], based on attention over multiple objects (similar to tokens in MLP or image patches in computer vision). This choice makes GATr equivariant also with respect to permutations along the object dimension. As in standard transformers, we can break this equivariance when desired"
+  },
+  {
+    "paper_id": "2305.18415v3",
+    "title": "Geometric Algebra Transformer",
+    "page_num": 4,
+    "chunk_id": "2305.18415v3_page4_chunk4",
+    "text": "us to implement GATr as a transformer [50], based on attention over multiple objects (similar to tokens in MLP or image patches in computer vision). This choice makes GATr equivariant also with respect to permutations along the object dimension. As in standard transformers, we can break this equivariance when desired (in particular, along time dimensions) through positional embedding. Like a vanilla transformer, GATr is based on a dot-product attention mechanism, for which heavily optimized implementations exist [14, 32, 37]. We will demonstrate later that this allows us to scale GATr to problems with many thousands of tokens, much further than equivariant architectures based on graph neural networks and message-passing algorithms. Architecture overview We sketch GATr in Fig. 1. In the top row, we sketch the overall workflow. If necessary, raw inputs are first preprocessed into geometric types. The geometric objects are then embedded into multivectors of the geometric algebra G3,0,1, following the recipe described in Tbl. 1. The multivector-valued data are processed with a GATr network. We show this architecture in more detail in the bottom row of Fig. 1. GATr consists of N transformer blocks, each consisting 4"
+  },
+  {
+    "paper_id": "2305.18415v3",
+    "title": "Geometric Algebra Transformer",
+    "page_num": 5,
+    "chunk_id": "2305.18415v3_page5_chunk1",
+    "text": "= Equi linear × N GATr Equi layer norm Geo attn. Equi linear + Equi linear Equi linear Raw inputs Geometric types Multivector & scalar inputs Multivector & scalar outputs Raw outputs Preprocess Embed in geometric algebra GATr Extract from geometric algebra 1 1 Geo bilinear Equi layer norm Equi linear Gated GELU Equi linear + Figure 1: Overview over the GATr architecture. Boxes with solid lines are learnable components, those with dashed lines are fixed. of an equivariant multivector LayerNorm, an equivariant multivector self-attention mechanism, a residual connection, another equivariant LayerNorm, an equivariant multivector MLP with geometric bilinear interactions, and another residual connection. The architecture is thus similar to a typical transformer [50] with pre-layer normalization [2, 54], but adapted to correctly handle multivector data and be E(3) equivariant. We describe the individual layers below. Finally, from the outputs of the GATr network we extract the target variables, again following the mapping given in Tbl. 1. 3.2 GATr primitives Linear layers We begin with linear layers between multivectors. In Appendix A, we show that the equivariance condition of Eq. (3) severely constrains them: Proposition 1. Any linear map ϕ : Gd,0,1 →Gd,0,1 that is equivariant to Pin(d, 0, 1)"
+  },
+  {
+    "paper_id": "2305.18415v3",
+    "title": "Geometric Algebra Transformer",
+    "page_num": 5,
+    "chunk_id": "2305.18415v3_page5_chunk2",
+    "text": "following the mapping given in Tbl. 1. 3.2 GATr primitives Linear layers We begin with linear layers between multivectors. In Appendix A, we show that the equivariance condition of Eq. (3) severely constrains them: Proposition 1. Any linear map ϕ : Gd,0,1 →Gd,0,1 that is equivariant to Pin(d, 0, 1) is of the form ϕ(x) = d+1 X k=0 wk⟨x⟩k + d X k=0 vke0⟨x⟩k (4) for parameters w ∈Rd+2, v ∈Rd+1. Here ⟨x⟩k is the blade projection of a multivector, which sets all non-grade-k elements to zero. Thus, E(3)-equivariant linear maps between G3,0,1 multivectors can be parameterized with nine coefficients, five of which are the grade projections and four include a multiplication with the homogeneous basis vector e0. We thus parameterize affine layers between multivector-valued arrays with Eq. (4), with learnable coefficients wk and vk for each combination of input channel and output channel. In addition, there is a learnable bias term for the scalar components of the outputs (biases for the other components are not equivariant). Geometric bilinears Equivariant linear maps are not sufficient to build expressive networks. The reason is that these operations allow for only very limited grade mixing, as shown in Prop. 1. For the"
+  },
+  {
+    "paper_id": "2305.18415v3",
+    "title": "Geometric Algebra Transformer",
+    "page_num": 5,
+    "chunk_id": "2305.18415v3_page5_chunk3",
+    "text": "learnable bias term for the scalar components of the outputs (biases for the other components are not equivariant). Geometric bilinears Equivariant linear maps are not sufficient to build expressive networks. The reason is that these operations allow for only very limited grade mixing, as shown in Prop. 1. For the network to be able to construct new geometric features from existing ones, such as the translation vector between two points, two additional primitives are essential. The first is the geometric product x, y 7→xy, the fundamental bilinear operation of geometric algebra. It allows for substantial mixing between grades: for instance, the geometric product of vectors consists of scalars and bivector components. The geometric product is equivariant (Appendix A). The second geometric primitive we use is derived from the so-called join7 x, y 7→(x∗∧y∗)∗. This map may appear complicated, but it plays a simple role in our architecture: an equivariant map that involves the dual x 7→x∗. Including the dual in an architecture is essential for expressivity: in G3,0,1, without any dualization it is impossible to represent even simple functions such as the Euclidean 7Technically, the join has an anti-dual, not the dual, in the output. We leave this detail out"
+  },
+  {
+    "paper_id": "2305.18415v3",
+    "title": "Geometric Algebra Transformer",
+    "page_num": 5,
+    "chunk_id": "2305.18415v3_page5_chunk4",
+    "text": "that involves the dual x 7→x∗. Including the dual in an architecture is essential for expressivity: in G3,0,1, without any dualization it is impossible to represent even simple functions such as the Euclidean 7Technically, the join has an anti-dual, not the dual, in the output. We leave this detail out for notational simplicity. In our network architecture, it makes no difference for equivariance nor for expressivity whether the anti-dual or dual is used, as any equivariant linear layer can transform between the two. 5"
+  },
+  {
+    "paper_id": "2305.18415v3",
+    "title": "Geometric Algebra Transformer",
+    "page_num": 6,
+    "chunk_id": "2305.18415v3_page6_chunk1",
+    "text": "distance between two points [17]; we show this in Appendix A. While the dual itself is not Pin(3, 0, 1)- equivariant (w. r. t. ρ), the join operation is equivariant to even (non-mirror) transformations. To make the join equivariant to mirrorings as well, we multiply its output with a pseudoscalar derived from the network inputs: x, y, z 7→EquiJoin(x, y; z) = z0123(x∗∧y∗)∗, where z0123 ∈R is the pseudoscalar component of a reference multivector z (see Appendix B). We define a geometric bilinear layer that combines the geometric product and the join of the two inputs as Geometric(x, y; z) = Concatenatechannels(xy, EquiJoin(x, y; z)). In GATr, this layer is included in the MLP. Nonlinearities and normalization We use scalar-gated GELU nonlinearities [23] GatedGELU(x) = GELU(x1)x, where x1 is the scalar component of the multivector x. More- over, we define an E(3)-equivariant LayerNorm operation for multivectors as LayerNorm(x) = x/ p Ec⟨x, x⟩, where the expectation goes over channels and we use the invariant inner product ⟨·, ·⟩ of G3,0,1. Attention Given multivector-valued query, key, and value tensors, each consisting of ni items (or tokens) and nc channels (key length), we define the E(3)-equivariant multivector attention as Attention(q, k, v)i′c′"
+  },
+  {
+    "paper_id": "2305.18415v3",
+    "title": "Geometric Algebra Transformer",
+    "page_num": 6,
+    "chunk_id": "2305.18415v3_page6_chunk2",
+    "text": "p Ec⟨x, x⟩, where the expectation goes over channels and we use the invariant inner product ⟨·, ·⟩ of G3,0,1. Attention Given multivector-valued query, key, and value tensors, each consisting of ni items (or tokens) and nc channels (key length), we define the E(3)-equivariant multivector attention as Attention(q, k, v)i′c′ = X i Softmaxi P c⟨qi′c, kic⟩ √8nc ! vic′ . (5) Here the indices i, i′ label items, c, c′ label channels, and ⟨·, ·⟩is the invariant inner product of the geometric algebra. Just as in the original transformer [50], we thus compute scalar attention weights with a scaled dot product; the difference is that we use the inner product of G3,0,1, which is the regular R8 dot product on 8 of the 16 dimensions, ignoring the dimensions containing e0.8 We compute the attention using highly efficient implementations of conventional dot-product attention [14, 32, 37]. As we will demonstrate later, this allows us to scale GATr to systems with many thousands of tokens. We extend this attention mechanism to multi-head self-attention in the usual way. 3.3 Extensions Auxiliary scalar representations While multivectors are well-suited to model geometric data, many problems contain non-geometric information as well. Such scalar information may"
+  },
+  {
+    "paper_id": "2305.18415v3",
+    "title": "Geometric Algebra Transformer",
+    "page_num": 6,
+    "chunk_id": "2305.18415v3_page6_chunk3",
+    "text": "later, this allows us to scale GATr to systems with many thousands of tokens. We extend this attention mechanism to multi-head self-attention in the usual way. 3.3 Extensions Auxiliary scalar representations While multivectors are well-suited to model geometric data, many problems contain non-geometric information as well. Such scalar information may be high- dimensional, for instance in sinusoidal positional encoding schemes. Rather than embedding into the scalar components of the multivectors, we add an auxiliary scalar representation to the hidden states of GATr. Each layer thus has both scalar and multivector inputs and outputs. They have the same batch dimension and item dimension, but may have different number of channels. This additional scalar information interacts with the multivector data in two ways. In linear layers, we allow the auxiliary scalars to mix with the scalar component of the multivectors. In the attention layer, we compute attention weights both from the multivectors, as given in Eq. (5), and from the auxiliary scalars, using a regular scaled dot-product attention. The two attention maps are summed before computing the softmax, and the normalizing factor is adapted. In all other layers, the scalar information is processed separately from the multivector information, using the unrestricted form"
+  },
+  {
+    "paper_id": "2305.18415v3",
+    "title": "Geometric Algebra Transformer",
+    "page_num": 6,
+    "chunk_id": "2305.18415v3_page6_chunk4",
+    "text": "as given in Eq. (5), and from the auxiliary scalars, using a regular scaled dot-product attention. The two attention maps are summed before computing the softmax, and the normalizing factor is adapted. In all other layers, the scalar information is processed separately from the multivector information, using the unrestricted form of the multivector map. For instance, nonlinearities transform multivectors with equivariant gated GELUs and auxiliary scalars with regular GELU functions. We describe the scalar path of our architecture in more detail in Appendix B. Distance-aware dot-product attention The dot-product attention in Eq. (5) ignores the 8 di- mensions involving the basis element e0. These dimensions vary under translations, and thus their straightforward Euclidean inner product violates equivariance. We can, however, extend the atten- tion mechanism to incorporate more components, while still maintaining E(3) equivariance and the computational efficiency of dot-product attention. To this end, we define certain auxiliary, non- linear query features ϕ(q) and key features ψ(k) and extend the attention weights in Eq. (5) as ⟨qi′c, kic⟩→⟨qi′c, kic⟩+ ϕ(qi′c) · ψ(kic), adapting the normalization appropriately. We define these nonlinear features in Appendix B. 8We also experimented with attention mechanisms that use the geometric product rather than the dot product,"
+  },
+  {
+    "paper_id": "2305.18415v3",
+    "title": "Geometric Algebra Transformer",
+    "page_num": 6,
+    "chunk_id": "2305.18415v3_page6_chunk5",
+    "text": "query features ϕ(q) and key features ψ(k) and extend the attention weights in Eq. (5) as ⟨qi′c, kic⟩→⟨qi′c, kic⟩+ ϕ(qi′c) · ψ(kic), adapting the normalization appropriately. We define these nonlinear features in Appendix B. 8We also experimented with attention mechanisms that use the geometric product rather than the dot product, but found a worse performance in practice. 6"
+  },
+  {
+    "paper_id": "2305.18415v3",
+    "title": "Geometric Algebra Transformer",
+    "page_num": 7,
+    "chunk_id": "2305.18415v3_page7_chunk1",
+    "text": "102 103 104 105 Training samples 10 3 10 2 10 1 100 101 Mean squared error MLP GCA-GNN Transformer SE(3)-Trf. SEGNN GATr (ours) 102 103 104 105 Training samples Token number generalization 102 103 104 105 Training samples E(3) generalization Figure 2: n-body dynamics experiments. We show the error in predicting future positions of planets as a function of the training dataset size. Out of five independent training runs, the mean and standard error are shown. Left: Evaluating without distribution shift. GATr ( )is more sample efficient than the equivariant SEGNN [6] ( ) and SE(3)-Transformer [20] ( ) and clearly outperforms non-equivariant baselines ( , , ). Middle: Evaluating on systems with more planets than trained on. Transformer architectures generalize well to different object counts. GCA-GNN has larger errors than the visible range. Right: Evaluating on translated data. Because GATr is E(3) equivariant, it generalizes under this domain shift. Our choice of these nonlinear features not only maintains equivariance, but has a straightforward geometric interpretation. When the trivector components of queries and keys represent 3D points (see Tbl. 1), ψ(q) · ϕ(k) is proportional to the pairwise negative squared Euclidean distance. GATr’s attention mechanism is therefore directly sensitive"
+  },
+  {
+    "paper_id": "2305.18415v3",
+    "title": "Geometric Algebra Transformer",
+    "page_num": 7,
+    "chunk_id": "2305.18415v3_page7_chunk2",
+    "text": "shift. Our choice of these nonlinear features not only maintains equivariance, but has a straightforward geometric interpretation. When the trivector components of queries and keys represent 3D points (see Tbl. 1), ψ(q) · ϕ(k) is proportional to the pairwise negative squared Euclidean distance. GATr’s attention mechanism is therefore directly sensitive to Euclidean distance, while still respecting the highly efficient dot-product attention format. Positional embeddings GATr assumes the data can be described as a set of items (or tokens). If these items are distinguishable and form a sequence, we encode their position using “rotary positional”9 embeddings [47] in the auxiliary scalar variables.10 Axial attention The architecture is flexible about the structure of the data. In some use cases, there will be a single dimension along which objects are organized, for instance when describing a static scene or the time evolution of a single object. But GATr also supports the organization of a problem along multiple axes, for example with one dimension describing objects and another time steps. In this case, we follow an axial transformer layout [24], alternating between transformer blocks that attend over different dimensions. (The not-attended dimensions in each block are treated like a batch dimension.) 4 Experiments 4.1"
+  },
+  {
+    "paper_id": "2305.18415v3",
+    "title": "Geometric Algebra Transformer",
+    "page_num": 7,
+    "chunk_id": "2305.18415v3_page7_chunk3",
+    "text": "a problem along multiple axes, for example with one dimension describing objects and another time steps. In this case, we follow an axial transformer layout [24], alternating between transformer blocks that attend over different dimensions. (The not-attended dimensions in each block are treated like a batch dimension.) 4 Experiments 4.1 n-body dynamics We start our empirical demonstration of GATr with an n-body dynamics problem, on which we compare GATr to a wide range of baselines. Given the masses, initial positions, and velocities of a star and a few planets, the goal is to predict the final position after the system has evolved under Newtonian gravity for 1000 Euler integration time steps. We compare GATr to a Transformer and an MLP, the equivariant SEGNN [6] and SE(3)-Transformer [20], as well as the geometric-algebra- based—but not equivariant—GCA-GNN [41]. The experiment is described in detail in Appendix C.1. In the left panel of Fig. 2 we show the prediction error as a function of the number of training samples used. GATr clearly outperforms all non-equivariant baselines, including the geometric-algebra-based GCA-GNN. Compared to the equivariant SEGNN and SE(3)-Transformer, GATr is more sample- 9This terminology, which stems from non-geometric transformers, can be confusing. “Position” here"
+  },
+  {
+    "paper_id": "2305.18415v3",
+    "title": "Geometric Algebra Transformer",
+    "page_num": 8,
+    "chunk_id": "2305.18415v3_page8_chunk1",
+    "text": "efficient, while all three methods reach the same prediction error when trained on enough data. This provides evidence for the usefulness of geometric algebra representations as an inductive bias. GATr also generalizes robustly out of domain, as we show in the middle and right panels of Fig. 1. When evaluating on a larger number of bodies than trained on, methods that use a softmax over attention weights (GATr, Transformer, SE(3)-Transformer) generalize best. Finally, the performance of the E(3)-equivariant GATr, SEGNN, and SE(3)-Transformer does not drop when evaluated on spatially translated data, while the non-equivariant baselines fail in this setting. 4.2 Wall-shear-stress estimation on large meshes of human arteries 16 160 1600 Number of training samples 5 10 100 Mean approximation error (%) GATr (ours) GATr canonical Transformer Transformer canonical PointNet++ PointNet++ canonical GEM-CNN GEM-CNN canonical Figure 3: Arterial wall-shear-stress estimation [48]. We show the mean approximation error (lower is better) as a function of training dataset size, reporting results both on randomly oriented training and test samples (solid mark- ers) and on a version of the dataset in which all artery meshes are canonically oriented (hollow markers). With- out canonicalization, GATr ( ) predicts wall shear stress more precisely and"
+  },
+  {
+    "paper_id": "2305.18415v3",
+    "title": "Geometric Algebra Transformer",
+    "page_num": 8,
+    "chunk_id": "2305.18415v3_page8_chunk2",
+    "text": "as a function of training dataset size, reporting results both on randomly oriented training and test samples (solid mark- ers) and on a version of the dataset in which all artery meshes are canonically oriented (hollow markers). With- out canonicalization, GATr ( ) predicts wall shear stress more precisely and is more sample-efficient than the baselines. Next, we turn towards a realistic experiment in- volving more complex geometric objects. We study the prediction of the wall shear stress ex- erted by the blood flow on the arterial wall, an important predictor of aneurysms. While the wall shear stress can be computed with computa- tional fluid dynamics, simulating a single artery can take many hours, and efficient neural sur- rogates can have substantial impact. However, training such neural surrogates is challenging, as meshes are large (around 7000 nodes in our data) and datasets typically small (we work with 1600 training meshes). We train GATr on a dataset of arterial meshes and simulated wall shear stress published by Suk et al. [48]. They are compared to a Trans- former and to the results reported by Suk et al. [48], including the equivariant GEM-CNN [15] and the non-equivariant PointNet++ [36].11 See Appendix C.2"
+  },
+  {
+    "paper_id": "2305.18415v3",
+    "title": "Geometric Algebra Transformer",
+    "page_num": 8,
+    "chunk_id": "2305.18415v3_page8_chunk3",
+    "text": "We train GATr on a dataset of arterial meshes and simulated wall shear stress published by Suk et al. [48]. They are compared to a Trans- former and to the results reported by Suk et al. [48], including the equivariant GEM-CNN [15] and the non-equivariant PointNet++ [36].11 See Appendix C.2 for experiment details. The results are shown in Fig. 3. On non- canonicalized data, with randomly rotated meshes, GATr improves upon all previous meth- ods and sets a new state of the art. We also experiment with canonicalization: rotat- ing the arteries such that blood always flows in the same direction. This helps the Transformer to be almost competitive with GATr. However, canonicalization is only feasible for relatively straight arteries as in this dataset, not in more complex scenarios with branching and turning arteries. We find it likely that GATr will be more robust in such scenarios. 4.3 Robotic planning through invariant diffusion In our third experiment, we show how GATr defines an E(3)-invariant diffusion model, that it can be used for model-based reinforcement learning and planning, and that this combination is well-suited to solve robotics problems. We follow Janner et al. [27], who propose to treat learning a world"
+  },
+  {
+    "paper_id": "2305.18415v3",
+    "title": "Geometric Algebra Transformer",
+    "page_num": 8,
+    "chunk_id": "2305.18415v3_page8_chunk4",
+    "text": "through invariant diffusion In our third experiment, we show how GATr defines an E(3)-invariant diffusion model, that it can be used for model-based reinforcement learning and planning, and that this combination is well-suited to solve robotics problems. We follow Janner et al. [27], who propose to treat learning a world model and planning within that model as a unified generative modeling problem. After training a diffusion model [45] on offline trajectories, one can use it in a planning loop, sampling from it conditional on the current state, desired future states, or to maximize a given reward, as needed. We use a GATr model as the denoising network in a diffusion model and to use it for planning. We call this combination GATr-Diffuser. Combining the equivariant GATr with an invariant base density defines an E(3) × Sn-invariant diffusion model [29]. GATr-Diffuser is demonstrated on the problem of a Kuka robotic gripper stacking blocks using the “unconditional” environment introduced by Janner et al. [27]. We train GATr-Diffuser on the offline 11We also tried to run SEGNN [5] and SE(3)-Transformer [20] as additional baselines, but were not able to fit them into memory on this task. 8"
+  },
+  {
+    "paper_id": "2305.18415v3",
+    "title": "Geometric Algebra Transformer",
+    "page_num": 9,
+    "chunk_id": "2305.18415v3_page9_chunk1",
+    "text": "101 102 103 104 Training trajectories 0 20 40 60 80 Reward GATr-Diffuser (ours) Transformer-Diffuser Diffuser (reproduced) EDGI Diffuser CQL BCQ Figure 4: Diffusion-based robotic planning. We show normalized rewards (higher is better) as a function of training dataset size. GATr ( ) is more successful at block stacking and more sample-efficient than the baselines, including the original Diffuser [27] ( ) and our modification of it based on a Transformer ( ). In grey, we show results reported by Brehmer et al. [7] and Janner et al. [27]. trajectory dataset published with that paper and then use it for planning, following the setup of Janner et al. [27]. We compare our GATr- Diffuser model to a reproduction of the origi- nal Diffuser model and a new Transformer back- bone for the Diffuser model. In addition, we show the published results of Diffuser [27], the equivariant EDGI [7], and the offline RL algo- rithms CQL [30] and BCQ [21] as published in Ref. [27]. The problem and hyperparameters are described in detail in Appendix C.3. As shown in Fig. 4, GATr-Diffuser solves the block-stacking task better than all baselines. It is also clearly more sample-efficient, matching the performance of a"
+  },
+  {
+    "paper_id": "2305.18415v3",
+    "title": "Geometric Algebra Transformer",
+    "page_num": 9,
+    "chunk_id": "2305.18415v3_page9_chunk2",
+    "text": "offline RL algo- rithms CQL [30] and BCQ [21] as published in Ref. [27]. The problem and hyperparameters are described in detail in Appendix C.3. As shown in Fig. 4, GATr-Diffuser solves the block-stacking task better than all baselines. It is also clearly more sample-efficient, matching the performance of a Diffuser model or Transformer trained on the full dataset even when training only on 1% of the trajectories. 4.4 Scaling Finally, we study GATr’s computational require- ments and scaling. We measure the memory usage and compute time of forward and back- ward passes on synthetic data as a function of the number of items. GATr is compared to a Transformer, to SEGNN [6] in the official implementation, and to the SE(3)-Transformer [20]; for the latter we use the highly optimized implementation by Milesi [35]. We choose hyperparameters for the four architectures such that they have the same depth and width and require that the methods allow all items to interact at each step (i. e. fully connected graphs). Because of the fundamental dif- ferences between the architectures, it is impossible to find fully equivalent settings; our results should thus be interpreted with care. The details of our experiment are described"
+  },
+  {
+    "paper_id": "2305.18415v3",
+    "title": "Geometric Algebra Transformer",
+    "page_num": 9,
+    "chunk_id": "2305.18415v3_page9_chunk3",
+    "text": "and require that the methods allow all items to interact at each step (i. e. fully connected graphs). Because of the fundamental dif- ferences between the architectures, it is impossible to find fully equivalent settings; our results should thus be interpreted with care. The details of our experiment are described in Appendix C.4. We show the results in Fig. 5. For few tokens, GATr is slower than a Transformer. However, this difference is partially due to the low utilization of the GPUs in this test; GATr is closer to the 10 1 100 101 GPU memory usage [GB] 102 103 104 Number of items 10 1 100 101 Time per step [s] GATr (ours) Transformer SE(3)-Trf. SEGNN Figure 5: Computational cost and scaling. We measure peak GPU memory usage (top) and wall time (bottom) per combined forward and backward pass as a func- tion of the number of items in synthetic data. Despite some compute overhead, GATr ( ) scales just like the Transformer ( ) and orders of magnitude more favor- ably than the equivariant baselines ( , ). Transformer when using larger batch sizes or when pre-compiling the computation graph. For larger problems, compute and memory are dominated"
+  },
+  {
+    "paper_id": "2305.18415v3",
+    "title": "Geometric Algebra Transformer",
+    "page_num": 9,
+    "chunk_id": "2305.18415v3_page9_chunk4",
+    "text": "synthetic data. Despite some compute overhead, GATr ( ) scales just like the Transformer ( ) and orders of magnitude more favor- ably than the equivariant baselines ( , ). Transformer when using larger batch sizes or when pre-compiling the computation graph. For larger problems, compute and memory are dominated by the pairwise interactions in the at- tention mechanism. Here GATr and the base- line Transformer perform on par, as they use the same efficient implementation of dot-product at- tention. In terms of memory, both scale linearly in the number of tokens, while the equivariant baselines scale quadratically. In terms of time, all methods scale quadratically, but the equivari- ant baselines have a worse prefactor than GATr and the Transformer. All in all, we can easily scale GATr to tens of thousands of tokens, while the equivariant baselines run out of memory two orders of magnitude earlier. 5 Related work Geometric algebra Geometric (or Clifford) algebra was first conceived in the 19th century [10, 22] and has been used widely in quantum physics [16, 34]. Recently, it has found new pop- ularity in computer graphics [18]. In particular, 9"
+  },
+  {
+    "paper_id": "2305.18415v3",
+    "title": "Geometric Algebra Transformer",
+    "page_num": 10,
+    "chunk_id": "2305.18415v3_page10_chunk1",
+    "text": "the projective geometric algebra used in this work [17, 38] and a conformal model [18] are suitable for 3D computations. Geometric algebras have been used in machine learning in various ways. Spellings [46] use G3,0,0 geometric products to compute rotation-invariant features from small point clouds. Unlike us, they do not learn internal geometric representations. Our work was inspired by Brandstetter et al. [5] and Ruhe et al. [41]. These works also use multivector features (the latter even of the same G3,0,1), and process them with operations such as the geometric / sandwich product, Clifford Fourier transforms and Clifford convolutions. The main difference to our work is that GATr is E(3) equivariant, while both of these works are not. We compare to the GCA-GNN network from Ref. [41] in our experiments. Concurrently to this publication, Ruhe et al. [40] also study equivariant, geometric algebra–based architectures. While some of our and their findings overlap, there are several differences: They develop theory for generic geometric algebras of the form Gp,q,r, while we focus on the projective algebra G3,0,1 with its faithful E(3) representations, with our theory also applicable to the group E(n) and the algebras Gn,0,0 and Gn,0,1. Ruhe et al. [40] also"
+  },
+  {
+    "paper_id": "2305.18415v3",
+    "title": "Geometric Algebra Transformer",
+    "page_num": 10,
+    "chunk_id": "2305.18415v3_page10_chunk2",
+    "text": "findings overlap, there are several differences: They develop theory for generic geometric algebras of the form Gp,q,r, while we focus on the projective algebra G3,0,1 with its faithful E(3) representations, with our theory also applicable to the group E(n) and the algebras Gn,0,0 and Gn,0,1. Ruhe et al. [40] also finds the linear maps of Eq. (4), but does not discuss the join or distance-aware dot-product, which we found to be essential for performance in the projective algebra. Moreover, they propose an MLP-like architecture and use it in a message-passing graph network, while our GATr is a Transformer. Equivariant deep learning Equivariance to symmetries [11] is the primary design principle in modern geometric deep learning [8]. Equivariant networks have been applied successfully in areas such as medical imaging [31, 53] and robotics [7, 26, 44, 51, 52, 55], and are ubiquitous in applications of machine learning to physics and chemistry [1, 3, 4, 19, 28, 33]. In recent years, a number of works have investigated equivariant Transformer and message-passing architectures [3, 4, 6, 19, 20, 39, 42, 49]. These works are generally more limited in terms of the types of geometric quantities they can process compared to our multivector features."
+  },
+  {
+    "paper_id": "2305.18415v3",
+    "title": "Geometric Algebra Transformer",
+    "page_num": 10,
+    "chunk_id": "2305.18415v3_page10_chunk3",
+    "text": "[1, 3, 4, 19, 28, 33]. In recent years, a number of works have investigated equivariant Transformer and message-passing architectures [3, 4, 6, 19, 20, 39, 42, 49]. These works are generally more limited in terms of the types of geometric quantities they can process compared to our multivector features. Furthermore, our architecture is equivariant to the full group of Euclidean transformations, whereas previous works focus on SO(3) equivariance. 6 Discussion We introduced the Geometric Algebra Transformer (GATr), a general-purpose architecture for geo- metric data, and implemented it at https://github.com/qualcomm-ai-research/geometric- algebra-transformer. We argued and demonstrated that GATr effectively combines structure and scalability. GATr incorporates geometric structure by representing data in projective geometric algebra, as well as through E(3) equivariance. Unlike most equivariant architectures, GATr features faithful E(3) representations, including absolute positions and equivariance with respect to translations. Empiri- cally, GATr outperforms non-geometric, equivariant, and geometric algebra–based non-equivariant baselines across three experiments. At the same time, GATr scales much better than most geometric networks. This is because GATr is a Transformer and computes pairwise interactions through dot-product attention. Using recent efficient attention implementations, we demonstrated that we can scale GATr to systems with many thousands of tokens and fully connected interactions."
+  },
+  {
+    "paper_id": "2305.18415v3",
+    "title": "Geometric Algebra Transformer",
+    "page_num": 10,
+    "chunk_id": "2305.18415v3_page10_chunk4",
+    "text": "experiments. At the same time, GATr scales much better than most geometric networks. This is because GATr is a Transformer and computes pairwise interactions through dot-product attention. Using recent efficient attention implementations, we demonstrated that we can scale GATr to systems with many thousands of tokens and fully connected interactions. For few tokens and small batch sizes, GATr has some computational overhead, which we hope to address in future implementations. One drawback of our approach is that since geometric algebra is not widely known yet, it may present an obstacle to understanding the details of the method. However, given a dictionary for embeddings of common objects and a library of primitives that act on them, using this framework is no more difficult than using typical neural network layers grounded in linear algebra. Another potential downside is that GATr is not yet shown to be a universal approximator, which is an interesting direction for future work. Given the promising results presented in this work, we look forward to further study the potential of Geometric Algebra Transformers in problems from molecular dynamics to robotics. 10"
+  },
+  {
+    "paper_id": "2305.18415v3",
+    "title": "Geometric Algebra Transformer",
+    "page_num": 11,
+    "chunk_id": "2305.18415v3_page11_chunk1",
+    "text": "Acknowledgements We would like to thank Joey Bose, Johannes Brandstetter, Gabriele Cesa, Steven De Keninck, Daniel Dijkman, Leo Dorst, Mario Geiger, Jonas Köhler, Ekdeep Singh Lubana, Evgeny Mironov, and David Ruhe for generous guidance regarding geometry, enthusiastic encourage- ment on equivariance, and careful counsel concerning computing complications. References [1] Brandon Anderson, Truong Son Hy, and Risi Kondor. Cormorant: Covariant molecular neural networks. Advances in Neural Information Processing Systems, 32, 2019. (Cited on page 10) [2] Alexei Baevski and Michael Auli. Adaptive input representations for neural language modeling. arXiv:1809.10853, 2018. (Cited on pages 5 and 22) [3] Ilyes Batatia, David Peter Kovacs, Gregor N C Simm, Christoph Ortner, and Gabor Csanyi. MACE: Higher order equivariant message passing neural networks for fast and accurate force fields. In Advances in Neural Information Processing Systems, 2022. (Cited on page 10) [4] Simon Batzner, Albert Musaelian, Lixin Sun, Mario Geiger, Jonathan P Mailoa, Mordechai Kornbluth, Nicola Molinari, Tess E Smidt, and Boris Kozinsky. E(3)-equivariant graph neural networks for data-efficient and accurate interatomic potentials. Nat. Commun., 13(1):2453, May 2022. (Cited on page 10) [5] Johannes Brandstetter, Rianne van den Berg, Max Welling, and Jayesh K Gupta. Clifford neural layers for PDE modeling. arXiv:2209.04934, 2022. (Cited on"
+  },
+  {
+    "paper_id": "2305.18415v3",
+    "title": "Geometric Algebra Transformer",
+    "page_num": 11,
+    "chunk_id": "2305.18415v3_page11_chunk2",
+    "text": "Nicola Molinari, Tess E Smidt, and Boris Kozinsky. E(3)-equivariant graph neural networks for data-efficient and accurate interatomic potentials. Nat. Commun., 13(1):2453, May 2022. (Cited on page 10) [5] Johannes Brandstetter, Rianne van den Berg, Max Welling, and Jayesh K Gupta. Clifford neural layers for PDE modeling. arXiv:2209.04934, 2022. (Cited on pages 2, 8, and 10) [6] Johannes Brandstetter, Rob Hesselink, Elise van der Pol, Erik J Bekkers, and Max Welling. Geometric and physical quantities improve E(3) equivariant message passing. In International Conference on Learning Representations, 2022. (Cited on pages 7, 9, 10, 22, and 25) [7] Johann Brehmer, Joey Bose, Pim De Haan, and Taco Cohen. EDGI: Equivariant diffusion for planning with embodied agents. In Advances in Neural Information Processing Systems, volume 37, 2023. (Cited on pages 9, 10, and 24) [8] Michael M Bronstein, Joan Bruna, Taco Cohen, and Petar Veliˇckovi´c. Geometric deep learning: Grids, groups, graphs, geodesics, and gauges. 2021. (Cited on page 10) [9] Tianqi Chen, Bing Xu, Chiyuan Zhang, and Carlos Guestrin. Training deep nets with sublinear memory cost. arXiv:1604.06174, 2016. (Cited on page 23) [10] William Kingdon Clifford. Applications of Grassmann’s Extensive Algebra. Amer. J. Math., 1 (4):350–358, 1878. (Cited on page 9) [11] Taco"
+  },
+  {
+    "paper_id": "2305.18415v3",
+    "title": "Geometric Algebra Transformer",
+    "page_num": 11,
+    "chunk_id": "2305.18415v3_page11_chunk3",
+    "text": "gauges. 2021. (Cited on page 10) [9] Tianqi Chen, Bing Xu, Chiyuan Zhang, and Carlos Guestrin. Training deep nets with sublinear memory cost. arXiv:1604.06174, 2016. (Cited on page 23) [10] William Kingdon Clifford. Applications of Grassmann’s Extensive Algebra. Amer. J. Math., 1 (4):350–358, 1878. (Cited on page 9) [11] Taco Cohen. Equivariant Convolutional Networks. PhD thesis, University of Amsterdam, 2021. (Cited on page 10) [12] Taco Cohen and Max Welling. Group equivariant convolutional networks. In International Conference on Machine Learning, pages 2990–2999. PMLR, 2016. (Cited on page 2) [13] Erwin Coumans and Yunfei Bai. PyBullet, a Python module for physics simulation for games, robotics and machine learning. http://pybullet.org, 2016–2019. (Cited on page 23) [14] Tri Dao, Dan Fu, Stefano Ermon, Atri Rudra, and Christopher Ré. FlashAttention: Fast and memory-efficient exact attention with IO-awareness. Advances in Neural Information Processing Systems, 35:16344–16359, 2022. (Cited on pages 4 and 6) [15] Pim De Haan, Maurice Weiler, Taco Cohen, and Max Welling. Gauge equivariant mesh CNNs: Anisotropic convolutions on geometric graphs. International Conference on Learning Representations, 2021. (Cited on pages 8 and 23) [16] C Doran and A Lasenby. Geometric algebra for physicists. Cambridge University Press, 2003. (Cited on page 9) [17] Leo Dorst."
+  },
+  {
+    "paper_id": "2305.18415v3",
+    "title": "Geometric Algebra Transformer",
+    "page_num": 12,
+    "chunk_id": "2305.18415v3_page12_chunk1",
+    "text": "[18] Leo Dorst, Daniel Fontijne, and Stephen Mann. Geometric Algebra for Computer Science: An Object-oriented Approach to Geometry. Morgan Kaufmann Series in Computer Graphics. Morgan Kaufmann, Amsterdam, 2007. ISBN 978-0-12-369465-2. (Cited on pages 2, 9, 10, and 15) [19] Thorben Frank, Oliver Thorsten Unke, and Klaus Robert Muller. So3krates: Equivariant attention for interactions on arbitrary length-scales in molecular systems. October 2022. (Cited on page 10) [20] Fabian B Fuchs, Daniel E Worrall, Volker Fischer, and Max Welling. SE(3)-Transformers: 3D Roto-Translation equivariant attention networks. In Advances in Neural Information Processing Systems, 2020. (Cited on pages 7, 8, 9, 10, and 22) [21] Scott Fujimoto, David Meger, and Doina Precup. Off-policy deep reinforcement learning without exploration. In International Conference on Machine Learning, pages 2052–2062. PMLR, 2019. (Cited on pages 9 and 24) [22] Hermann Grassmann. Die lineale Ausdehnungslehre. Otto Wigand, Leipzig, 1844. (Cited on page 9) [23] Dan Hendrycks and Kevin Gimpel. Gaussian error linear units (gelus). arXiv:1606.08415, 2016. (Cited on pages 6 and 22) [24] Jonathan Ho, Nal Kalchbrenner, Dirk Weissenborn, and Tim Salimans. Axial attention in multidimensional transformers. arXiv:1912.12180 [cs], December 2019. (Cited on page 7) [25] Jonathan Ho, Ajay Jain, and Pieter Abbeel. Denoising diffusion probabilistic models. In Neural"
+  },
+  {
+    "paper_id": "2305.18415v3",
+    "title": "Geometric Algebra Transformer",
+    "page_num": 12,
+    "chunk_id": "2305.18415v3_page12_chunk2",
+    "text": "Gaussian error linear units (gelus). arXiv:1606.08415, 2016. (Cited on pages 6 and 22) [24] Jonathan Ho, Nal Kalchbrenner, Dirk Weissenborn, and Tim Salimans. Axial attention in multidimensional transformers. arXiv:1912.12180 [cs], December 2019. (Cited on page 7) [25] Jonathan Ho, Ajay Jain, and Pieter Abbeel. Denoising diffusion probabilistic models. In Neural Information Processing Systems, 2020. (Cited on page 24) [26] Haojie Huang, Dian Wang, Robin Walters, and Robert Platt. Equivariant transporter network. In Proceedings of Robotics: Science and Systems, 2022. (Cited on page 10) [27] Michael Janner, Yilun Du, Joshua Tenenbaum, and Sergey Levine. Planning with diffusion for flexible behavior synthesis. In International Conference on Machine Learning, 2022. (Cited on pages 8, 9, 23, and 24) [28] John Jumper, Richard Evans, Alexander Pritzel, Tim Green, Michael Figurnov, Olaf Ron- neberger, Kathryn Tunyasuvunakool, Russ Bates, Augustin Žídek, Anna Potapenko, et al. Highly accurate protein structure prediction with alphafold. Nature, 596(7873):583–589, 2021. (Cited on page 10) [29] Jonas Köhler, Leon Klein, and Frank Noé. Equivariant flows: exact likelihood generative learning for symmetric densities. In International Conference on Machine Learning, pages 5361–5370. PMLR, 2020. (Cited on page 8) [30] Aviral Kumar, Aurick Zhou, George Tucker, and Sergey Levine. Conservative q-learning for offline reinforcement learning."
+  },
+  {
+    "paper_id": "2305.18415v3",
+    "title": "Geometric Algebra Transformer",
+    "page_num": 12,
+    "chunk_id": "2305.18415v3_page12_chunk3",
+    "text": "on page 10) [29] Jonas Köhler, Leon Klein, and Frank Noé. Equivariant flows: exact likelihood generative learning for symmetric densities. In International Conference on Machine Learning, pages 5361–5370. PMLR, 2020. (Cited on page 8) [30] Aviral Kumar, Aurick Zhou, George Tucker, and Sergey Levine. Conservative q-learning for offline reinforcement learning. Advances in Neural Information Processing Systems, 33:1179– 1191, 2020. (Cited on pages 9 and 24) [31] Maxime W Lafarge, Erik J Bekkers, Josien P W Pluim, Remco Duits, and Mitko Veta. Roto- translation equivariant convolutional networks: Application to histopathology image analysis. Med. Image Anal., 68, 2021. (Cited on page 10) [32] Benjamin Lefaudeux, Francisco Massa, Diana Liskovich, Wenhan Xiong, Vittorio Caggiano, Sean Naren, Min Xu, Jieru Hu, Marta Tintore, Susan Zhang, Patrick Labatut, and Daniel Haziza. xFormers: A modular and hackable Transformer modelling library. https://github.com/ facebookresearch/xformers, 2022. (Cited on pages 4, 6, 23, and 24) [33] Yi-Lun Liao and Tess Smidt. Equiformer: Equivariant graph attention transformer for 3d atomistic graphs. arXiv:2206.11990, 2022. (Cited on page 10) [34] Pertti Lounesto. Clifford Algebras and Spinors. London Mathematical Society Lecture Note. Cambridge University Press, 2001. (Cited on page 9) 12"
+  },
+  {
+    "paper_id": "2305.18415v3",
+    "title": "Geometric Algebra Transformer",
+    "page_num": 13,
+    "chunk_id": "2305.18415v3_page13_chunk1",
+    "text": "[35] Alexandre Milesi. Accelerating SE(3)-Transformers training using an NVIDIA open-source model implementation. https://developer.nvidia.com/blog/ accelerating-se3-transformers-training-using-an-nvidia-open-source- model-implementation/, 2021. (Cited on pages 9 and 25) [36] Charles Ruizhongtai Qi, Li Yi, Hao Su, and Leonidas J Guibas. Pointnet++: Deep hierarchical feature learning on point sets in a metric space. Advances in Neural Information Processing Systems, 30, 2017. (Cited on pages 8 and 23) [37] Markus N Rabe and Charles Staats. Self-attention does not need O(n2) memory. arXiv:2112.05682, 2021. (Cited on pages 4 and 6) [38] Martin Roelfs and Steven De Keninck. Graded symmetry groups: plane and simple. arXiv:2107.03771, 2021. (Cited on pages 2, 3, 10, and 15) [39] David W Romero, Erik J Bekkers, Jakub M Tomczak, and Mark Hoogendoorn. Attentive group equivariant convolutional networks. In Proceedings of the 37th International Conference on Machine Learning, volume 119, pages 8188–8199. JMLR.org, July 2020. (Cited on page 10) [40] David Ruhe, Johannes Brandstetter, and Patrick Forré. Clifford group equivariant neural networks. In Advances in Neural Information Processing Systems, volume 37, 2023. (Cited on pages 2 and 10) [41] David Ruhe, Jayesh K Gupta, Steven de Keninck, Max Welling, and Johannes Brandstetter. Geometric clifford algebra networks. In International Conference on Machine Learning, 2023. (Cited on pages"
+  },
+  {
+    "paper_id": "2305.18415v3",
+    "title": "Geometric Algebra Transformer",
+    "page_num": 13,
+    "chunk_id": "2305.18415v3_page13_chunk2",
+    "text": "Forré. Clifford group equivariant neural networks. In Advances in Neural Information Processing Systems, volume 37, 2023. (Cited on pages 2 and 10) [41] David Ruhe, Jayesh K Gupta, Steven de Keninck, Max Welling, and Johannes Brandstetter. Geometric clifford algebra networks. In International Conference on Machine Learning, 2023. (Cited on pages 2, 3, 7, 10, and 22) [42] Víctor Garcia Satorras, Emiel Hoogeboom, and Max Welling. E(n) equivariant graph neural networks. In Marina Meila and Tong Zhang, editors, Proceedings of the 38th International Conference on Machine Learning, volume 139 of Proceedings of Machine Learning Research, pages 9323–9332. PMLR, 2021. (Cited on page 10) [43] Noam Shazeer. Fast transformer decoding: One write-head is all you need. arXiv:1911.02150, 2019. (Cited on page 21) [44] Anthony Simeonov, Yilun Du, Andrea Tagliasacchi, Joshua B Tenenbaum, Alberto Rodriguez, Pulkit Agrawal, and Vincent Sitzmann. Neural descriptor fields: SE(3)-Equivariant object representations for manipulation. In ICRA, 2022. (Cited on page 10) [45] Jascha Sohl-Dickstein, Eric Weiss, Niru Maheswaranathan, and Surya Ganguli. Deep unsuper- vised learning using nonequilibrium thermodynamics. In International Conference on Machine Learning, pages 2256–2265. PMLR, 2015. (Cited on page 8) [46] Matthew Spellings. Geometric algebra attention networks for small point clouds. arXiv:2110.02393, 2021. (Cited on pages 2"
+  },
+  {
+    "paper_id": "2305.18415v3",
+    "title": "Geometric Algebra Transformer",
+    "page_num": 13,
+    "chunk_id": "2305.18415v3_page13_chunk3",
+    "text": "page 10) [45] Jascha Sohl-Dickstein, Eric Weiss, Niru Maheswaranathan, and Surya Ganguli. Deep unsuper- vised learning using nonequilibrium thermodynamics. In International Conference on Machine Learning, pages 2256–2265. PMLR, 2015. (Cited on page 8) [46] Matthew Spellings. Geometric algebra attention networks for small point clouds. arXiv:2110.02393, 2021. (Cited on pages 2 and 10) [47] Jianlin Su, Yu Lu, Shengfeng Pan, Bo Wen, and Yunfeng Liu. Roformer: Enhanced transformer with rotary position embedding. arXiv:2104.09864, 2021. (Cited on page 7) [48] Julian Suk, Pim de Haan, Phillip Lippe, Christoph Brune, and Jelmer M Wolterink. Mesh neural networks for se (3)-equivariant hemodynamics estimation on the artery wall. arXiv:2212.05023, 2022. (Cited on pages 8, 22, and 23) [49] Nathaniel Thomas, Tess Smidt, Steven Kearnes, Lusann Yang, Li Li, Kai Kohlhoff, and Patrick Riley. Tensor field networks: Rotation-and translation-equivariant neural networks for 3d point clouds. arXiv:1802.08219, 2018. (Cited on page 10) [50] Ashish Vaswani, Noam Shazeer, Niki Parmar, Jakob Uszkoreit, Llion Jones, Aidan N Gomez, Łukasz Kaiser, and Illia Polosukhin. Attention is all you need. In Advances in Neural Informa- tion Processing Systems, volume 30, 2017. (Cited on pages 2, 4, 5, and 6) [51] Dian Wang, Robin Walters, Xupeng Zhu, and Robert Platt. Equivariant Q"
+  },
+  {
+    "paper_id": "2305.18415v3",
+    "title": "Geometric Algebra Transformer",
+    "page_num": 14,
+    "chunk_id": "2305.18415v3_page14_chunk1",
+    "text": "[52] Dian Wang, Mingxi Jia, Xupeng Zhu, Robin Walters, and Robert Platt. On-Robot learning with equivariant models. In CoRL, 2022. (Cited on page 10) [53] Marysia Winkels and Taco Cohen. Pulmonary nodule detection in CT scans with equivariant CNNs. MIA, 2019. (Cited on page 10) [54] Ruibin Xiong, Yunchang Yang, Di He, Kai Zheng, Shuxin Zheng, Chen Xing, Huishuai Zhang, Yanyan Lan, Liwei Wang, and Tieyan Liu. On layer normalization in the transformer architecture. In International Conference on Machine Learning, pages 10524–10533. PMLR, 2020. (Cited on pages 5 and 22) [55] Xupeng Zhu, Dian Wang, Ondrej Biza, Guanang Su, Robin Walters, and Robert Platt. Sample efficient grasp learning using equivariant models. In Robotics: Science and Systems XVIII. Robotics: Science and Systems Foundation, June 2022. (Cited on page 10) 14"
+  },
+  {
+    "paper_id": "2305.18415v3",
+    "title": "Geometric Algebra Transformer",
+    "page_num": 15,
+    "chunk_id": "2305.18415v3_page15_chunk1",
+    "text": "A Theoretical results In this section, we state or prove several properties of equivariant maps between geometric algebras that we use in the construction of GATr. The grade involution is a linear involutive bijection b· : Gn,0,r : Gn,0,r, which sends a k-blade x to bx = (−1)kx. Note that this is an algebra automorphism c xy = bxby, and also an ∧-algebra automorphism. The reversal in a linear involutive bijectione· : Gn,0,r : Gn,0,r which sends a k-blade x = x1∧x2∧...∧xk to the reverse: ex = xk∧...∧x2∧x1 = ±x with +x if k ∈{0, 1, 4, 5, ..., 8, 9, ...} and −x otherwise. Note that this is an anti-automorphism (contravariant functor): f xy = eyex. Here we denote the sandwich action of u ∈Pin(n, 0, r) on a multivector x not as ρu(x), but as u[x]. For odd u, u[x] = ubxu−1, while for even u, u[x] = uxu−1. The sandwich action is linear by linearity of theb· and bilinearity of the geometric product. Furthermore, note that for any particular u ∈Pin(n, 0, r), the action is a geometric algebra homomorphism: u[ab] = u babu−1 = ubau−1ubbu−1 = u[a]u[b]. By linearity and a symmetrization argument [18, Sec 7.1],"
+  },
+  {
+    "paper_id": "2305.18415v3",
+    "title": "Geometric Algebra Transformer",
+    "page_num": 15,
+    "chunk_id": "2305.18415v3_page15_chunk2",
+    "text": "uxu−1. The sandwich action is linear by linearity of theb· and bilinearity of the geometric product. Furthermore, note that for any particular u ∈Pin(n, 0, r), the action is a geometric algebra homomorphism: u[ab] = u babu−1 = ubau−1ubbu−1 = u[a]u[b]. By linearity and a symmetrization argument [18, Sec 7.1], one can show that it also a ∧-algebra homomorphism (outermorphism): u[a ∧b] = u[a] ∧u[b]. Let l ≥k. Given a k-vector a and l-vector b, define the left contraction as a⌋b := ⟨ab⟩l−k, which is a l −k-vector. For k = 1, and b a blade b = b1 ∧... ∧bl. Geometrically, a⌋b is the projection of a to the space spanned by the vectors bi. Thus we have that a⌋b = 0 ⇐⇒∀i, ⟨a, bi⟩= 0 [18, Sec 3.2.3], in which case we define a and b to be orthogonal. In particular, two vectors a, b are orthogonal if their inner product is zero. Futhermore, we define a vector a to be tangential to blade b if a ∧b = 0. In the projective algebra, a blade x is defined to be ideal if it can be written as x = e0 ∧y for another blade y. A.1 Linear"
+  },
+  {
+    "paper_id": "2305.18415v3",
+    "title": "Geometric Algebra Transformer",
+    "page_num": 15,
+    "chunk_id": "2305.18415v3_page15_chunk3",
+    "text": "their inner product is zero. Futhermore, we define a vector a to be tangential to blade b if a ∧b = 0. In the projective algebra, a blade x is defined to be ideal if it can be written as x = e0 ∧y for another blade y. A.1 Linear maps We begin with Pin-equivariant linear maps. After some technical lemmata, we prove the most general form of linear equivariant maps in the Euclidean geometric algebra Gn,0,0, and then also in projective geometric algebra Gn,0,1. Proposition 2. The grade projection ⟨·⟩k is equivariant [18, Sec 13.2.3]. Proof. Choose an l-blade x = a1 ∧a2 ∧... ∧al. Let u be a 1-versor. As the action u is an outermorphism, u[x] = u[a1] ∧... ∧u[al] is an l-blade. Now if l ̸= k, then ⟨x⟩k = 0 and thus u[⟨x⟩k] = ⟨u[x]⟩k. If l = k, then ⟨x⟩k = x and thus u[⟨x⟩k] = ⟨u[x]⟩k. As the grade projection is linear, equivariance extends to any multivector. Proposition 3. The following map is equivariant: ϕ : G3,0,1 →G3,0,1 : x 7→e0x. Proof. Let u be a 1-versor, then u acts on a multivector as x 7→u[x] = uˆxu−1, where ˆx is the grade"
+  },
+  {
+    "paper_id": "2305.18415v3",
+    "title": "Geometric Algebra Transformer",
+    "page_num": 15,
+    "chunk_id": "2305.18415v3_page15_chunk4",
+    "text": "u[⟨x⟩k] = ⟨u[x]⟩k. As the grade projection is linear, equivariance extends to any multivector. Proposition 3. The following map is equivariant: ϕ : G3,0,1 →G3,0,1 : x 7→e0x. Proof. Let u be a 1-versor, then u acts on a multivector as x 7→u[x] = uˆxu−1, where ˆx is the grade involution. Note that e0 is invariant: u[e0] = −ue0u−1 = e0uu−1 = e0, where ue0 = −e0u because u and e0 are orthogonal: ue0 = ⟨u, e0⟩+ u ∧e0 = −e0 ∧u = −e0 ∧u. Then ϕ is equivariant, as the action is an algebra homomorphism: u[ϕ(x)] = u[e0x] = ud e0xu−1 = uˆe0u−1uˆxu−1 = u[e0]u[x] = e0u[x] = ϕ(u[x]). It follows that ϕ is also equivariant to any product of vectors, i.e. any versor u. Euclidean geometric algebra Before constructing the most general equivariant linear map between multivectors in projective geometric algebra, we begin with the Euclidean case Gn,0,0. Theorem 1 (Cartan-Dieuodonné). Every orthogonal transformation of an n-dimensional space can be decomposed into at most n reflections in hyperplanes. Proof. This theorem is proven in Roelfs and De Keninck [38]. Lemma 1. In the n-dimensional Euclidean geometric algebra Gn,0,0, the group Pin(n, 0, 0) acts transitively on the space"
+  },
+  {
+    "paper_id": "2305.18415v3",
+    "title": "Geometric Algebra Transformer",
+    "page_num": 16,
+    "chunk_id": "2305.18415v3_page16_chunk1",
+    "text": "Proof. As the Pin group preserves norm, choose λ = 1 without loss of generality. Any k-blade x of unit norm can be written by Gram-Schmidt factorization as the wedge product of k orthogonal vectors of unit norm x = v1 ∧v2 ∧... ∧vk. Consider another k-blade y = w1 ∧w2 ∧... ∧wk with wi orthonormal. We’ll construct a u ∈Pin(n, 0, 0) such that u[x] = y. Choose n −k additional orthonormal vectors vk+1, ..., vn and wk+1, .., .wn to form orthonormal bases. Then, there exists a unique orthogonal transformation Rn →Rn that maps vi into wi for all i ∈{1, ..., n}. By the Cartan-Dieuodonné theorem 1, this orthogonal transformation can be expressed as the product of reflections, thus there exists a u ∈Pin(n, 0, 0) such that u[vi] = wi. As the u action is a ∧-algebra homomorphism (u[a ∧b] = u[a] ∧u[b], for any multivectors a, b), we have that u[x] = y. Lemma 2. In the Euclidean (r = 0) or projective (r = 1) geometric algebra Gn,0,r, let x be a k- blade. Let u be a 1-versor. Then u[x] = x ⇐⇒u⌋x = 0 and u[x] = −x ⇐⇒u ∧x = 0."
+  },
+  {
+    "paper_id": "2305.18415v3",
+    "title": "Geometric Algebra Transformer",
+    "page_num": 16,
+    "chunk_id": "2305.18415v3_page16_chunk2",
+    "text": "a, b), we have that u[x] = y. Lemma 2. In the Euclidean (r = 0) or projective (r = 1) geometric algebra Gn,0,r, let x be a k- blade. Let u be a 1-versor. Then u[x] = x ⇐⇒u⌋x = 0 and u[x] = −x ⇐⇒u ∧x = 0. Proof. Let x be a k-blade and u a vector of unit norm. We can decompose u into u = t + v with t∧x = 0 (the part tangential to the subspace of x) and v⌋x = 0 (the normal part). This decomposition is unique unless x is ideal in the projective GA, in which case the e0 component of u is both normal and tangential, and we choose t Euclidean. In either case, note the following equalities: xt = (−1)k−1tx; xv = (−1)kvx; vt = −tv and note ∄λ ̸= 0 such that vtx = λx, which can be shown e.g. by picking a basis. Then: u[x] = (−1)k(t + v)x(t + v) = (t + v)(−t + v)x = (−∥t∥2 + ∥v∥2)x −2vtx We have u[x] ∝x ⇐⇒vtx = 0. If x is not ideal, this implies that either v = 0 (thus u ∧x = 0"
+  },
+  {
+    "paper_id": "2305.18415v3",
+    "title": "Geometric Algebra Transformer",
+    "page_num": 16,
+    "chunk_id": "2305.18415v3_page16_chunk3",
+    "text": "be shown e.g. by picking a basis. Then: u[x] = (−1)k(t + v)x(t + v) = (t + v)(−t + v)x = (−∥t∥2 + ∥v∥2)x −2vtx We have u[x] ∝x ⇐⇒vtx = 0. If x is not ideal, this implies that either v = 0 (thus u ∧x = 0 and u[x] = −x) or t = 0 (thus u⌋x = 0 and u[x] = x). If x is ideal, this implies that either v ∝e0 (thus u ∧x = 0 and u[x] = −x) or t = 0 (thus u⌋x = 0 and u[x] = x). Lemma 3. Let r ∈{0, 1}. Any linear Pin(n, 0, r)-equivariant map ϕ : Gn,0,r →Gn,0,r can be decomposed into a sum of equivariant maps ϕ = P lkm ϕlkm, with ϕlkm equivariantly mapping k- blades to l-blades. If r = 0 (Euclidean algebra) or k < n + 1, such a map ϕlkm is defined by the image of any one non-ideal k-blade, like e12...k. Instead, if r = 1 (projective algebra) and k = n + 1, then such a map is defined by the image of a pseudoscalar, like e01...n. Proof. The Pin(n, 0, r) group action maps k-vectors to"
+  },
+  {
+    "paper_id": "2305.18415v3",
+    "title": "Geometric Algebra Transformer",
+    "page_num": 16,
+    "chunk_id": "2305.18415v3_page16_chunk4",
+    "text": "ϕlkm is defined by the image of any one non-ideal k-blade, like e12...k. Instead, if r = 1 (projective algebra) and k = n + 1, then such a map is defined by the image of a pseudoscalar, like e01...n. Proof. The Pin(n, 0, r) group action maps k-vectors to k-vectors. Therefore, ϕ can be decomposed into equivariant maps from grade k to grade l: ϕ(x) = P lk ϕlk(⟨x⟩k), with ϕlk having l-vectors as image, and all k′-vectors in the kernel, for k′ ̸= k. Let x be an non-ideal k-blade (or pseudoscalar if k = n + 1). By lemmas 1 and 4, in both Euclidean and projective GA, the span of the k-vectors in the orbit of x contains any k-vector. So ϕlk is defined by the l-vector y = ϕlk(x). Any l-vector can be decomposed as a finite sum of l-blades: y = y1 + ...yM. We can define ϕlkm(x) = ym, extended to all l-vectors by equivariance, and note that ϕlk = P m ϕlkm. Proposition 4. For an n-dimensional Euclidean geometric algebra Gn,0,0, any linear endomorphism ϕ : Gn,0,0 →Gn,0,0 that is equivariant to the Pin(n, 0, 0) group (equivalently to O(n)) is of"
+  },
+  {
+    "paper_id": "2305.18415v3",
+    "title": "Geometric Algebra Transformer",
+    "page_num": 16,
+    "chunk_id": "2305.18415v3_page16_chunk5",
+    "text": "We can define ϕlkm(x) = ym, extended to all l-vectors by equivariance, and note that ϕlk = P m ϕlkm. Proposition 4. For an n-dimensional Euclidean geometric algebra Gn,0,0, any linear endomorphism ϕ : Gn,0,0 →Gn,0,0 that is equivariant to the Pin(n, 0, 0) group (equivalently to O(n)) is of the type ϕ(x) = Pn k=0 wk⟨x⟩k, for parameters w ∈Rn+1. Proof. By decomposition of Lemma 3, let ϕ map from k-blades to l-blades. Let x be a k-blade. Let u be a 1-versor. By Lemma 2, if u is orthogonal to x, u[ϕ(x)] = ϕ(u[x]) = ϕ(x) and u is also orthogonal to ϕ(x). If u∧x = 0, then u[ϕ(x)] = ϕ(u[x]) = ϕ(−x) = −ϕ(x) and u∧ϕ(x) = 0. Thus any vector in x is in ϕ(x) and any vector orthogonal to x is orthogonal to ϕ(x), this implies ϕ(x) = wkx, for some wk ∈R. By Lemma 3, we can extend ϕ to ϕ(y) = wky for any k-vector y. Projective geometric algebra How about equivariant linear maps in projective geometric algebra? The degenerate metric makes the derivation more involved, but in the end we will arrive at a result that is only slightly more general. Lemma"
+  },
+  {
+    "paper_id": "2305.18415v3",
+    "title": "Geometric Algebra Transformer",
+    "page_num": 16,
+    "chunk_id": "2305.18415v3_page16_chunk6",
+    "text": "3, we can extend ϕ to ϕ(y) = wky for any k-vector y. Projective geometric algebra How about equivariant linear maps in projective geometric algebra? The degenerate metric makes the derivation more involved, but in the end we will arrive at a result that is only slightly more general. Lemma 4. The Pin group of the projective geometric algebra, Pin(n, 0, 1), acts transitively on the space of k-blades with positive norm ∥x∥= λ > 0. Additionally, the group acts transitively on the space of zero-norm k-blades of the form x = e0 ∧y (called ideal blades), with ∥y∥= κ. 16"
+  },
+  {
+    "paper_id": "2305.18415v3",
+    "title": "Geometric Algebra Transformer",
+    "page_num": 17,
+    "chunk_id": "2305.18415v3_page17_chunk1",
+    "text": "Proof. Let x = x1 ∧... ∧xk be a k-blade with positive norm λ. All vectors xi can be written as xi = vi + δie0, for a nonzero Euclidean vector vi (meaning with no e0 component) and δi ∈R, because if vi = 0, the norm of x would have been 0. Orthogonalize them as x′ 2 = x2 −⟨x1, x2⟩x1, etc., resulting in x = x′ 1 ∧· · · ∧x′ k with x′ i = v′ i + δ′ ie0 with orthogonal v′ i. Define the translation t = 1 + 1 2 P i δ′ ie0 ∧v′ i, which makes x′ Euclidean: t[x′] = v′ 1 ∧... ∧v′ k. By Lemma 1, the Euclidean Pin group Pin(n, 0, 0), which is a subgroup of Pin(n, 0, 1), acts transitively on Euclidean k-blades of a given norm. Thus, in the projective geometric algebra Pin(n, 0, 1), any two k-blades of equal positive norm λ are related by a translation to the origin and then a Pin(n, 0, 0) transformation. For the ideal blades, let x = e0 ∧y, with ∥y∥= κ. We take y to be Euclidean without loss of generality. For any g ∈Pin(n, 0, 1),"
+  },
+  {
+    "paper_id": "2305.18415v3",
+    "title": "Geometric Algebra Transformer",
+    "page_num": 17,
+    "chunk_id": "2305.18415v3_page17_chunk2",
+    "text": "two k-blades of equal positive norm λ are related by a translation to the origin and then a Pin(n, 0, 0) transformation. For the ideal blades, let x = e0 ∧y, with ∥y∥= κ. We take y to be Euclidean without loss of generality. For any g ∈Pin(n, 0, 1), g[e0] = e0, so g[x] = e0 ∧g[y]. Consider another x′ = e0 ∧y′ with ∥y′∥= κ and taking y′ Euclidean. As Pin(n, 0, 0) acts transitively on Euclidean (k −1)-blades with norm κ, let g ∈Pin(n, 0, 0) such that g[y] = y′. Then g[x] = x′. We can now construct the most general equivariant linear map between projective geometric algebras, a key ingredient for GATr: Proposition 5. For the projective geometric algebra Gn,0,1, any linear endomorphism ϕ : Gn,0,1 → Gn,0,1 that is equivariant to the group Pin(n, 0, r) (equivalently to E(n)) is of the type ϕ(x) = Pn+1 k=0 wk⟨x⟩k + Pn k=0 vke0⟨x⟩k, for parameters w ∈Rn+2, v ∈Rn+1. Proof. Following Lemma 3, decompose ϕ into a linear equivariant map from k-blades to l-blades. For k < n + 1, let x = e12...k. Then following Lemma 2, for any 1 ≤i ≤k, ei ∧x"
+  },
+  {
+    "paper_id": "2305.18415v3",
+    "title": "Geometric Algebra Transformer",
+    "page_num": 17,
+    "chunk_id": "2305.18415v3_page17_chunk3",
+    "text": "= Pn+1 k=0 wk⟨x⟩k + Pn k=0 vke0⟨x⟩k, for parameters w ∈Rn+2, v ∈Rn+1. Proof. Following Lemma 3, decompose ϕ into a linear equivariant map from k-blades to l-blades. For k < n + 1, let x = e12...k. Then following Lemma 2, for any 1 ≤i ≤k, ei ∧x = 0, ei[x] = −x, and ei[ϕ(x)] = ϕ(ei[x]) = ϕ(−x) = −ϕ(x) and thus ei ∧ϕ(x) = 0. Therefore, we can write ϕ(x) = x ∧y1 ∧... ∧yl−k, for l −k vectors yj orthogonal to x. Also, again using Lemma 2, for k < i ≤n, ei⌋x = 0 =⇒ei[ϕ(x)] = ϕ(x) =⇒ei⌋ϕ(x) = 0 =⇒∀i, ⟨ei, yj⟩= 0. Thus, yj is orthogonal to all ei with 1 ≤i ≤n. Hence, l = k or l = k + 1 and y1 ∝e0. For k = n + 1, let x = e012...k. By a similar argument, all invertible vectors u tangent to x must be tangent to ϕ(x), thus we find that ϕ(x) = x ∧y for some blade y. For any non-zero ϕ(x), y ∝1, and thus ϕ(x) ∝x. By Lemma 3, by equivariance and linearity, this fully defines ϕ. A.2 Bilinear maps Next, we turn towards"
+  },
+  {
+    "paper_id": "2305.18415v3",
+    "title": "Geometric Algebra Transformer",
+    "page_num": 17,
+    "chunk_id": "2305.18415v3_page17_chunk4",
+    "text": "vectors u tangent to x must be tangent to ϕ(x), thus we find that ϕ(x) = x ∧y for some blade y. For any non-zero ϕ(x), y ∝1, and thus ϕ(x) ∝x. By Lemma 3, by equivariance and linearity, this fully defines ϕ. A.2 Bilinear maps Next, we turn towards bilinear operations. In particular, we show that the geometric product and the join are equivariant. For the geometric product, equivariance is straightforward: Any transformation u ∈Pin(n, 0, r), gives a homomorphism of the geometric algebra, as for any multivectors x, y, u[xy] = uc xyu−1 = ubxbyu−1 = ubxu−1ubyu−1 = u[x]u[y]. The geometric product is thus equivariant. Dual and join in Euclidean algebra For the join and the closely related dual, we again begin with the Euclidean geometric algebra, before turning to the projective case later. The role of the dual is to have a bijection ·∗: Gn,0,0 →Gn,0,0 that maps k-vectors to (n−k)-vectors. For the Euclidean algebra, with a choice of pseudoscalar I, we can define a dual as: x∗= xI−1 = x˜I (6) This dual is bijective, and involutive up to a sign: (y∗)∗= y˜I ˜I = ±y, with +y = 1 for n ∈ {1, 4, 5,"
+  },
+  {
+    "paper_id": "2305.18415v3",
+    "title": "Geometric Algebra Transformer",
+    "page_num": 17,
+    "chunk_id": "2305.18415v3_page17_chunk5",
+    "text": "maps k-vectors to (n−k)-vectors. For the Euclidean algebra, with a choice of pseudoscalar I, we can define a dual as: x∗= xI−1 = x˜I (6) This dual is bijective, and involutive up to a sign: (y∗)∗= y˜I ˜I = ±y, with +y = 1 for n ∈ {1, 4, 5, 8, 9, ...} and −y for n ∈{2, 3, 6, 7, ...}. We choose ˜I instead of I in the definition of the dual so that given n vectors x1, ..., xn, the dual of the multivector x = x1 ∧...xn, is given by the scalar of the oriented volume spanned by the vector. We denote the inverse of the dual as x−∗= xI. Expressed in a basis, the dual yields the complementary indices and a sign. For example, for n = 3 and I = e123, we have (e1)∗= −e23, (e12)∗= e3. Via the dual, we can define the bilinear join operation, for multivectors x, y: x ∨y := (x∗∧y∗)−⋆= ((x˜I) ∧(y˜I))I . 17"
+  },
+  {
+    "paper_id": "2305.18415v3",
+    "title": "Geometric Algebra Transformer",
+    "page_num": 18,
+    "chunk_id": "2305.18415v3_page18_chunk1",
+    "text": "Lemma 5. In Euclidean algebra Gn,0,0, the join is Spin(n, 0, 0) equivariant. Furthermore, it is Pin(n, 0, 0) equivariant if and only if n is even. Proof. The join is equivariant to the transformations from the group Spin(n, 0, 0), which consists of the product of an even amount of unit vectors, because such transformations leave the pseudoscalar I invariant, and the operation consists otherwise of equivariant geometric and wedge products. However, let e12...n = I ∈Pin(n, 0, 0) be the point reflection, which negates vectors of odd grades by the grade involution: I[x] = ˆx. Let x be a k-vector and y an l-vector. Then x ∨y is a vector of grade n −((n −k) + (n −l)) = k + l −n (and zero if k + l < n). Given that the join is bilinear, the inputs transform as (−1)k+l under the point reflection, while the transformed output gets a sign (−1)k+l−n. Thus for odd n, the join is not Pin(n, 0, 0) equivariant. To address this, given a pseudoscalar z = λI, we can create an equivariant Euclidean join via: EquiJoin(x, y, z = λI) := λ(x ∨y) = λ(x∗∧y∗)−∗. (7) Proposition 6. In Euclidean"
+  },
+  {
+    "paper_id": "2305.18415v3",
+    "title": "Geometric Algebra Transformer",
+    "page_num": 18,
+    "chunk_id": "2305.18415v3_page18_chunk2",
+    "text": "transformed output gets a sign (−1)k+l−n. Thus for odd n, the join is not Pin(n, 0, 0) equivariant. To address this, given a pseudoscalar z = λI, we can create an equivariant Euclidean join via: EquiJoin(x, y, z = λI) := λ(x ∨y) = λ(x∗∧y∗)−∗. (7) Proposition 6. In Euclidean algebra Gn,0,0, the equivariant join EquiJoin is Pin(n, 0, 0) equivari- ant. Proof. The EquiJoin is a multilinear operation, so for k-vector x and l-vector y, under a point reflection, the input gets a sign (−1)k+l+n while the output is still a k + l −n vector and gets sign (−1)k+l−n. These signs differ by even (−1)2n = 1 and thus EquiJoin is Pin(n, 0, 1)-equivariant. We prove two equalities of the Euclidean join which we use later. Lemma 6. In the algebra Gn,0,0, let v be a vector and x, y be multivectors. Then v⌋(x ∨y) = (v⌋x) ∨y (8) and x ∨(v⌋y) = −(−1)nd v⌋x ∨y . (9) Proof. For the first statement, let a be a k-vector and b an l-vector. Then note the following two identities: a ∨b = ⟨a∗b˜I⟩2n−k−lI = ⟨a∗b⟩n−(2n−k−l)˜II = ⟨a∗b⟩k+l−n = a∗⌋b , (v⌋a)∗= ⟨va⟩k−1˜I = ⟨va˜I⟩n−k+1 = ⟨va∗⟩n−k+1 = v⌋(a∗) ."
+  },
+  {
+    "paper_id": "2305.18415v3",
+    "title": "Geometric Algebra Transformer",
+    "page_num": 19,
+    "chunk_id": "2305.18415v3_page19_chunk1",
+    "text": "Dual and join in projective algebra For the projective algebra Gn,0,1 with its degenerate inner product, the dual definition of Eq. 6 unfortunately does not yield a bijective dual. For example, e0 ^ e012...n = 0. For a bijective dual that yields the complementary indices on basis elements, a different definition is needed. Following Dorst [17], we use the right complement. This involves choosing an orthogonal basis and then for a basis k-vector x to define the dual x∗to be the basis n + 1 −k-vector such that x ∧x∗= I, for pseudoscalar I = e012...n. For example, this gives dual e∗ 01 = e23, so that e01 ∧e23 = e0123. This dual is still easy to compute numerically, but it can no longer be constructed solely from operations available to us in the geometric algebra. This makes it more difficult to reason about equivariance. Proposition 7. In the algebra Gn,0,1, the join a ∨b = (a∗∧b∗)−∗is equivariant to Spin(n, 0, 1). Proof. Even though the dual is not a Gn,0,1 operation, we can express the join in the algebra as follows. We decompose a k-vector x as x = tx + e0px into a Euclidean k-vector tx and a"
+  },
+  {
+    "paper_id": "2305.18415v3",
+    "title": "Geometric Algebra Transformer",
+    "page_num": 19,
+    "chunk_id": "2305.18415v3_page19_chunk2",
+    "text": "Gn,0,1, the join a ∨b = (a∗∧b∗)−∗is equivariant to Spin(n, 0, 1). Proof. Even though the dual is not a Gn,0,1 operation, we can express the join in the algebra as follows. We decompose a k-vector x as x = tx + e0px into a Euclidean k-vector tx and a Euclidean (k −1)-vector px. Then Dorst [17, Eq (35)] computes the following expression (tx + e0px) ∨(ty + e0py) = ((tx + e0px)∗∧(ty + e0py)∗)−∗ = tx ∨Euc py + (−1)nc px ∨Euc ty + e0(px ∨Euc py) , (10) where the Euclidean join of vectors a, b in the projective algebra is defined to equal the join of the corresponding vectors in the Euclidean algebra: a ∨Euc b := ((a ^ e12...n) ∧(b ^ e12...n))e12...n The operation a ∨Euc b is Spin(n, 0, 0) equivariant, as discussed in Lemma 5. For any rotation r ∈Spin(n, 0, 1) (which is Euclidean), we thus have r[a ∨Euc b] = r[a] ∨Euc r[b]. This makes the PGA dual in Eq. (10) equivariant to the rotational subgroup Spin(n, 0, 0) ⊂Spin(n, 0, 1). We also need to show equivariance to translations. Let v be a Euclidean vector and τ = 1 −e0v/2 a"
+  },
+  {
+    "paper_id": "2305.18415v3",
+    "title": "Geometric Algebra Transformer",
+    "page_num": 19,
+    "chunk_id": "2305.18415v3_page19_chunk3",
+    "text": "Euclidean), we thus have r[a ∨Euc b] = r[a] ∨Euc r[b]. This makes the PGA dual in Eq. (10) equivariant to the rotational subgroup Spin(n, 0, 0) ⊂Spin(n, 0, 1). We also need to show equivariance to translations. Let v be a Euclidean vector and τ = 1 −e0v/2 a translation. Translations act by shifting with e0 times a contraction: τ[x] = x −e0(v⌋x). This acts on the decomposed x in the following way: τ[tx + e0px] = τ[tx] + e0px = tx + e0(px −v⌋tx). We thus get: τ[x] ∨τ[y] = (τ[tx] + e0px) ∨(τ[ty] + e0py) = (tx + e0(px −v⌋t)) ∨(ty + e0(py −v⌋ty)) = x ∨y −tx ∨Euc (v⌋ty) −(−1)n d v⌋tx ∨Euc ty −e0 (px ∨Euc (v⌋ty) + (v⌋tx) ∨Euc py) Used (10) & linearity = x ∨y −e0 (px ∨Euc (v⌋ty) + (v⌋tx) ∨Euc py) Used (9) = x ∨y −e0 \u0010 −(−1)n d v⌋px ∨Euc ty + (v⌋tx) ∨Euc py \u0011 Used (9) = x ∨y −e0 ((−1)n(v⌋c px) ∨Euc ty + (v⌋tx) ∨Euc py) = x ∨y −e0 (v⌋{(−1)nc px ∨Euc ty + tx ∨Euc py}) Used (8) = τ[x ∨y] The join is thus equivariant 12 to translations and rotations and"
+  },
+  {
+    "paper_id": "2305.18415v3",
+    "title": "Geometric Algebra Transformer",
+    "page_num": 19,
+    "chunk_id": "2305.18415v3_page19_chunk4",
+    "text": "v⌋px ∨Euc ty + (v⌋tx) ∨Euc py \u0011 Used (9) = x ∨y −e0 ((−1)n(v⌋c px) ∨Euc ty + (v⌋tx) ∨Euc py) = x ∨y −e0 (v⌋{(−1)nc px ∨Euc ty + tx ∨Euc py}) Used (8) = τ[x ∨y] The join is thus equivariant 12 to translations and rotations and is therefore Spin(n, 0, 1) equivariant. Similar to the Euclidean case, we obtain full Pin(n, 0, 1) equivariance via multiplication with a pseudoscalar. We thus also use the EquiJoin from Eq. (7) in the projective case. A.3 Expressivity As also noted in Ref. [17], in the projective algebra, the geometric product itself is unable to compute many quantities. It is thus insufficient to build expressive networks. This follows from the fact that the geometric product preserves norms. 12The authors agree with the reader that there must be an easier way to prove this. 19"
+  },
+  {
+    "paper_id": "2305.18415v3",
+    "title": "Geometric Algebra Transformer",
+    "page_num": 20,
+    "chunk_id": "2305.18415v3_page20_chunk1",
+    "text": "Lemma 7. For the algebra Gn,0,r, for multivectors x, y, we have ∥xy∥= ∥x∥∥y∥. Proof. ∥xy∥2 = xyf xy = xy˜y˜x = x∥y∥2˜x = x˜x∥y∥2 = ∥x∥2∥y∥2 Hence, any null vector in the algebra can never be mapped to a non-null vector, including scalars. The projective algebra can have substantial information encoded as null vector, such as the position of points. This information can never influence scalars or null vectors. For example, there is no way to compute the distance (a scalar) between points just using the projective algebra. In the GATr architecture, the input to the MLPs that operate on the scalars, or the attention weights, thus could not be affected by the null information, had we only used the geometric product on multivectors. To address this limitation, we use besides the geometric product also the join. The join is able to compute such quantities. For example, given the Euclidean vector e12...n, we can map a null vector x = e012...k to a non-null vector x ∨e12...n ∝e12...k. B Architecture Equivariant join One of the primitives in GATr is the equivariant join EquiJoin(x, y; z), which we define in Eq. (7). For x and y, we use hidden states"
+  },
+  {
+    "paper_id": "2305.18415v3",
+    "title": "Geometric Algebra Transformer",
+    "page_num": 20,
+    "chunk_id": "2305.18415v3_page20_chunk2",
+    "text": "Euclidean vector e12...n, we can map a null vector x = e012...k to a non-null vector x ∨e12...n ∝e12...k. B Architecture Equivariant join One of the primitives in GATr is the equivariant join EquiJoin(x, y; z), which we define in Eq. (7). For x and y, we use hidden states of the neural network after the previous layer. The nature of z is different: it is a reference multivector and only necessary to ensure that the function correctly changes sign under mirrorings of the inputs. We find it beneficial to choose this reference multivector z based on the input data rather than the hidden representations, and choose it as the mean of all inputs to the network. Auxiliary scalars In addition to multivector representations, GATr supports auxiliary scalar repre- sentations, for instance to describe non-geometric side information such as positional encodings or diffusion time embeddings. In most layers, these scalar variables are processed like in a standard Transformer, with two exceptions. In linear layers, we allow for the scalar components of multivectors and the auxiliary scalars to freely mix. In the attention operation, we compute attention weights as Softmaxi P c⟨qMV i′c , kMV ic ⟩+ P c qs i′cks"
+  },
+  {
+    "paper_id": "2305.18415v3",
+    "title": "Geometric Algebra Transformer",
+    "page_num": 20,
+    "chunk_id": "2305.18415v3_page20_chunk3",
+    "text": "variables are processed like in a standard Transformer, with two exceptions. In linear layers, we allow for the scalar components of multivectors and the auxiliary scalars to freely mix. In the attention operation, we compute attention weights as Softmaxi P c⟨qMV i′c , kMV ic ⟩+ P c qs i′cks ic √8nMV + ns ! , (11) where qMV and kMV are query and key multivector representations, qs and ks are query and key scalar representations, nMV is the number of multivector channels, and ns is the number of scalar channels. Distance-aware dot-product attention As we argue in Sec. 3.3, it can be beneficial to extend queries and keys with nonlinear features. We use the following choice: ϕ(q) = ω(q\\0)       q2 \\0 P i q2 \\i q\\0 q\\1 q\\0 q\\2 q\\0 q\\3       and ψ(k) = ω(k\\0)       −P i k2 \\i −k2 \\0 2k\\0 k\\1 2k\\0 k\\2 2k\\0 k\\3       with ω(x) = x x2 + ϵ . Here the index \\i denotes the trivector component with all indices but i. Then ϕ(q) · ψ(k) = −ω(q\\0)ω(k\\0)∥k\\0 ⃗q"
+  },
+  {
+    "paper_id": "2305.18415v3",
+    "title": "Geometric Algebra Transformer",
+    "page_num": 20,
+    "chunk_id": "2305.18415v3_page20_chunk4",
+    "text": "    −P i k2 \\i −k2 \\0 2k\\0 k\\1 2k\\0 k\\2 2k\\0 k\\3       with ω(x) = x x2 + ϵ . Here the index \\i denotes the trivector component with all indices but i. Then ϕ(q) · ψ(k) = −ω(q\\0)ω(k\\0)∥k\\0 ⃗q −q\\0 ⃗k∥2 R3 , where we use the shorthand ⃗x = (x\\1, x\\2, x\\3)T . When the trivector components of queries and keys represent 3D points, with q\\0 = k\\0 = 1, it becomes proportional to the pairwise negative squared Euclidean distance between the points. In this notation, a trivector q = (q\\0, ⃗q) transforms under rotation R ∈O(3) and translation ⃗t ∈R3 20"
+  },
+  {
+    "paper_id": "2305.18415v3",
+    "title": "Geometric Algebra Transformer",
+    "page_num": 21,
+    "chunk_id": "2305.18415v3_page21_chunk1",
+    "text": "as (q\\0, ⃗q) 7→(q\\0, R⃗q + q\\0⃗t). It is easy to see that the inner product is invariant: ϕ(q) · ψ(k) 7→−ω(q\\0)ω(k\\0)∥k\\0 (R⃗q + q\\0⃗t) −q\\0 (R⃗k + k\\0⃗t)∥2 R3 = −ω(q\\0)ω(k\\0)∥R(k\\0 ⃗q −q\\0 ⃗k) + q\\0k\\0⃗t −q\\0k\\0⃗t∥2 R3 = −ω(q\\0)ω(k\\0)∥k\\0 ⃗q −q\\0 ⃗k∥2 R3 = ϕ(q) · ψ(k) . The normalization function ω could have been chosen as ω(x) = 1, but this would make the attention logit a fourth-order polynomial of the keys and queries, which tends to lead to instabilities when taking the exponential in the softmax. The choice above makes the attention logit a quadratic function for larger values of the keys and queries, just like regular dot-product attention. For the interested reader, we’d like to note that the above inner product is closely related to the inner product in another geometric algebra, the conformal geometric algebra. We plan on exploring this connection in future work. With this final piece, GATr’s attention mechanism computes attention weights from three sources: the G3,0,1 inner product of the multivector queries and keys ⟨q, k⟩, the distance-aware inner product of the nonlinear features ϕ(q) · ψ(k), and the Euclidean inner product of the auxiliary scalars qs · ks. We find"
+  },
+  {
+    "paper_id": "2305.18415v3",
+    "title": "Geometric Algebra Transformer",
+    "page_num": 21,
+    "chunk_id": "2305.18415v3_page21_chunk2",
+    "text": "With this final piece, GATr’s attention mechanism computes attention weights from three sources: the G3,0,1 inner product of the multivector queries and keys ⟨q, k⟩, the distance-aware inner product of the nonlinear features ϕ(q) · ψ(k), and the Euclidean inner product of the auxiliary scalars qs · ks. We find it beneficial to add learnable weights as prefactors to each of these three terms. The attention weights are then given by Softmaxi α P c⟨qMV i′c , kMV ic ⟩+ β P c ϕ(qMV i′c ) · ψ(kMV ic ) + γ P c qs i′cks ic √13nMV + ns ! with learnable, head-specific α, β, γ > 0. This may look complicated, but all terms can be summarized in a single Euclidean dot product between query features and key features. We can therefore use efficient implementations of dot- product attention to compute GATr’s attention. Multi-query attention To reduce memory use, we also consider a version of GATr that uses multi- query attention [43] instead of multi-head attention, sharing the keys and values among attention heads. C Experiments C.1 n-body dynamics Dataset We generate a synthetic n-body dataset for n objects by following these steps for each sample: 1. The"
+  },
+  {
+    "paper_id": "2305.18415v3",
+    "title": "Geometric Algebra Transformer",
+    "page_num": 21,
+    "chunk_id": "2305.18415v3_page21_chunk3",
+    "text": "use, we also consider a version of GATr that uses multi- query attention [43] instead of multi-head attention, sharing the keys and values among attention heads. C Experiments C.1 n-body dynamics Dataset We generate a synthetic n-body dataset for n objects by following these steps for each sample: 1. The masses of n objects are sampled from log-uniform distributions. For one object (the star), we use m0 ∈[1, 10]; for the remaining objects (the planets), we use mi ∈[0.01, 0.1]. (Following common practice in theoretical physics, we use dimensionless quantities such that the gravitational constant is 1.) 2. The initial positions of all bodies are sampled. We first use a heliocentric reference frame. Here the initial positions of all bodies are sampled. The star is set to the origin, while the planets are sampled uniformly on a plane within a distance ri ∈[0.1, 1.0] from the star. 3. The initial velocities are sampled. In the heliocentric reference frame, the star is at rest. The planet velocities are determined by computing the velocity of a stable circular orbit corresponding to the initial positions and masses, and then adding isotropic Gaussian noise (with standard deviation 0.01) to it. 4. We transform the"
+  },
+  {
+    "paper_id": "2305.18415v3",
+    "title": "Geometric Algebra Transformer",
+    "page_num": 21,
+    "chunk_id": "2305.18415v3_page21_chunk4",
+    "text": "velocities are sampled. In the heliocentric reference frame, the star is at rest. The planet velocities are determined by computing the velocity of a stable circular orbit corresponding to the initial positions and masses, and then adding isotropic Gaussian noise (with standard deviation 0.01) to it. 4. We transform the positions and velocities from the heliocentric reference frame to a global reference frame by applying a random translation and rotation to it. The translation is sampled from a multivariate Gaussian with standard deviation 20 and zero mean (except for the domain generalization evaluation set, where we use a mean of (200, 0, 0)T ). The rotation is sampled from the Haar measure on SO(3). In addition, we apply a random permutation of the bodies. 21"
+  },
+  {
+    "paper_id": "2305.18415v3",
+    "title": "Geometric Algebra Transformer",
+    "page_num": 22,
+    "chunk_id": "2305.18415v3_page22_chunk1",
+    "text": "5. We compute the final state of the system by evolving it under Newton’s equations of motion, using Euler’s method and 100 time steps with a time interval of 10−4 each. 6. Finally, samples in which any bodies have traveled more than a distance of 2 (the diamater of the solar system) are rejected. (Otherwise, rare gravitational slingshot effects dominate the regression loss and all methods become unreliable.) We generate training datasets with n = 4 and between 100 and 105 samples; a validation dataset with n = 4 and 5000 samples; a regular evaluation set with n = 4 and 5000 samples; a number- generalization evaluation set with n = 6 and 5000 samples; and a E(3) generalization set with n = 4, an additional translation (see step 4 above), and 5000 samples. All models are tasked with predicting the final object positions given the initial positions, initial velocities, and masses. Models For the GATr model, we embed object masses as scalars, positions as trivectors, and velocities (like translation vectors) as bivectors. We use 10 attention blocks, 16 multivector and 128 scalar channels, and 8 attention heads, resulting in 1.9 million parameters. We use multi-head attention and do not"
+  },
+  {
+    "paper_id": "2305.18415v3",
+    "title": "Geometric Algebra Transformer",
+    "page_num": 22,
+    "chunk_id": "2305.18415v3_page22_chunk2",
+    "text": "and masses. Models For the GATr model, we embed object masses as scalars, positions as trivectors, and velocities (like translation vectors) as bivectors. We use 10 attention blocks, 16 multivector and 128 scalar channels, and 8 attention heads, resulting in 1.9 million parameters. We use multi-head attention and do not use the distance-aware attention mechanism (as it led to similar results in a short test). For the Transformer baseline, we follow a pre-layer normalization [2, 54] architecture with GELU activations [23] in the MLP block. We use 10 attention blocks, 384 channels, and 8 attention heads, resulting in 11.8 million parameters. We also compare to a simple MLP with GELU activations. We test models with 2, 5, and 10 layers, each with 384 channels. We report results for the best-performing 2-layer MLP, which has 0.2 million parameters. Next, we compare GATr to the geometric-algebra-based, but not equivariant, GCA-GNN [41]. We follow the hyperparameters reported by Ruhe et al. [41] for their Tetris experiment, arriving at an architecture with 1.5 million parameters. We also experiment with the GCA-MLP architecture [41], but find worse results. Finally, we compare to two equivariant baselines: SEGNN [6] and the SE(3)-Transformer [20]. In both cases we"
+  },
+  {
+    "paper_id": "2305.18415v3",
+    "title": "Geometric Algebra Transformer",
+    "page_num": 22,
+    "chunk_id": "2305.18415v3_page22_chunk3",
+    "text": "follow the hyperparameters reported by Ruhe et al. [41] for their Tetris experiment, arriving at an architecture with 1.5 million parameters. We also experiment with the GCA-MLP architecture [41], but find worse results. Finally, we compare to two equivariant baselines: SEGNN [6] and the SE(3)-Transformer [20]. In both cases we use the code released by the authors and the hyperparameters they recommend for (slightly different) n-body experiments. This leads to models with 0.1 (SEGNN) and 0.3 (SE(3)- Transformer) million parameters. For SEGNN, we vary the number of nearest neighbours between 3 and the number of objects in the scene (corresponding a fully connected graph) and show the best result. Training All models are trained by minimizing a L2 loss on the final position of all objects. We train for 50 000 steps with the Adam optimizer, using a batch size of 64 and exponentially decaying the learning rate from 3 · 10−4 to 3 · 10−6. C.2 Arterial wall-shear-stress estimation Dataset We use the single-artery wall-shear-stress dataset published by Suk et al. [48]. It consists of 2000 meshes of human arteries, of which 1600 are used for training the remaining for validation and evaluation. Each mesh has around 7000 nodes."
+  },
+  {
+    "paper_id": "2305.18415v3",
+    "title": "Geometric Algebra Transformer",
+    "page_num": 22,
+    "chunk_id": "2305.18415v3_page22_chunk4",
+    "text": "· 10−4 to 3 · 10−6. C.2 Arterial wall-shear-stress estimation Dataset We use the single-artery wall-shear-stress dataset published by Suk et al. [48]. It consists of 2000 meshes of human arteries, of which 1600 are used for training the remaining for validation and evaluation. Each mesh has around 7000 nodes. We experiment both with randomly rotated meshes as well as a canonicalized version, in which all meshes point in the same direction. Models For the GATr model, we embed object the positions of the mesh nodes as trivectors, the mesh surface normals as vectors, and the geodesic distance to the inlet as scalars. We use multi-query attention, the distance-aware attention mechanism, and learnable prefactors for the attention weights. Our model has 10 attention blocks, 8 multivector channels and 32 scalar channels, and 4 attention heads, resulting in 0.2 million parameters. For the Transformer baseline, we follow a pre-layer normalization [2, 54] architecture with GELU activations [23] in the MLP block. We use 10 attention blocks, 160 channels, and 4 attention heads, resulting in 1.7 million parameters. In addition, we compare to the results reported by Suk et al. [48]. 22"
+  },
+  {
+    "paper_id": "2305.18415v3",
+    "title": "Geometric Algebra Transformer",
+    "page_num": 23,
+    "chunk_id": "2305.18415v3_page23_chunk1",
+    "text": "Method Mean approximation error [%] Random orientations Canonical orientations GATr 5.6 5.5 Transformer 10.5 6.0 PointNet++ [36] 12.3 8.6 GEM-CNN [15] 7.7 7.8 Table 2: Arterial wall-shear-stress estimation [48]. We show the mean approximation error (lower is better), reporting results both on randomly oriented training and test samples (left) and on a version of the dataset in which all artery meshes are canonically oriented (right). We compare GATr to our own Transformer baseline as well as to the results reported by Suk et al. [48]. Method Mean approx. error [%] GATr (default) 6.1 Without multivector representations (= Transformer) 10.5 Without aux. scalar representations 10.4 Without equivariance constraints on linear maps 9.7 Less wide (4 MV channels + 8 scalar channels) 12.0 Less deep (5 blocks) 7.8 Table 3: Ablation experiments on the arterial wall-shear-stress dataset. We report the mean approximation error (lower is better) on the validation set after training for 100 000 steps. Training We train the models on a L2 loss on wall shear stress. We train for 200 000 steps with the Adam optimizer, using a batch size of 8 and exponentially decaying the learning rate from 3 · 10−4 to 3 · 10−6. To fit the"
+  },
+  {
+    "paper_id": "2305.18415v3",
+    "title": "Geometric Algebra Transformer",
+    "page_num": 23,
+    "chunk_id": "2305.18415v3_page23_chunk2",
+    "text": "for 100 000 steps. Training We train the models on a L2 loss on wall shear stress. We train for 200 000 steps with the Adam optimizer, using a batch size of 8 and exponentially decaying the learning rate from 3 · 10−4 to 3 · 10−6. To fit the models into memory, we use mixed 16-bit / 32-bit precision, gradient checkpointing [9], and multi-query attention. Most importantly, we compute dot-product attention with the implementation by [32]. Results The results of our experiments are shown in Fig. 3 and in Tbl. 2. Ablation studies We also perform ablation experiments to study the impact of multiple design de- cisions on the performance. All major design choices appear to play an important role: without multi- vector representations, without auxiliary scalar representations, or without equivariance constraints, GATr performs much worse. Further reducing the model’s width also severaly harms the performance. C.3 Robotic planning through invariant diffusion Environment We use the block stacking environment from Janner et al. [27]. It consists of a Kuka robotic arm interacting with four blocks on a table, simulated with PyBullet [13]. The state consists of seven robotic joint angles as well as the positions and orientations of the"
+  },
+  {
+    "paper_id": "2305.18415v3",
+    "title": "Geometric Algebra Transformer",
+    "page_num": 23,
+    "chunk_id": "2305.18415v3_page23_chunk3",
+    "text": "through invariant diffusion Environment We use the block stacking environment from Janner et al. [27]. It consists of a Kuka robotic arm interacting with four blocks on a table, simulated with PyBullet [13]. The state consists of seven robotic joint angles as well as the positions and orientations of the four blocks. We consider the task of stacking four blocks on top of each other in any order. The reward is the stacking success probability and is normalized such that 0 means that no blocks are ever successfully stacked, while 100 denotes perfect block stacking. Dataset and data parameterization We train models on the offline trajectory dataset published by Janner et al. [27]. It consists of 11 000 expert demonstrations. To facilitate a geometric interpretation, we re-parameterize the environment state into the positions and orientations of the robotic endeffector as well as the four blocks. The orientations of all objects are given by two direction vectors. In addition, there are attachment variables that characterize whether the endeffector is in contact with either of the four blocks. In this parameterization, the environment state is 49-dimensional. We train models in this geometric parameterization of the problem. To map back to the original"
+  },
+  {
+    "paper_id": "2305.18415v3",
+    "title": "Geometric Algebra Transformer",
+    "page_num": 23,
+    "chunk_id": "2305.18415v3_page23_chunk4",
+    "text": "are given by two direction vectors. In addition, there are attachment variables that characterize whether the endeffector is in contact with either of the four blocks. In this parameterization, the environment state is 49-dimensional. We train models in this geometric parameterization of the problem. To map back to the original parameterization in terms of joint angles, we use a simple inverse kinematics model that solves for the joint angles consistent with a given endeffector pose. 23"
+  },
+  {
+    "paper_id": "2305.18415v3",
+    "title": "Geometric Algebra Transformer",
+    "page_num": 24,
+    "chunk_id": "2305.18415v3_page24_chunk1",
+    "text": "Method Reward GATr-Diffuser (ours) 74.8 ± 1.7 Transformer-Diffuser 69.8 ± 1.9 Diffuser [27] (reproduced) 57.7 ± 1.8 Diffuser [27] 58.7 ± 2.5 EDGI [7] 62.0 ± 2.1 CQL [30] 24.4 BCQ [21] 0.0 Table 4: Diffusion-based robotic planning. We show the normalized cumulative rewards achieved on a robotic block stacking task [27], where 100 is optimal and means that each block stacking task is completed successfully, while 0 corresponds to a failure to stack any blocks. We show the mean and standard error over 200 evaluation episodes. The top three results were computed in the GATr code base, the bottom four taken from the literature [7, 27]. Models For the GATr model we embed object positions as trivectors, object orientations as oriented planes, gripper attachment variables as scalars, and the diffusion time as scalars. We use axial attention, alternating between attending over time steps and over objects, with positional embeddings along the time axis. Neither multi-query attention nor the distance-aware attention mechanism are used. We train three models, with 10, 20, and 30 Transformer blocks. In each case we use 16 multivector plus 32 scalar channels and 8 attention heads. We report results for the best-performing model with 20 Transformer"
+  },
+  {
+    "paper_id": "2305.18415v3",
+    "title": "Geometric Algebra Transformer",
+    "page_num": 24,
+    "chunk_id": "2305.18415v3_page24_chunk2",
+    "text": "along the time axis. Neither multi-query attention nor the distance-aware attention mechanism are used. We train three models, with 10, 20, and 30 Transformer blocks. In each case we use 16 multivector plus 32 scalar channels and 8 attention heads. We report results for the best-performing model with 20 Transformer blocks and 4.0 million parameters. For the Transformer baseline, we also use axial attention, pre-layer normalization, GELU activations, and rotary positional embeddings. We experiment with 6 models, with 10, 20, or 30 Transformer blocks and 144 or 384 channels. All use 8 attention heads. We report results for the best model, which has 20 Transformer blocks, 144 channels, and 3.5 million parameters. For the Diffuser baseline, we follow the architecture and hyperparameters described by Janner et al. [27]. The model has 65.1 million parameters. All models are embedded in a diffusion pipeline as described by Ho et al. [25], using the diffusion time embedding and hyperparameter choices of Ref. [27]. In particular, we use univariate Gaussian base densities and 1000 diffusion steps. Training We train all models by minimizing the simplified diffusion loss proposed by Ho et al. [25]. For our GATr models and the Diffuser baselines we use an"
+  },
+  {
+    "paper_id": "2305.18415v3",
+    "title": "Geometric Algebra Transformer",
+    "page_num": 24,
+    "chunk_id": "2305.18415v3_page24_chunk3",
+    "text": "the diffusion time embedding and hyperparameter choices of Ref. [27]. In particular, we use univariate Gaussian base densities and 1000 diffusion steps. Training We train all models by minimizing the simplified diffusion loss proposed by Ho et al. [25]. For our GATr models and the Diffuser baselines we use an L2 loss and train for 200 000 steps with the Adam optimizer, exponentially decaying the learning rate from 3 · 10−4 to 3 · 10−6. This setup did not work well for the Diffuser model, where (following Janner et al. [27]) we use a L1 loss and a low constant learning rate instead. Evaluation All models are evaluated by rolling out at least 200 episodes in a block stacking environment and reporting the mean task and the standard error. We use the planning algorithm and parameter choices of Janner et al. [27] (we do not optimize these, as our focus in this work is on architectural improvements). It consists of sampling trajectories of length 128 from the model, conditional on the current state; then executing these in the environment using PyBullet’s PID controller. Each rollout consists of three such phases. Results The results of our experiments are shown in Fig."
+  },
+  {
+    "paper_id": "2305.18415v3",
+    "title": "Geometric Algebra Transformer",
+    "page_num": 24,
+    "chunk_id": "2305.18415v3_page24_chunk4",
+    "text": "in this work is on architectural improvements). It consists of sampling trajectories of length 128 from the model, conditional on the current state; then executing these in the environment using PyBullet’s PID controller. Each rollout consists of three such phases. Results The results of our experiments are shown in Fig. 4 and in Tbl. 4. C.4 Scaling Setup To study computational requirements and scaling behaviour, we measure the wall time and peak GPU memory usage during a combined forward and backward pass for various models. We use random Gaussian input data with a batch size of 4, a variable number of items (tokens), and four input channels. After a number of warmup steps, measure the resource use over ten successive steps and report the average time and peak memory usage. For all measurements, we use mixed 16-bit / 32-bit precision, gradient checkpointing, and an efficient attention implementation by Lefaudeux et al. [32]. 24"
+  },
+  {
+    "paper_id": "2305.18415v3",
+    "title": "Geometric Algebra Transformer",
+    "page_num": 25,
+    "chunk_id": "2305.18415v3_page25_chunk1",
+    "text": "Models The GATr model has 10 blocks, 8 multivector and 16 scalar channels, and 4 attention heads. We use multi-query attention, the distance-aware attention mechanism, and learnable prefactors for the attention weights. For the baselines, we choose hyperparameters to match GATr in terms of depth (number of blocks), width (total size of hidden channels), and token connectivity (allowing all tokens to interact with each other in each layer). For the Transformer, this leads to the same choices as for GATr, except that 144 hidden channels are used. For SEGNN and the SE(3)-Transformer, we use fully connected graphs, O(3) representations ℓ≤1, a total of 144 hidden features distributed between scalar and vector representations, and 10 layers. We use the official implementation by Brandstetter et al. [6] for SEGNN and the optimized implementation by Milesi [35] for the SE(3)-Transformer. 25"
+  }
+]

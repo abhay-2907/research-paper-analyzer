@@ -1,0 +1,219 @@
+[
+  {
+    "paper_id": "2305.11403v5",
+    "title": "Efficient Mixed Transformer for Single Image Super-Resolution",
+    "page_num": 1,
+    "chunk_id": "2305.11403v5_page1_chunk1",
+    "text": "Efficient Mixed Transformer for Single Image Super-Resolution Ling Zheng1, Jinchen Zhu1,2, Jinpeng Shi1,2, Shizhuang Weng1 1Anhui University, 2Fried Rice Lab weng_1989@126.com https://jinchen2028.github.io/EMT/ Abstract Recently, Transformer-based methods have achieved impressive results in single image super-resolution (SISR). However, the lack of locality mechanism and high complexity limit their application in the field of super-resolution (SR). To solve these problems, we propose a new method, Efficient Mixed Transformer (EMT) in this study. Specifically, we propose the Mixed Transformer Block (MTB), consisting of multiple consecutive transformer layers, in some of which the Pixel Mixer (PM) is used to replace the Self-Attention (SA). PM can enhance the local knowledge aggregation with pixel shifting operations. At the same time, no additional complexity is introduced as PM has no parameters and floating-point operations. Moreover, we employ striped window for SA (SWSA) to gain an efficient global dependency modelling by utilizing image anisotropy. Experimental results show that EMT outperforms the existing methods on benchmark dataset and achieved state-of-the-art performance. 1 Introduction Figure 1: Comparison of the trade-off between model performance and complexity on the Ur- ban100 [14] (×4) test set. The purpose of Single Image Super-Resolution (SISR) is to recover high-resolution (HR) from low- resolution (LR) images [20]."
+  },
+  {
+    "paper_id": "2305.11403v5",
+    "title": "Efficient Mixed Transformer for Single Image Super-Resolution",
+    "page_num": 1,
+    "chunk_id": "2305.11403v5_page1_chunk2",
+    "text": "outperforms the existing methods on benchmark dataset and achieved state-of-the-art performance. 1 Introduction Figure 1: Comparison of the trade-off between model performance and complexity on the Ur- ban100 [14] (×4) test set. The purpose of Single Image Super-Resolution (SISR) is to recover high-resolution (HR) from low- resolution (LR) images [20]. Convolutional neural network (CNN) [3, 7, 15, 17, 19, 34, 39, 44] -based Super-Resolution (SR) methods are popular because of their powerful ability to extract high frequency de- tail from images. However, establishing global con- nectivity by using CNN-based methods [6, 15, 26] is difficult. As an alternative, Transformer-based meth- ods [25, 26, 38, 45] exploit powerful Self-Attention (SA) to model global dependencies on the input data, and has shown impressive performance. Recently, several studies found that the Transformer lacks locality mechanism for information aggregation within local regions [23, 41]. Local knowledge is highly relevant to the structure and details of the image and crucial for SISR. As more and more SR networks are required to be loaded onto mobile or embedded devices, lightweight SR (LSR) methods have gradually become research hotspots. Many transformer-based lightweight networks, such as ESRT [29], SwinIR [25], and ELAN-light [45] have been proposed. These methods"
+  },
+  {
+    "paper_id": "2305.11403v5",
+    "title": "Efficient Mixed Transformer for Single Image Super-Resolution",
+    "page_num": 1,
+    "chunk_id": "2305.11403v5_page1_chunk3",
+    "text": "of the image and crucial for SISR. As more and more SR networks are required to be loaded onto mobile or embedded devices, lightweight SR (LSR) methods have gradually become research hotspots. Many transformer-based lightweight networks, such as ESRT [29], SwinIR [25], and ELAN-light [45] have been proposed. These methods reduce the complexity by modifying the SA calculation, such as using a non-fixed computational window or shared attention mechanism for multiple SAs. However, the modified networks remain highly complex, and SA is an expensive module for LSR application. Preprint. Under review. arXiv:2305.11403v5 [cs.CV] 19 Jun 2023"
+  },
+  {
+    "paper_id": "2305.11403v5",
+    "title": "Efficient Mixed Transformer for Single Image Super-Resolution",
+    "page_num": 2,
+    "chunk_id": "2305.11403v5_page2_chunk2",
+    "text": "image to improve the efficiency of global dependency modelling. Finally, extensive experiments show that our method achieves better performance with fewer parameters than the existing efficient SR methods, as shown in Fig. 1. 2 Related Work Locality Mechanism in Transformers. Previous studies have shown that capturing local spatial knowledge using transformer-based methods is difficult, limiting their application in the field of SR. Several attempts have been made to introduce locality in the Transformer-based networks [11, 23, 41]. Li et al. [23] bring in depth-wise convolution in feed-forward network to improve the overall locality and achieve competitive results in ImageNet classification [5]. Later, Han et al. [11] propose to replace the SA in the Swin Transformer with a depth-wise convolution and achieve comparable performance in high-level computer vision tasks to Swin Transformer [27]. Inspired by these works, we explore local perceptrons that enhance the local knowledge aggregation of the network, such as convolution, to replace the SA and thus improve locality mechanism. Transformer-based method for LSR. Recently, Transformer-based LSR methods have been proposed. Liang et al. [25] applies the Swin Transformer [27] structure to LSR and propose SwinIR, achieving impressive results by exploiting window-based attention mechanisms. Lu et al. [29] developed"
+  },
+  {
+    "paper_id": "2305.11403v5",
+    "title": "Efficient Mixed Transformer for Single Image Super-Resolution",
+    "page_num": 2,
+    "chunk_id": "2305.11403v5_page2_chunk3",
+    "text": "as convolution, to replace the SA and thus improve locality mechanism. Transformer-based method for LSR. Recently, Transformer-based LSR methods have been proposed. Liang et al. [25] applies the Swin Transformer [27] structure to LSR and propose SwinIR, achieving impressive results by exploiting window-based attention mechanisms. Lu et al. [29] developed Efficient Multi-Head Attention (EMHA) to reduce the use of training data and lower the memory occupation of the GPU. Then, Zhang et al. [45] proposes group-wise multi-scale self- attention (GMSA) by using different window sizes and shared attention mechanisms to solve the redundancy of SA computation. However, the modified transformer-based methods are still complex. 2"
+  },
+  {
+    "paper_id": "2305.11403v5",
+    "title": "Efficient Mixed Transformer for Single Image Super-Resolution",
+    "page_num": 3,
+    "chunk_id": "2305.11403v5_page3_chunk1",
+    "text": "3 Methodology 3.1 Overall EMT Architecture As shown in Fig. 2, EMT consists of three parts: shallow feature extraction unit (SFEU), deep feature extraction unit (DFEU), and reconstruction unit (RECU). We use Ilr ∈RH×W ×Cin and Isr ∈RH×W ×Cin as the input and output of EMT, respectively. We only use a 3 × 3 convolutional layer as a SFEU to process the input image F0 ∈RH×W ×C: F0 = HSF (Ilr), (1) where HSF (·) denotes the function of SFEU; H, W, and Cin denotes the height, width, and number for channels of the input LR image; C denotes the number of channels of intermediate features. Subsequently, F0 ∈RH×W ×C is extracted by DFEU to obtain the deep features FD ∈RH×W ×C, and the unit contains n MTB. The processing formula is as: FD = HDF (F0), = HMT Bn(HMT Bn−1(· · ·HMT B1(F0)· · ·)); (2) where HDF (·) is the DFEU function and HMT Bn(·) represents the n-th MTB in the DFEU. MTB consists of multiple consecutive transformer layers, where SA is replaced in some of the layers. Finally, as F0 and FD are rich in low and high frequency information, they are summed and transmitted directly to"
+  },
+  {
+    "paper_id": "2305.11403v5",
+    "title": "Efficient Mixed Transformer for Single Image Super-Resolution",
+    "page_num": 3,
+    "chunk_id": "2305.11403v5_page3_chunk2",
+    "text": "is the DFEU function and HMT Bn(·) represents the n-th MTB in the DFEU. MTB consists of multiple consecutive transformer layers, where SA is replaced in some of the layers. Finally, as F0 and FD are rich in low and high frequency information, they are summed and transmitted directly to RECU: Isr = HREC(F0 + FD), (3) where HREC represents the processing function of the RECU. The EMT is then optimized using a loss function, where many loss functions are available, such as L2 [7, 12, 37, 44], L1 [18, 25, 26, 45, 46], and perceptual losses [13, 35]. For simplicity and directness, we select the L1 loss function. Given a training set {Ii LR, Ii HR}N i=1 with a total of N ground-truth HR and matching LR images, the parameters of EMT are trained by minimizing the L1 loss function: L = 1 N N X i=1 ∥Ii RHR −Ii HR∥1, (4) where IRHR is the EMT output of ILR. 3.2 Mixed Transformer Block for SR Starting from [27], many works have optimized SA and achieved good results in various computer vision tasks. However, the modified SA still cannot address the lack of locality mechanism in Transformer-based methods and"
+  },
+  {
+    "paper_id": "2305.11403v5",
+    "title": "Efficient Mixed Transformer for Single Image Super-Resolution",
+    "page_num": 3,
+    "chunk_id": "2305.11403v5_page3_chunk3",
+    "text": "−Ii HR∥1, (4) where IRHR is the EMT output of ILR. 3.2 Mixed Transformer Block for SR Starting from [27], many works have optimized SA and achieved good results in various computer vision tasks. However, the modified SA still cannot address the lack of locality mechanism in Transformer-based methods and still remains high complexity. Thus, we propose Mixed Transformer Block (MTB), which consists of two types of transformer layers, namely the Local Transformer Layer (LTL) and Global Transformer Layer (GTL). In LTL, we use local perceptrons to replace SA, thereby improving overall local knowledge aggregation and reducing the complexity of layers. In addition, a new local perceptron, PM, with no computational cost is developed. For GTL, we use striped window for SA to efficiently build global dependency modelling. Algorithm 1: Pixel Mixer for EMT, PyTorch-like Code import torch class PixelMixer(torch.nn.Module): def __init__(self): super().__init__() # list of shift rules self.rule = [[-1, 0], [0, 1], [0, -1], [1, 0], [0, 0]] def forward(self, x): groups = torch.split(x, [x.shape[1]//5] * 5, dim=1) # use different shift rules for each group groups = [torch.roll(group, shifts=rule, dims=(2, 3)) for group, rule in zip(groups, self.rule)] return torch.cat(groups, dim=1) 3"
+  },
+  {
+    "paper_id": "2305.11403v5",
+    "title": "Efficient Mixed Transformer for Single Image Super-Resolution",
+    "page_num": 4,
+    "chunk_id": "2305.11403v5_page4_chunk2",
+    "text": "feature points with the opposite ones each input window in the self-attention mechanism can obtain different knowledge from other source. We assume that z ∈H × W × C, where H, W and C represent the height, width and number of channels, respectively; and z′ represents the output with the same shape as the input. The equation is as follows: z[[0 : H −n] : [H −n : H], 0 : W, 0 : βC] →z′[[H −n : H] : [0 : H −n], 0 : W, 3βC : 4βC] z[0 : H, [0 : W −n] : [W −n : W], βC : 2β] →z′[0 : H, [W −n : W] : [0 : W −n], 0 : βC] z[0 : H, [0 : n] : [n : W], 2βC : 3βC] →z′[0 : H, [n : W] : [0 : n], βC : 2βC] z[[0 : n] : [n : H], 0 : W, 3βC : 4βC] →z′[[n : H] : [0 : n], 0 : W, 2βC : 3βC] z[0 : H, 0 : W, 4βC : C] →z′[0 : H, 0 : W, 4βC : C], (5) where n represents the shift step, set to 1"
+  },
+  {
+    "paper_id": "2305.11403v5",
+    "title": "Efficient Mixed Transformer for Single Image Super-Resolution",
+    "page_num": 4,
+    "chunk_id": "2305.11403v5_page4_chunk3",
+    "text": "[n : H], 0 : W, 3βC : 4βC] →z′[[n : H] : [0 : n], 0 : W, 2βC : 3βC] z[0 : H, 0 : W, 4βC : C] →z′[0 : H, 0 : W, 4βC : C], (5) where n represents the shift step, set to 1 pixel in this paper, and β is the parameter that controls the percentage of channel shifted, in this case 1 5. This process is outlined in Algorithm 1. PM is simple and clean, with no additional parameters and FLOPs during operation, and it is thus a practical solution for effectively improving SR network performance. 3.4 Striped Window for SA Transformer is particularly good at global dependency modelling. Although the global connectivity between token embeddings can be computed by self-attention mechanism, anisotropic features in the image still make the isotropic square window SA redundant [24]. To efficiently model global dependencies, we propose to use mutually perpendicular striped window for SA (SWSA). Specifically, the span of multi-scale similarity or symmetry in an image is horizontally or vertically anisotropic, so it is difficult to fully utilize this feature using horizontal or vertical windows [36] alone. we use mutually perpendicular windows and multi-head calculations"
+  },
+  {
+    "paper_id": "2305.11403v5",
+    "title": "Efficient Mixed Transformer for Single Image Super-Resolution",
+    "page_num": 4,
+    "chunk_id": "2305.11403v5_page4_chunk4",
+    "text": "propose to use mutually perpendicular striped window for SA (SWSA). Specifically, the span of multi-scale similarity or symmetry in an image is horizontally or vertically anisotropic, so it is difficult to fully utilize this feature using horizontal or vertical windows [36] alone. we use mutually perpendicular windows and multi-head calculations within each window to cope with this problem. As shown in Fig. 3, the striped window follows the anisotropic feature of the image, making the proportion of similar features within the window larger, and the computed attention score increases its focus on modeling the contained features. In addition, The computational efficiency is further improved by applying multi-head calculations within each window. For an input image size H × W × C, the H, W and C represent the height, width, and number of channels, respectively. The self-attention of each window is then calculated separately to obtain 4"
+  },
+  {
+    "paper_id": "2305.11403v5",
+    "title": "Efficient Mixed Transformer for Single Image Super-Resolution",
+    "page_num": 5,
+    "chunk_id": "2305.11403v5_page5_chunk3",
+    "text": "query and value matrices Q and V , the following steps are performed: Reshape the input X ∈RC×H×W into X′ n ∈RC/2×(H×W ). Calculate the linear transformation of X′ using weight matrices WQ and WV : Qn = X′ n × WQ, Vn = X′ n × WV , (6) where Qn ∈Rdq×(H×W ) and Vn ∈Rdv×(H×W ), respectively. Then multi-head calculations are applied to each window. To calculate the self-attention score matrix Foutn, the softmax function was applied as follows: Foutn = Softmax(Qn · QT n scale )Vn, (7) where scale is a constant used to control the size of the matrix A. The Foutn matrix is concatenated along the channel dimension to obtain the output of SWSA: Fout = [Fout1; Foutn], (8) note that the n windows are computed sequentially, and the final results are concatenated. 4 Experiments 4.1 Implementation Details Datasets and Metrics. We use DF2K (DIV2K [1], Flickr2K [26]) as the training set, DIV2K [1] dataset contains HR images with various scenes and objects, and Flickr2K [26] dataset contains images with multiple quality levels. The Set5 [2], Set14 [43], BSD100 [30], Urban100 [14], and Manga109 [31] datasets are used as the test set to evaluate the"
+  },
+  {
+    "paper_id": "2305.11403v5",
+    "title": "Efficient Mixed Transformer for Single Image Super-Resolution",
+    "page_num": 5,
+    "chunk_id": "2305.11403v5_page5_chunk4",
+    "text": "[1], Flickr2K [26]) as the training set, DIV2K [1] dataset contains HR images with various scenes and objects, and Flickr2K [26] dataset contains images with multiple quality levels. The Set5 [2], Set14 [43], BSD100 [30], Urban100 [14], and Manga109 [31] datasets are used as the test set to evaluate the performance of our method. The Peak Signal-to-Noise Ratio (PSNR) and Structural Similarity Index Measure (SSIM) are used as evaluation metrics, where the RGB are first converted to YCbCr format, and then the metrics are computed on the Y channel. In addition, we report the network parameters to compare our method with other state-of-the-art (SOTA). The network parameters indicate the model complexity and the amount of computational resources required to train and use the model. Training Setting. In proposed method, we set the channel input to 60. In the DFEU, the number of MTBs is set to six. Each MTB consists of six layers (2GTL and 4LTL). The number of SWSA heads is three and the mutual vertical window is ((32, 8), (8, 32)). During the training process, we use data augmentation techniques, including random rotations of 90◦, 180◦, and 270◦, and horizontal flipping. The batch size is set to 64"
+  },
+  {
+    "paper_id": "2305.11403v5",
+    "title": "Efficient Mixed Transformer for Single Image Super-Resolution",
+    "page_num": 5,
+    "chunk_id": "2305.11403v5_page5_chunk5",
+    "text": "of six layers (2GTL and 4LTL). The number of SWSA heads is three and the mutual vertical window is ((32, 8), (8, 32)). During the training process, we use data augmentation techniques, including random rotations of 90◦, 180◦, and 270◦, and horizontal flipping. The batch size is set to 64 and the input patch size of LR is 64 × 64. We use the Adam optimizer [16] with β1 = 0.9 and β2 = 0.999 for model optimization. The initial learning rate is set to 5 × 10−4 and decays to 1 × 10−6 using cosine annealing scheduler [28]. To train our model, we use the L1 5"
+  },
+  {
+    "paper_id": "2305.11403v5",
+    "title": "Efficient Mixed Transformer for Single Image Super-Resolution",
+    "page_num": 7,
+    "chunk_id": "2305.11403v5_page7_chunk1",
+    "text": "officially provided models, they have been omitted from the comparison. According to the figure, CNN-based methods, such as FDIWN, LBNet, in image_062 of Urban100 [14] shows severe artifacts in the construction of the details. SwinIR [25] outperforms CNN-based methods in terms of detail construction, but several artifacts and smoothing problems still appear. Our method further relieves this problem and allows for clearer image recovery. In 108005 image [30], our method recovers clearer detailed textures than other transformer-based methods due to the enhanced local knowledge interaction. For HighschoolKimengumi-vol20 and GarakutayaManta of Manga109 [31], our method is more accurate in font recover, less prone to generate misspellings and therefore more reliable. Overall, the details of SR images in EMT are clearer and more realistic, and the structural information is more obvious due to the enhanced local knowledge aggregation and efficient global interaction. (a) MTB-2GTL (b) MTB-4GTL (c) MTB-6GTL Figure 5: CKA similarity between MTB layers using different numbers of GTLs, with horizontal and vertical coordinates indicating network depth. 4.3 Ablation studies Similarity between Layers. Central kernel alignment (CKA) is commonly used to study the representational similarity of hidden layers in networks [21, 32]. We introduced this method to investigate the extraction of"
+  },
+  {
+    "paper_id": "2305.11403v5",
+    "title": "Efficient Mixed Transformer for Single Image Super-Resolution",
+    "page_num": 7,
+    "chunk_id": "2305.11403v5_page7_chunk2",
+    "text": "between MTB layers using different numbers of GTLs, with horizontal and vertical coordinates indicating network depth. 4.3 Ablation studies Similarity between Layers. Central kernel alignment (CKA) is commonly used to study the representational similarity of hidden layers in networks [21, 32]. We introduced this method to investigate the extraction of features using MTB with different numbers of GTLs. Specifically, given m data points, we input the activation X ∈Rm×p1 and Y ∈Rm×p2 of two layers, having p1 and p2 neurons, respectively, as follows: CKA(K, L) = HSIC(K, L) p HSIC(K, K)HSIC(L, L) , (9) where we use m × m Gram matrices K = XX⊤and L = YY⊤and HSIC is the Hilbert-Schmidt independence criterion [10]. To facilitate the experiment, we use minibatches of size n = 288, with six layers in each block and a batch size of eight for training strategy, and otherwise the same as above 4.1. For the fairness of experiments, the position of TokenMixer [42] in LTL is replaced is replaced by Identity(·), and SWSA is used in the TokenMixer position of GTL. MTBs with different numbers of GTLs (2, 4, 6) were used in the experiments and the same training strategy was performed. The results"
+  },
+  {
+    "paper_id": "2305.11403v5",
+    "title": "Efficient Mixed Transformer for Single Image Super-Resolution",
+    "page_num": 7,
+    "chunk_id": "2305.11403v5_page7_chunk3",
+    "text": "the fairness of experiments, the position of TokenMixer [42] in LTL is replaced is replaced by Identity(·), and SWSA is used in the TokenMixer position of GTL. MTBs with different numbers of GTLs (2, 4, 6) were used in the experiments and the same training strategy was performed. The results are presented in Fig. 5, and the lower left and upper right corners are extracted from SFEU and RECU. Similar yellow squares can be observed on the heat map of the initial and intermediate hidden layers, of which the lighter the colour, the higher the similarity. Comparing MTB-4GTL and -6GTL with the MTB-2GTL, the yellow area is larger and lighter, which may indicate the presence of redundant operations in the network [32]. On this basis, we suggest that reducing the number of GTLs to 2 may be a more reasonable choice. Effect of MTB structure on Performance. GTL is replaced by LTL in the MTB structure to enhance the capture of local knowledge and reduce the parameters and FLOPs, and different levels of replacement result in different performance. In this subsection, we verify the effectiveness of the proposed MTB structure. In GTL, square (16 × 16) and striped windows SA"
+  },
+  {
+    "paper_id": "2305.11403v5",
+    "title": "Efficient Mixed Transformer for Single Image Super-Resolution",
+    "page_num": 7,
+    "chunk_id": "2305.11403v5_page7_chunk4",
+    "text": "by LTL in the MTB structure to enhance the capture of local knowledge and reduce the parameters and FLOPs, and different levels of replacement result in different performance. In this subsection, we verify the effectiveness of the proposed MTB structure. In GTL, square (16 × 16) and striped windows SA are used, while maintaining the same complexity. As shown in Fig. 6, MTB using a larger number of GTLs gradually improves PSNR on the Set5 [2], Set14 [43], and BSD100 [30] ×4 test set. However, regardless of the type of SA window, we observed a decreasing trend of improvement in PSNR with increasing GTLs, while parameters and FLOPs still increased proportionally. The slope of 0 to 2GTLs in MTB is the largest, and we believe that MTB-2GTL is a cost-effective choice. The striped self-attention 7"
+  },
+  {
+    "paper_id": "2305.11403v5",
+    "title": "Efficient Mixed Transformer for Single Image Super-Resolution",
+    "page_num": 8,
+    "chunk_id": "2305.11403v5_page8_chunk1",
+    "text": "(a) Set5 [2] (b) Set14 [43] (c) BSD100 [30] Figure 6: Comparison of PNSR and parameters using different numbers of GTL in MTB structure on the ×4 test set . window utilizes image anisotropy features and performs better in the test set than the traditional square window. In addition, we further validated the MTB architecture by quantitatively comparing MTB-4GTL and -6GTL with MTB-2GTL, while keeping the same parameter levels. As shown in the Table 2, MTB-2GTL outperformed the number of other GTLs on most of the test sets. Due to the lack of interaction between the SAs of MTB-1GTL, -3GTL and -5GTL, which may lead to poor results, they are omitted in the display. Table 2: The PSNR is tested on a set of ×4 image SR, using different numbers of GTLs on the MTB struc- ture while controlling the parameters to be approxi- mately equal. The BEST results are highlighted. Model Params FLOPs Set5 Set14 Urban100 BSD100 Manga109 (K) (G) (PSNR) (PSNR) (PSNR) (PSNR) (PSNR) MTB - 0GTL 733 47.5 32.328 28.719 26.387 27.688 30.942 MTB - 2GTL 690 44.6 32.559 28.875 26.741 27.772 31.296 MTB - 4GTL 690 44.6 32.546 28.869 26.760 27.757 31.277 MTB - 6GTL 645"
+  },
+  {
+    "paper_id": "2305.11403v5",
+    "title": "Efficient Mixed Transformer for Single Image Super-Resolution",
+    "page_num": 8,
+    "chunk_id": "2305.11403v5_page8_chunk2",
+    "text": "highlighted. Model Params FLOPs Set5 Set14 Urban100 BSD100 Manga109 (K) (G) (PSNR) (PSNR) (PSNR) (PSNR) (PSNR) MTB - 0GTL 733 47.5 32.328 28.719 26.387 27.688 30.942 MTB - 2GTL 690 44.6 32.559 28.875 26.741 27.772 31.296 MTB - 4GTL 690 44.6 32.546 28.869 26.760 27.757 31.277 MTB - 6GTL 645 41.8 32.491 28.864 26.754 27.757 31.264 Table 3: Test results on Manga109 [31] of ×4 image SR on which module is used in the lo- cation of the TokenMixer in LTL. The BEST results are highlighted. Model Params FLOPs PixelMixer(·) Identity(·) Manga109 (K) (G) MTB - 4GTL 690 44.6 ✓ 31.328 MTB - 4GTL 690 44.6 ✓ 31.277 MTB - 2GTL 690 44.6 ✓ 31.329 MTB - 2GTL 690 44.6 ✓ 31.296 Figure 7: Qualitative analysis results of MTB with and without PM in Urban100 [14] and Manga109 [31] (×4) test sets. Effectiveness of the Pixel Mixer. We propose PM to enhance locality mechanisms in the architec- ture by mixing pixels without adding parameters and FLOPs. To verify the effectiveness of PM, we set up four groups of experiments for quantitative and qualitative analysis, i.e., with and without PM in MTB-2GTL and MTB-4GTL, as shown in Table 3 and Fig."
+  },
+  {
+    "paper_id": "2305.11403v5",
+    "title": "Efficient Mixed Transformer for Single Image Super-Resolution",
+    "page_num": 8,
+    "chunk_id": "2305.11403v5_page8_chunk3",
+    "text": "to enhance locality mechanisms in the architec- ture by mixing pixels without adding parameters and FLOPs. To verify the effectiveness of PM, we set up four groups of experiments for quantitative and qualitative analysis, i.e., with and without PM in MTB-2GTL and MTB-4GTL, as shown in Table 3 and Fig. 7. The results show that the network with PM improves the PSNR of test set and recovers clearer and more realistic image details and textures while maintaining the same parameter levels. In addition, the ability of the network to utilize local knowledge can be reflected by observing the change in Mean Attention Distance (MAD) [21]. MAD is obtained by averaging the distance between the query pixel and all other pixels, weighted by the attention weights. The points represent the attention distance with lower indexes typically indicating increased use of local knowledge in the network. We further carry out MAD experiments on the DIV2K [1] validation set. As shown in Fig. 8, PM brought more locality in several regions, 8"
+  },
+  {
+    "paper_id": "2305.11403v5",
+    "title": "Efficient Mixed Transformer for Single Image Super-Resolution",
+    "page_num": 9,
+    "chunk_id": "2305.11403v5_page9_chunk2",
+    "text": "experimental results show that EMT achieves more outstanding performance in LSR than previous SOTA methods and a better balance between performance and complexity. In the future, we attempt to reduce the complexity of self-attention and consider SISR deployment in mobile and embedded devices. References [1] Eirikur Agustsson and Radu Timofte. Ntire 2017 challenge on single image super-resolution: Dataset and study. In Proceedings of the IEEE conference on computer vision and pattern recognition workshops, pages 126–135, 2017. [2] M. Bevilacqua, A. Roumy, C. Guillemot, and A. Morel. Low-complexity single image super-resolution based on nonnegative neighbor embedding. In British Machine Vision Conference, 2012. [3] Haoyu Chen, Jinjin Gu, and Zhi Zhang. Attention in attention network for image super-resolution. arXiv preprint arXiv:2104.09497, 2021. [4] Haram Choi, Jeongmin Lee, and Jihoon Yang. N-gram in swin transformers for efficient lightweight image super-resolution. arXiv preprint arXiv:2211.11436, 2022. [5] Jia Deng, Wei Dong, Richard Socher, Li-Jia Li, Kai Li, and Li Fei-Fei. Imagenet: A large-scale hierarchical image database. In 2009 IEEE conference on computer vision and pattern recognition, pages 248–255. Ieee, 2009. [6] Chao Dong, Chen Change Loy, Kaiming He, and Xiaoou Tang. Learning a deep convolutional network for image super-resolution. In European conference on computer vision,"
+  },
+  {
+    "paper_id": "2305.11403v5",
+    "title": "Efficient Mixed Transformer for Single Image Super-Resolution",
+    "page_num": 9,
+    "chunk_id": "2305.11403v5_page9_chunk3",
+    "text": "Kai Li, and Li Fei-Fei. Imagenet: A large-scale hierarchical image database. In 2009 IEEE conference on computer vision and pattern recognition, pages 248–255. Ieee, 2009. [6] Chao Dong, Chen Change Loy, Kaiming He, and Xiaoou Tang. Learning a deep convolutional network for image super-resolution. In European conference on computer vision, pages 184–199. Springer, 2014. [7] Chao Dong, Chen Change Loy, Kaiming He, and Xiaoou Tang. Image super-resolution using deep convolutional networks. IEEE transactions on pattern analysis and machine intelligence, 38(2):295–307, 2015. [8] Guangwei Gao, Wenjie Li, Juncheng Li, Fei Wu, Huimin Lu, and Yi Yu. Feature distillation interaction weighting network for lightweight image super-resolution. In AAAI Conference on Artificial Intelligence (AAAI), 2022. 9"
+  },
+  {
+    "paper_id": "2305.11403v5",
+    "title": "Efficient Mixed Transformer for Single Image Super-Resolution",
+    "page_num": 10,
+    "chunk_id": "2305.11403v5_page10_chunk1",
+    "text": "[9] Guangwei Gao, Zhengxue Wang, Juncheng Li, Wenjie Li, Yi Yu, and Tieyong Zeng. Lightweight bimodal network for single-image super-resolution via symmetric cnn and recursive transformer. In International Joint Conference on Artificial Intelligence (IJCAI), 2022. [10] A. Gretton, K. Fukumizu, C. H. Teo, S. Le, and A. J. Smola. A kernel statistical test of independence. In Advances in Neural Information Processing Systems 20, Proceedings of the Twenty-First Annual Conference on Neural Information Processing Systems, Vancouver, British Columbia, Canada, December 3-6, 2007, 2007. [11] Q. Han, Z. Fan, Q. Dai, L. Sun, and J. Wang. Demystifying local vision transformer: Sparse connectivity, weight sharing, and dynamic weight, 2021. [12] Muhammad Haris, Gregory Shakhnarovich, and Norimichi Ukita. Deep back-projection networks for super-resolution. In Proceedings of the IEEE conference on computer vision and pattern recognition, pages 1664–1673, 2018. [13] Gao Huang, Zhuang Liu, Laurens Van Der Maaten, and Kilian Q Weinberger. Densely connected convolutional networks. In Proceedings of the IEEE conference on computer vision and pattern recognition, pages 4700–4708, 2017. [14] Jia-Bin Huang, Abhishek Singh, and Narendra Ahuja. Single image super-resolution from transformed self-exemplars. In Proceedings of the IEEE conference on computer vision and pattern recognition, pages 5197–5206, 2015. [15] Jiwon Kim, Jung Kwon"
+  },
+  {
+    "paper_id": "2305.11403v5",
+    "title": "Efficient Mixed Transformer for Single Image Super-Resolution",
+    "page_num": 10,
+    "chunk_id": "2305.11403v5_page10_chunk2",
+    "text": "networks. In Proceedings of the IEEE conference on computer vision and pattern recognition, pages 4700–4708, 2017. [14] Jia-Bin Huang, Abhishek Singh, and Narendra Ahuja. Single image super-resolution from transformed self-exemplars. In Proceedings of the IEEE conference on computer vision and pattern recognition, pages 5197–5206, 2015. [15] Jiwon Kim, Jung Kwon Lee, and Kyoung Mu Lee. Accurate image super-resolution using very deep convolutional networks. In Proceedings of the IEEE conference on computer vision and pattern recognition, pages 1646–1654, 2016. [16] Diederik P Kingma and Jimmy Ba. Adam: A method for stochastic optimization. arXiv preprint arXiv:1412.6980, 2014. [17] Wei-Sheng Lai, Jia-Bin Huang, Narendra Ahuja, and Ming-Hsuan Yang. Deep laplacian pyramid networks for fast and accurate super-resolution. In Proceedings of the IEEE conference on computer vision and pattern recognition, pages 624–632, 2017. [18] Wei-Sheng Lai, Jia-Bin Huang, Narendra Ahuja, and Ming-Hsuan Yang. Deep laplacian pyramid networks for fast and accurate super-resolution. In Proceedings of the IEEE conference on computer vision and pattern recognition, pages 624–632, 2017. [19] Yann LeCun, Yoshua Bengio, and Geoffrey Hinton. Deep learning. nature, 521(7553):436–444, 2015. [20] Christian Ledig, Lucas Theis, Ferenc Huszár, Jose Caballero, Andrew Cunningham, Alejandro Acosta, Andrew Aitken, Alykhan Tejani, Johannes Totz, Zehan Wang, et al. Photo-realistic"
+  },
+  {
+    "paper_id": "2305.11403v5",
+    "title": "Efficient Mixed Transformer for Single Image Super-Resolution",
+    "page_num": 10,
+    "chunk_id": "2305.11403v5_page10_chunk3",
+    "text": "of the IEEE conference on computer vision and pattern recognition, pages 624–632, 2017. [19] Yann LeCun, Yoshua Bengio, and Geoffrey Hinton. Deep learning. nature, 521(7553):436–444, 2015. [20] Christian Ledig, Lucas Theis, Ferenc Huszár, Jose Caballero, Andrew Cunningham, Alejandro Acosta, Andrew Aitken, Alykhan Tejani, Johannes Totz, Zehan Wang, et al. Photo-realistic single image super- resolution using a generative adversarial network. In Proceedings of the IEEE conference on computer vision and pattern recognition, pages 4681–4690, 2017. [21] W. Li, X. Lu, J. Lu, X. Zhang, and J. Jia. On efficient transformer and image pre-training for low-level vision. arXiv e-prints, 2021. [22] Wenbo Li, Kun Zhou, Lu Qi, Nianjuan Jiang, Jiangbo Lu, and Jiaya Jia. Lapar: Linearly-assembled pixel-adaptive regression network for single image super-resolution and beyond. In Advances in Neural Information Processing Systems (NeurIPS), 2020. [23] Yawei Li, Kai Zhang, Jiezhang Cao, Radu Timofte, and Luc Van Gool. Localvit: Bringing locality to vision transformers. arXiv preprint arXiv:2104.05707, 2021. [24] Yawei Li, Yuchen Fan, Xiaoyu Xiang, Denis Demandolx, Rakesh Ranjan, Radu Timofte, and Luc Van Gool. Efficient and explicit modelling of image hierarchies for image restoration. arXiv preprint arXiv:2303.00748, 2023. [25] Jingyun Liang, Jiezhang Cao, Guolei Sun, Kai Zhang, Luc Van Gool, and Radu"
+  },
+  {
+    "paper_id": "2305.11403v5",
+    "title": "Efficient Mixed Transformer for Single Image Super-Resolution",
+    "page_num": 10,
+    "chunk_id": "2305.11403v5_page10_chunk4",
+    "text": "transformers. arXiv preprint arXiv:2104.05707, 2021. [24] Yawei Li, Yuchen Fan, Xiaoyu Xiang, Denis Demandolx, Rakesh Ranjan, Radu Timofte, and Luc Van Gool. Efficient and explicit modelling of image hierarchies for image restoration. arXiv preprint arXiv:2303.00748, 2023. [25] Jingyun Liang, Jiezhang Cao, Guolei Sun, Kai Zhang, Luc Van Gool, and Radu Timofte. Swinir: Image restoration using swin transformer. In Proceedings of the IEEE/CVF International Conference on Computer Vision, pages 1833–1844, 2021. [26] Bee Lim, Sanghyun Son, Heewon Kim, Seungjun Nah, and Kyoung Mu Lee. Enhanced deep residual networks for single image super-resolution. In Proceedings of the IEEE conference on computer vision and pattern recognition workshops, pages 136–144, 2017. [27] Ze Liu, Yutong Lin, Yue Cao, Han Hu, Yixuan Wei, Zheng Zhang, Stephen Lin, and Baining Guo. Swin transformer: Hierarchical vision transformer using shifted windows. In Proceedings of the IEEE/CVF International Conference on Computer Vision, pages 10012–10022, 2021. [28] I. Loshchilov and F. Hutter. Sgdr: Stochastic gradient descent with restarts. 2016. [29] Zhisheng Lu, Juncheng Li, Hong Liu, Chaoyan Huang, Linlin Zhang, and Tieyong Zeng. Transformer for single image super-resolution. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition, pages 457–466, 2022. 10"
+  },
+  {
+    "paper_id": "2305.11403v5",
+    "title": "Efficient Mixed Transformer for Single Image Super-Resolution",
+    "page_num": 11,
+    "chunk_id": "2305.11403v5_page11_chunk1",
+    "text": "[30] David Martin, Charless Fowlkes, Doron Tal, and Jitendra Malik. A database of human segmented natural images and its application to evaluating segmentation algorithms and measuring ecological statistics. In Proceedings Eighth IEEE International Conference on Computer Vision. ICCV 2001, volume 2, pages 416–423. IEEE, 2001. [31] Yusuke Matsui, Kota Ito, Yuji Aramaki, Azuma Fujimoto, Toru Ogawa, Toshihiko Yamasaki, and Kiyoharu Aizawa. Sketch-based manga retrieval using manga109 dataset. Multimedia Tools and Applications, 76: 21811–21838, 2017. [32] Thao Nguyen, Maithra Raghu, and Simon Kornblith. Do wide and deep networks learn the same things? un- covering how neural network representations vary with width and depth. arXiv preprint arXiv:2010.15327, 2020. [33] Adam Paszke, Sam Gross, Francisco Massa, Adam Lerer, James Bradbury, Gregory Chanan, Trevor Killeen, Zeming Lin, Natalia Gimelshein, Luca Antiga, et al. Pytorch: An imperative style, high-performance deep learning library. Advances in neural information processing systems, 32, 2019. [34] Mehdi SM Sajjadi, Bernhard Scholkopf, and Michael Hirsch. Enhancenet: Single image super-resolution through automated texture synthesis. In Proceedings of the IEEE international conference on computer vision, pages 4491–4500, 2017. [35] Mehdi SM Sajjadi, Bernhard Scholkopf, and Michael Hirsch. Enhancenet: Single image super-resolution through automated texture synthesis. In Proceedings of the IEEE international conference on"
+  },
+  {
+    "paper_id": "2305.11403v5",
+    "title": "Efficient Mixed Transformer for Single Image Super-Resolution",
+    "page_num": 11,
+    "chunk_id": "2305.11403v5_page11_chunk2",
+    "text": "Scholkopf, and Michael Hirsch. Enhancenet: Single image super-resolution through automated texture synthesis. In Proceedings of the IEEE international conference on computer vision, pages 4491–4500, 2017. [35] Mehdi SM Sajjadi, Bernhard Scholkopf, and Michael Hirsch. Enhancenet: Single image super-resolution through automated texture synthesis. In Proceedings of the IEEE international conference on computer vision, pages 4491–4500, 2017. [36] Jinpeng Shi, Hui Li, Tianle Liu, Yulong Liu, Mingjian Zhang, Jinchen Zhu, Ling Zheng, and Shizhuang Weng. Image super-resolution using efficient striped window transformer. arXiv preprint arXiv:2301.09869, 2023. [37] Ying Tai, Jian Yang, Xiaoming Liu, and Chunyan Xu. Memnet: A persistent memory network for image restoration. In Proceedings of the IEEE international conference on computer vision, pages 4539–4547, 2017. [38] Ashish Vaswani, Noam Shazeer, Niki Parmar, Jakob Uszkoreit, Llion Jones, Aidan N Gomez, Łukasz Kaiser, and Illia Polosukhin. Attention is all you need. Advances in neural information processing systems, 30, 2017. [39] Zhaowen Wang, Ding Liu, Jianchao Yang, Wei Han, and Thomas Huang. Deep networks for image super-resolution with sparse prior. In Proceedings of the IEEE international conference on computer vision, pages 370–378, 2015. [40] B. Wu, A. Wan, X. Yue, P. Jin, S. Zhao, N. Golmant, A. Gholaminejad, J. Gonzalez, and K. Keutzer."
+  },
+  {
+    "paper_id": "2305.11403v5",
+    "title": "Efficient Mixed Transformer for Single Image Super-Resolution",
+    "page_num": 11,
+    "chunk_id": "2305.11403v5_page11_chunk3",
+    "text": "Ding Liu, Jianchao Yang, Wei Han, and Thomas Huang. Deep networks for image super-resolution with sparse prior. In Proceedings of the IEEE international conference on computer vision, pages 370–378, 2015. [40] B. Wu, A. Wan, X. Yue, P. Jin, S. Zhao, N. Golmant, A. Gholaminejad, J. Gonzalez, and K. Keutzer. Shift: A zero flop, zero parameter alternative to spatial convolutions. 2017. [41] Haiping Wu, Bin Xiao, Noel Codella, Mengchen Liu, Xiyang Dai, Lu Yuan, and Lei Zhang. Cvt: Introducing convolutions to vision transformers. In Proceedings of the IEEE/CVF International Conference on Computer Vision, pages 22–31, 2021. [42] Weihao Yu, Mi Luo, Pan Zhou, Chenyang Si, Yichen Zhou, Xinchao Wang, Jiashi Feng, and Shuicheng Yan. Metaformer is actually what you need for vision. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition, pages 10819–10829, 2022. [43] Roman Zeyde, Michael Elad, and Matan Protter. On single image scale-up using sparse-representations. In Curves and Surfaces: 7th International Conference, Avignon, France, June 24-30, 2010, Revised Selected Papers 7, pages 711–730. Springer, 2012. [44] Kai Zhang, Wangmeng Zuo, and Lei Zhang. Learning a single convolutional super-resolution network for multiple degradations. In Proceedings of the IEEE conference on computer vision and pattern recognition,"
+  },
+  {
+    "paper_id": "2305.11403v5",
+    "title": "Efficient Mixed Transformer for Single Image Super-Resolution",
+    "page_num": 11,
+    "chunk_id": "2305.11403v5_page11_chunk4",
+    "text": "sparse-representations. In Curves and Surfaces: 7th International Conference, Avignon, France, June 24-30, 2010, Revised Selected Papers 7, pages 711–730. Springer, 2012. [44] Kai Zhang, Wangmeng Zuo, and Lei Zhang. Learning a single convolutional super-resolution network for multiple degradations. In Proceedings of the IEEE conference on computer vision and pattern recognition, pages 3262–3271, 2018. [45] Xindong Zhang, Hui Zeng, Shi Guo, and Lei Zhang. Efficient long-range attention network for image super-resolution. arXiv preprint arXiv:2203.06697, 2022. [46] Yulun Zhang, Yapeng Tian, Yu Kong, Bineng Zhong, and Yun Fu. Residual dense network for image super-resolution. In Proceedings of the IEEE conference on computer vision and pattern recognition, pages 2472–2481, 2018. 11"
+  }
+]

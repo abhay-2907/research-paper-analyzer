@@ -1,0 +1,464 @@
+[
+  {
+    "paper_id": "2503.21686v2",
+    "title": "Molecular Quantum Transformer",
+    "page_num": 1,
+    "chunk_id": "2503.21686v2_page1_chunk1",
+    "text": "Molecular Quantum Transformer Yuichi Kamata,∗Quoc Hoan Tran,† Yasuhiro Endo, and Hirotaka Oshima Quantum Laboratory, Fujitsu Research, Fujitsu Limited, Kawasaki, Kanagawa 211-8588, Japan The Transformer model, renowned for its powerful attention mechanism, has achieved state-of- the-art performance in various artificial intelligence tasks but faces challenges such as high com- putational cost and memory usage. Researchers are exploring quantum computing to enhance the Transformer’s design, though it still shows limited success with classical data. With a growing focus on leveraging quantum machine learning for quantum data, particularly in quantum chemistry, we propose the Molecular Quantum Transformer (MQT) for modeling interactions in molecular quan- tum systems. By utilizing quantum circuits to implement the attention mechanism on the molecular configurations, MQT can efficiently calculate ground-state energies for all configurations. Numerical demonstrations show that in calculating ground-state energies for H2, LiH, BeH2, and H4, MQT outperforms the classical Transformer, highlighting the promise of quantum effects in Transformer structures. Furthermore, its pretraining capability on diverse molecular data facilitates the efficient learning of new molecules, extending its applicability to complex molecular systems with minimal additional effort. Our method offers an alternative to existing quantum algorithms for estimating ground-state energies, opening new avenues in quantum chemistry and materials"
+  },
+  {
+    "paper_id": "2503.21686v2",
+    "title": "Molecular Quantum Transformer",
+    "page_num": 1,
+    "chunk_id": "2503.21686v2_page1_chunk2",
+    "text": "in Transformer structures. Furthermore, its pretraining capability on diverse molecular data facilitates the efficient learning of new molecules, extending its applicability to complex molecular systems with minimal additional effort. Our method offers an alternative to existing quantum algorithms for estimating ground-state energies, opening new avenues in quantum chemistry and materials science. The Transformer model [1] has been recognized as a remarkable advancement in artificial intelligence. Its key power lies in its “attention mechanism”, which discerns the relative importance of different parts of its input and the connection strengths between them. This mechanism has been successfully applied to both natural language processing and visual object recognition tasks, delivering state-of-the-art performance across a variety of datasets. Despite these successes, the current implementation of the Transformer faces several challenges, including high computational costs, substantial memory requirements, the necessity for large datasets, and a vast number of training parameters. These limitations have prompted researchers to explore improved Transformer designs. The marriage of quantum computing and machine learning has given rise to the field of quantum machine learning (QML) [2–7], which aims to leverage quantum computers to tackle problems that are infeasible for clas- sical computers. In this context, efforts have been made to develop"
+  },
+  {
+    "paper_id": "2503.21686v2",
+    "title": "Molecular Quantum Transformer",
+    "page_num": 1,
+    "chunk_id": "2503.21686v2_page1_chunk3",
+    "text": "to explore improved Transformer designs. The marriage of quantum computing and machine learning has given rise to the field of quantum machine learning (QML) [2–7], which aims to leverage quantum computers to tackle problems that are infeasible for clas- sical computers. In this context, efforts have been made to develop quantum versions of the Transformer model. A significant advancement in quantum neural networks (QNNs) involves integrating the self-attention mecha- nism by encoding query and key vectors as quantum states using parametric quantum circuits (PQCs). This adaptation enables quantum analogs of the classical self- attention framework, though various approaches differ in their implementation. One straightforward extension re- places the classical inner-product self-attention with the overlap of quantum states [8], but this method strug- gles to scale effectively for capturing correlations in large datasets due to its computational complexity. To address this limitation, an alternative employs classical Gaussian projections of query and key quantum states, enhancing scalability while retaining essential features [9]. Other quantum self-attention variants include quantum vision ∗kamata.yuichi@fujitsu.com † tran.quochoan@fujitsu.com; Corresponding author Transformers [10] as an end-to-end approach that lever- ages analog encoding with quantum random access mem- ory (qRAM) [11], and hybrid classical-quantum meth- ods [12, 13] to reduce"
+  },
+  {
+    "paper_id": "2503.21686v2",
+    "title": "Molecular Quantum Transformer",
+    "page_num": 1,
+    "chunk_id": "2503.21686v2_page1_chunk4",
+    "text": "key quantum states, enhancing scalability while retaining essential features [9]. Other quantum self-attention variants include quantum vision ∗kamata.yuichi@fujitsu.com † tran.quochoan@fujitsu.com; Corresponding author Transformers [10] as an end-to-end approach that lever- ages analog encoding with quantum random access mem- ory (qRAM) [11], and hybrid classical-quantum meth- ods [12, 13] to reduce the time complexity of computing query-key dot products. Additionally, some proposals diverge from inner-product-based attention entirely, opt- ing instead to mix tokens directly in Hilbert space to model correlations without explicitly calculating query- key dot products [14, 15]. Despite these innovative adap- tations, these quantum self-attention implementations have demonstrated limited performance on tasks involv- ing classical data, such as text and image classification, highlighting challenges in translating the advantages of quantum Transformer to practical applications. In recent years, there has been a growing recognition within the research community that classical data, such as text and images, do not inherently require quantum effects for processing. Consequently, there is a shift to- wards employing QML methods that exploit quantum ef- fects on data originating from quantum systems [16]. One promising yet underexplored area is the application of QML methods in quantum chemistry, where QML holds the potential to determine molecular and material"
+  },
+  {
+    "paper_id": "2503.21686v2",
+    "title": "Molecular Quantum Transformer",
+    "page_num": 1,
+    "chunk_id": "2503.21686v2_page1_chunk5",
+    "text": "quantum effects for processing. Consequently, there is a shift to- wards employing QML methods that exploit quantum ef- fects on data originating from quantum systems [16]. One promising yet underexplored area is the application of QML methods in quantum chemistry, where QML holds the potential to determine molecular and material prop- erties more efficiently than traditional quantum compu- tational chemistry algorithms. A central focus in quantum computational chemistry is the electronic structure problem, which involves cal- culating the electronic Hamiltonian’s ground-state en- ergy while assuming the molecule’s nuclei remain fixed. Among the most studied algorithms for this problem are the Variational Quantum Eigensolver (VQE) [17, 18] for Noisy Intermediate-Scale Quantum (NISQ) devices and Quantum Phase Estimation (QPE) [19, 20] for fault- tolerant quantum computers. While these approaches show promise, they face practical limitations. For in- stance, estimating the ground-state energy of FeMoCo, a well-known and practical benchmark in quantum chem- istry, would require a fault-tolerant quantum computer with millions of physical qubits operating for nearly four arXiv:2503.21686v2 [quant-ph] 16 May 2025"
+  },
+  {
+    "paper_id": "2503.21686v2",
+    "title": "Molecular Quantum Transformer",
+    "page_num": 1,
+    "chunk_id": "2503.21686v2_page1_chunk6",
+    "text": "istry, would require a fault-tolerant quantum computer with millions of physical qubits operating for nearly four arXiv:2503.21686v2 [quant-ph] 16 May 2025"
+  },
+  {
+    "paper_id": "2503.21686v2",
+    "title": "Molecular Quantum Transformer",
+    "page_num": 2,
+    "chunk_id": "2503.21686v2_page2_chunk1",
+    "text": "2 FIG. 1. Overview of the Molecular Quantum Transformer (MQT) model for the ground-state energy calculation across various molecules and their configurations, and the comparison with traditional methods. (a) For each molecule A, B, C,. . . and its associated configuration r1, r2, r3, . . ., the MQT receives a corresponding classical features sequence xA(r1), xB(r2), xC(r3), . . . through an embedding process. Leveraging a quantum attention mechanism, the MQT represents the complex in- teractions and correlations within the molecular system. The output of the MQT is a sequence of quantum states |ψA(r1)⟩, |ψB(r2)⟩, |ψC(r3)⟩, . . ., which reflects these correlations in a variational representation of the estimated ground states for (A, r1), (B, r2), (C, r3), . . ., respectively. The corresponding Hamiltonian HA(r1), HB(r2), HC(r3), . . ., derived from quantum mechanics are transformed into measurable operators to be measured on |ψA(r1)⟩, |ψB(r2)⟩, |ψC(r3)⟩, . . .. During training, the optimization process adjusts the variational parameters in both the MQT and the embedding process to minimize the expectation value ⟨H(r)⟩|ψ(r)⟩across various molecules and a range of r values. In the evaluation phase, given a molecule, the MQT can provide an estimator of ground-state energy E(r)"
+  },
+  {
+    "paper_id": "2503.21686v2",
+    "title": "Molecular Quantum Transformer",
+    "page_num": 2,
+    "chunk_id": "2503.21686v2_page2_chunk2",
+    "text": ". .. During training, the optimization process adjusts the variational parameters in both the MQT and the embedding process to minimize the expectation value ⟨H(r)⟩|ψ(r)⟩across various molecules and a range of r values. In the evaluation phase, given a molecule, the MQT can provide an estimator of ground-state energy E(r) for any configuration r. (b) In contrast, traditional methods such as VQE or QPE require an independent and computationally expensive solver for each molecule and configuration r. days using QPE [21]. In contrast, VQE can utilize fewer, noisier qubits, but its scalability is hindered by the ex- tensive measurement demands during optimization, par- ticularly for large-scale molecular systems [22, 23]. In practical quantum chemistry, estimating the ground-state energy for a single molecular configuration is often insufficient. Determining dynamic and structural properties, such as reaction barriers and optimal geome- tries, necessitates exploring multiple configurations. This requires knowledge of a family of ground states for a se- ries of Hamiltonians parameterized by variables like nu- clear coordinates and electron-nucleus distances. Con- sequently, one must compute numerous ground states with corresponding energies over a potential energy sur- face. However, a straightforward approach, such as in- dependently running QPE or VQE for each configura-"
+  },
+  {
+    "paper_id": "2503.21686v2",
+    "title": "Molecular Quantum Transformer",
+    "page_num": 2,
+    "chunk_id": "2503.21686v2_page2_chunk3",
+    "text": "ground states for a se- ries of Hamiltonians parameterized by variables like nu- clear coordinates and electron-nucleus distances. Con- sequently, one must compute numerous ground states with corresponding energies over a potential energy sur- face. However, a straightforward approach, such as in- dependently running QPE or VQE for each configura- tion, incurs prohibitive computational costs. To address this, meta-based approaches leverage classical ML to op- timize circuit parameters across multiple configurations simultaneously, as seen in Meta-VQE [24]. Another in- triguing approach is the use of generative QML to pro- duce ground states with PQCs learning from quantum data [25]. Nevertheless, these methods lack adaptability to varying molecule types and Hamiltonian forms and fail to capture correlations as effectively as Transformer- based models. In this paper, we introduce the Molecular Quantum Transformer (MQT), a Quantum Transformer model designed to calculate molecular ground-state energies [Fig. 1(a)]. The MQT leverages attention mechanisms implemented through quantum circuits, enabling efficient modeling of complex interactions and correlations within molecular quantum systems. By training on random molecular configurations at each iteration, the MQT cap- tures these interactions, allowing it to generalize and ob- tain ground-state energies across diverse configurations. The MQT enables the simultaneous learning of ground-"
+  },
+  {
+    "paper_id": "2503.21686v2",
+    "title": "Molecular Quantum Transformer",
+    "page_num": 2,
+    "chunk_id": "2503.21686v2_page2_chunk4",
+    "text": "through quantum circuits, enabling efficient modeling of complex interactions and correlations within molecular quantum systems. By training on random molecular configurations at each iteration, the MQT cap- tures these interactions, allowing it to generalize and ob- tain ground-state energies across diverse configurations. The MQT enables the simultaneous learning of ground- state energies for molecules across a range of bond lengths within a single model, providing greater resource ef- ficiency compared to independently executing QPE or VQE for each molecular configuration [Fig. 1(b)]. We also compare MQT to a classical Transformer model un- der identical conditions of model dimensionality, demon- strating the superior performance of MQT over its clas- sical counterpart. Furthermore, the MQT can be uti- lized to learn new molecules efficiently through pretrain- ing with diverse molecular data. This capability is par- ticularly significant, as it allows for the applications of MQT in complex molecules with minimal effort, leverag- ing well-known molecular data."
+  },
+  {
+    "paper_id": "2503.21686v2",
+    "title": "Molecular Quantum Transformer",
+    "page_num": 2,
+    "chunk_id": "2503.21686v2_page2_chunk5",
+    "text": "ing well-known molecular data."
+  },
+  {
+    "paper_id": "2503.21686v2",
+    "title": "Molecular Quantum Transformer",
+    "page_num": 3,
+    "chunk_id": "2503.21686v2_page3_chunk1",
+    "text": "3 Results The electronic structure problem We consider a complex quantum many-body system in which multiple electrons and nuclei interact with each other through Coulomb interactions. Since the nuclei are thousands of times heavier than the electrons, they hardly move under the attraction from the electrons and can be regarded as fixed at coordinates Rm (Born- Oppenheimer approximation). The wave function where N electrons move around M (fixed) nuclei (with atomic numbers Z1, . . . , Zm) can be written as ψ(r1, r2, . . . , rN), and the Hamiltonian H for the electrons can be expressed in Hartree atomic units as follows in the following sim- plified form (first quantization): H(R) = − N X i=1 1 2∇2 i + N X i<j 1 |ri −rj| − N X i=1 M X m=1 Zm |ri −Rm|. (1) Solving the Schr¨odinger equation Hψ = Eψ with the energy eigenvalue E of H to determine the electronic state of a quantum many-body system is known as the molecular electronic problem. This problem is crucial for materials design and drug discovery but remains a central challenge in quantum chemistry due to the exponential complexity of quantum many-body systems. Classical methods"
+  },
+  {
+    "paper_id": "2503.21686v2",
+    "title": "Molecular Quantum Transformer",
+    "page_num": 3,
+    "chunk_id": "2503.21686v2_page3_chunk2",
+    "text": "eigenvalue E of H to determine the electronic state of a quantum many-body system is known as the molecular electronic problem. This problem is crucial for materials design and drug discovery but remains a central challenge in quantum chemistry due to the exponential complexity of quantum many-body systems. Classical methods such as Configuration Interac- tion (CI) [26], Coupled Cluster theory (CC) [27], Møller–Plesset perturbation (MP) [28], Density Func- tional Theory (DFT) [29], Quantum Monte Carlo (QMC) [30], and density matrix renormalization group (DMRG) [31] have significantly advanced the approxima- tion of molecular electronic structure, each balancing ac- curacy and computational cost in different ways. In par- allel, quantum computing offers a promising alternative by natively handling quantum states, with algorithms like QPE [19, 20] and VQE [17, 18] emerging as leading approaches. While QPE provides exponential precision, it requires fault-tolerant hardware. In contrast, VQE is more practical for near-term devices but relies heavily on ansatz design and optimization strategies. We refer to the Methods section for more detailed explanations. To be implemented on quantum computers, the Hamil- tonian form in Eq. (1) is transformed into the following form (the second quantization): H(R) = X p,q hpq(R)c† pcq + 1 2"
+  },
+  {
+    "paper_id": "2503.21686v2",
+    "title": "Molecular Quantum Transformer",
+    "page_num": 3,
+    "chunk_id": "2503.21686v2_page3_chunk3",
+    "text": "but relies heavily on ansatz design and optimization strategies. We refer to the Methods section for more detailed explanations. To be implemented on quantum computers, the Hamil- tonian form in Eq. (1) is transformed into the following form (the second quantization): H(R) = X p,q hpq(R)c† pcq + 1 2 X p,q,r,s hpqrs(R)c† pc† qcrcs. (2) This operation is equivalent to the basis function ex- pansion of the wave function. Here, c† p and cp are the fermionic creation and annihilation operators act- ing on the p-th orbital. Therefore, c† pcq is the operator to transit the state on the q-th orbital to the p-th or- bital, and c† pc† qcrcs is the operator to transit a pair of state (r, s) →(p, q). The one and two-electron integrals hpq(R) and hpqrs(R) in the molecular orbital basis ϕp(r) (yielded from the Hartree-Fock optimization procedure) depend implicitly on R, which is the general nuclear co- ordinate associated with the fixed nuclear configuration in 3-dimensional space. These integral coefficients are calculated on the classical computer as follows: hpq(R) = Z dr ϕ∗ p(r) −∇2 2 − X m Zm |r −Rm| ! ϕq(r), (3) hpqrs(R) = Z dr1dr2 ϕ∗ p(r1)ϕ∗ q(r2)ϕr(r2)ϕs(r1) |r1"
+  },
+  {
+    "paper_id": "2503.21686v2",
+    "title": "Molecular Quantum Transformer",
+    "page_num": 3,
+    "chunk_id": "2503.21686v2_page3_chunk4",
+    "text": "the general nuclear co- ordinate associated with the fixed nuclear configuration in 3-dimensional space. These integral coefficients are calculated on the classical computer as follows: hpq(R) = Z dr ϕ∗ p(r) −∇2 2 − X m Zm |r −Rm| ! ϕq(r), (3) hpqrs(R) = Z dr1dr2 ϕ∗ p(r1)ϕ∗ q(r2)ϕr(r2)ϕs(r1) |r1 −r2| . (4) The next step in implementing the Hamiltonian form in Eq. (2) using quantum circuits is to map the fermionic creation and annihilation operators to Pauli operators us- ing methods such as the Jordan-Wigner or Bravyi-Kitaev transforms [32]. Classical Transformer The Transformer architecture [1] has become a crucial and widely adopted deep learning model in modern arti- ficial intelligence. Originally developed to improve nat- ural language processing capabilities, Transformers over- come the limitations of earlier deep learning models by effectively representing long-range dependencies and cap- turing complex relationships within data. The core in- novation is the self-attention mechanism, which simul- taneously captures correlations among all elements in a sequence, in contrast to the incremental processing of tra- ditional models like recurrent neural networks. This par- allel processing capability substantially decreases train- ing time while also improving learning performance. The standard architecture of the Transformer is illus- trated in"
+  },
+  {
+    "paper_id": "2503.21686v2",
+    "title": "Molecular Quantum Transformer",
+    "page_num": 3,
+    "chunk_id": "2503.21686v2_page3_chunk5",
+    "text": "which simul- taneously captures correlations among all elements in a sequence, in contrast to the incremental processing of tra- ditional models like recurrent neural networks. This par- allel processing capability substantially decreases train- ing time while also improving learning performance. The standard architecture of the Transformer is illus- trated in Fig. 6 (see Methods) with both encoder and decoder components. The encoder processes the source sequence through multiple layers, each combining multi- head self-attention with position-wise feed-forward net- works. These layers are further enhanced with positional encodings, layer normalization, and residual connections to effectively capture sequential dependencies. The de- coder employs masked multi-head self-attention to pro- cess the target sequence while simultaneously leveraging multi-head cross-attention to incorporate context from the encoder. The output of the decoder is refined by an additional feed-forward network and a linear layer, which generates the predictions. In modern large language models (LLMs), the decoder- only architecture is primarily adopted. This design pre- dicts the next token based solely on previous tokens, making it ideal for generating coherent, context-aware text. The streamlined decoder-only structure simplifies training and scaling, enabling efficient processing of vast datasets and massive model sizes across various natural language processing tasks. Since our"
+  },
+  {
+    "paper_id": "2503.21686v2",
+    "title": "Molecular Quantum Transformer",
+    "page_num": 3,
+    "chunk_id": "2503.21686v2_page3_chunk6",
+    "text": "architecture is primarily adopted. This design pre- dicts the next token based solely on previous tokens, making it ideal for generating coherent, context-aware text. The streamlined decoder-only structure simplifies training and scaling, enabling efficient processing of vast datasets and massive model sizes across various natural language processing tasks. Since our MQT is not devel- oped for autoregressive language modeling, we only rely on the encoder-only Transformer. This encoder trans- forms the sequence of positions of molecules in different"
+  },
+  {
+    "paper_id": "2503.21686v2",
+    "title": "Molecular Quantum Transformer",
+    "page_num": 4,
+    "chunk_id": "2503.21686v2_page4_chunk1",
+    "text": "4 + FIG. 2. Structure of Molecular Quantum Transformer (MQT). Starting with a molecule defined by atomic symbols and nuclear coordinates, the molecular Hamiltonian H is constructed in a qubit-based representation using nq qubits. The MQT tokenizes the electronic state into an n × m × demb feature matrix, where demb is the embedding dimension, n and m represent the number of electrons and nuclei, respectively. Tokens eleci-nuclj (i = 1, . . . , n; j = 1, . . . , m) are processed by blocks Bi. Each block Bi comprises L layers, including an amplification module Np that scales features by proton number Np and a Quantum Transformer module with shared trainable parameters. Outputs are aggregated, mapped via an FC module to match the nq- qubit state vector, and combined with the Hartree-Fock (HF) state to produce the final state through amplitude embedding. The expectation of the Hamiltonian measured on this final state is then minimized by optimizing the model’s parameters. configurations into a set of contextualized representations before forwarding to the energy minimization problem. We refer to the Methods section for the detailed steps of the self-attention mechanism and the encoder layer. Molecular Quantum Transformer We"
+  },
+  {
+    "paper_id": "2503.21686v2",
+    "title": "Molecular Quantum Transformer",
+    "page_num": 4,
+    "chunk_id": "2503.21686v2_page4_chunk2",
+    "text": "Hamiltonian measured on this final state is then minimized by optimizing the model’s parameters. configurations into a set of contextualized representations before forwarding to the energy minimization problem. We refer to the Methods section for the detailed steps of the self-attention mechanism and the encoder layer. Molecular Quantum Transformer We propose the Molecular Quantum Transformer (MQT) model, which replaces the VQE ansatz with a Quantum Transformer structure to determine the electron wave function that minimizes the energy associated with the Hamiltonian. The fundamental concept of the atten- tion mechanism, described in the previous section, in- volves capturing correlations among all tokens simulta- neously. In the context of the MQT, these tokens repre- sent features derived from the positions and distances be- tween atomic nuclei. As configurations change, the model adapts its features such as electron configurations based on these relationships. This adaptation is generalized through training the model across a variety of conditions. In contrast, running QPE or VQE demands indepen- dent resources for each molecular configuration, neces- sitating multiple models. The MQT, however, can learn the ground-state energies for various molecules and vari- ous configurations simultaneously within a single model. The structure of our MQT model is illustrated in"
+  },
+  {
+    "paper_id": "2503.21686v2",
+    "title": "Molecular Quantum Transformer",
+    "page_num": 4,
+    "chunk_id": "2503.21686v2_page4_chunk3",
+    "text": "variety of conditions. In contrast, running QPE or VQE demands indepen- dent resources for each molecular configuration, neces- sitating multiple models. The MQT, however, can learn the ground-state energies for various molecules and vari- ous configurations simultaneously within a single model. The structure of our MQT model is illustrated in Fig. 2. Given a molecular structure defined by atomic symbols and the nuclear coordinates of its constituent atoms, we construct the molecular Hamiltonian H in a qubit-based representation using nq qubits as a prepro- cessing step. Here, we utilize the PennyLane molecules dataset [33] and its built-in functions [34] to generate the corresponding molecular Hamiltonians. The MQT begins with a tokenization module that creates input to- kens eleci-nuclj (i = 1, . . . , n; j = 1, . . . , m), representing the electronic state as an n × m two-dimensional array of demb-dimensional features. Here, demb is the embed- ding dimension, n and m denote the number of electrons and nuclei, respectively, resulting in an n × m × demb feature matrix. For each electron index i, the m tokens eleci-nuclj (j = 1, . . . , m) are processed by a block Bi, which"
+  },
+  {
+    "paper_id": "2503.21686v2",
+    "title": "Molecular Quantum Transformer",
+    "page_num": 4,
+    "chunk_id": "2503.21686v2_page4_chunk4",
+    "text": "is the embed- ding dimension, n and m denote the number of electrons and nuclei, respectively, resulting in an n × m × demb feature matrix. For each electron index i, the m tokens eleci-nuclj (j = 1, . . . , m) are processed by a block Bi, which consists of L layers. Each layer includes an am- plification module Np and a Quantum Transformer mod- ule. The amplification module Np scales the feature val- ues by the proton number Np to reflect the differences among nuclear species before passing them to the Quan- tum Transformer module. The Quantum Transformer module contains trainable parameters, which are shared across all blocks B1, . . . , Bn. The outputs of all Quan- tum Transformer modules are combined into a single fea- ture representation via an aggregation module. A fully connected (FC) module then maps this aggregated fea- ture into a vector with the same dimensionality as the nq-qubit state vector. This transformed vector is subse- quently added to the Hartree-Fock (HF) state vector, and the resulting representation is used to generate the final electronic state through an amplitude embedding mod- ule. The expectation value of the Hamiltonian H is com-"
+  },
+  {
+    "paper_id": "2503.21686v2",
+    "title": "Molecular Quantum Transformer",
+    "page_num": 4,
+    "chunk_id": "2503.21686v2_page4_chunk5",
+    "text": "vector with the same dimensionality as the nq-qubit state vector. This transformed vector is subse- quently added to the Hartree-Fock (HF) state vector, and the resulting representation is used to generate the final electronic state through an amplitude embedding mod- ule. The expectation value of the Hamiltonian H is com- puted from this amplitude-embedded state via a mea- surement process. This expectation value is minimized by optimizing the trainable parameters in the Quantum Transformer, aggregation, and FC modules. We refer to the Methods section for the detailed structures of these modules."
+  },
+  {
+    "paper_id": "2503.21686v2",
+    "title": "Molecular Quantum Transformer",
+    "page_num": 5,
+    "chunk_id": "2503.21686v2_page5_chunk1",
+    "text": "5 0 1 2 3 4 5 0 2 4 6 Energy [Hartree] (a) H2 (6-31G, 8 qubits) 0 1 2 3 4 5 5 0 5 10 15 (b) LiH (STO-3G, 12 qubits) 0 1 2 3 4 5 Bond length [Bohr] 10 0 10 20 30 40 50 Energy [Hartree] (c) BeH2 (STO-3G, 14 qubits) 0 1 2 3 4 5 Bond length [Bohr] 2.5 0.0 2.5 5.0 7.5 10.0 12.5 15.0 (d) H4 (STO-3G, 8 qubits) 0 1 2 3 4 5 0.000 0.005 0.010 0.015 ∆E 0 1 2 3 4 5 0.00 0.01 0.02 0.03 0.04 0.05 ∆E 0 1 2 3 4 5 0.00 0.05 0.10 0.15 ∆E 0 1 2 3 4 5 0.00 0.05 0.10 0.15 0.20 ∆E Exact MQT Classical FIG. 3. Potential energy curves and estimation errors (∆E) in the inset plots for varying interatomic bond lengths in (a) H2 (b) LiH, (c) BeH2, and (d) H4 molecules using the quantum (red lines) and classical (dotted blue lines) Transformers. In the main plots, the averages of the exact results (gray line with circle markers), MQT, and classical methods over nine trials are shown, but they overlap within the displayed range."
+  },
+  {
+    "paper_id": "2503.21686v2",
+    "title": "Molecular Quantum Transformer",
+    "page_num": 5,
+    "chunk_id": "2503.21686v2_page5_chunk2",
+    "text": "(b) LiH, (c) BeH2, and (d) H4 molecules using the quantum (red lines) and classical (dotted blue lines) Transformers. In the main plots, the averages of the exact results (gray line with circle markers), MQT, and classical methods over nine trials are shown, but they overlap within the displayed range. Numerical experiments In the following numerical experiments, we apply MQT to estimate the potential energy curves (PEC) of the molecular Hamiltonian for H2, LiH, BeH2, and H4. For the second quantization of the Hamiltonians, we employ the Bravyi-Kitaev mapping for H2 (8 qubits), LiH (12 qubits), and BeH2 (14 qubits), and the Jordan-Wigner transformation for H4 (8 qubits). The 6-31G basis set is used for H2, while STO-3G basis set is applied to the other molecules. We first evaluate MQT in a plain training scenario, where it is trained and tested on data from the same molecule. Subsequently, we investigate the pretraining effect by training MQT on H2, BeH2, and H4, followed by fine-tuning on a different molecule (LiH). We set the embedding dimension demb = 8 as the default setting for these experiments. Estimating the potential energy curve with plain training In plain training, the token matrix is generated"
+  },
+  {
+    "paper_id": "2503.21686v2",
+    "title": "Molecular Quantum Transformer",
+    "page_num": 5,
+    "chunk_id": "2503.21686v2_page5_chunk3",
+    "text": "the pretraining effect by training MQT on H2, BeH2, and H4, followed by fine-tuning on a different molecule (LiH). We set the embedding dimension demb = 8 as the default setting for these experiments. Estimating the potential energy curve with plain training In plain training, the token matrix is generated in each iteration from a configuration with a random bond length sampled from (0.0, 5.0) [Bohr]. After training, the poten- tial energy curves are estimated for bond lengths rang- ing from 0.1 to 4.9 [Bohr] in 0.1 [Bohr] increments us- ing the trained model. We use L = 6 layers of Quan- tum Transformer module in each processing block Bi as shown in Fig. 2. We compare the performance of MQT against a classical Transformer implementation replac- ing the Quantum Transformer module in Fig. 2. To align with the settings of MQT, we consider the classical Transformer with demb embedding dimensions, 4 × demb hidden dimensions (see Methods for the definition of the hidden dimension), and a single-head attention. We use AdamW [35] optimizer with a weight decay rate of 0.001. The learning rate is set to 0.008 for the classical Trans- former with H2; and 0.004 for other cases."
+  },
+  {
+    "paper_id": "2503.21686v2",
+    "title": "Molecular Quantum Transformer",
+    "page_num": 5,
+    "chunk_id": "2503.21686v2_page5_chunk4",
+    "text": "dimensions, 4 × demb hidden dimensions (see Methods for the definition of the hidden dimension), and a single-head attention. We use AdamW [35] optimizer with a weight decay rate of 0.001. The learning rate is set to 0.008 for the classical Trans- former with H2; and 0.004 for other cases. In the opti-"
+  },
+  {
+    "paper_id": "2503.21686v2",
+    "title": "Molecular Quantum Transformer",
+    "page_num": 6,
+    "chunk_id": "2503.21686v2_page6_chunk1",
+    "text": "6 FIG. 4. Bar plot comparing the average ground-state energy estimation error of LiH over potential energy curves between the classical Transformer (∆c) and MQT (∆q) as a function of the token embedding dimension demb (4, 6, 8, 10, and 786). Error bars represent standard deviations. Teal-blue bars in- dicate classical results, while orange bars indicate quantum results, highlighting MQT’s consistently lower errors across demb. The quantum result at demb = 786 is not displayed due to computational resource limitations. mization, we employ the method in Ref. [36] to run four processes in parallel on a single GPU, with each process performing 2500 iterations, for a total of 104 iterations. We use the TorchQuantum [37] library for the simulation of quantum circuits in MQT. Metric H2 LiH BeH2 H4 ∆c 9.3e-3 6.0e-3 3.3e-2 1.9e-2 ∆q 8.9e-3 3.5e-3 2.7e-2 0.5e-2 TABLE I. Average ground-state energy estimation error by classical Transformer (∆c) and MQT (∆q) Figure 3 compares the energy estimations of the MQT and classical Transformer against the theoretically calcu- lated ground-state energies of the Hamiltonians for each molecule. The inset figures show the estimation errors relative to the true ground-state energy, with each line representing one of nine trials. MQT"
+  },
+  {
+    "paper_id": "2503.21686v2",
+    "title": "Molecular Quantum Transformer",
+    "page_num": 6,
+    "chunk_id": "2503.21686v2_page6_chunk2",
+    "text": "and MQT (∆q) Figure 3 compares the energy estimations of the MQT and classical Transformer against the theoretically calcu- lated ground-state energies of the Hamiltonians for each molecule. The inset figures show the estimation errors relative to the true ground-state energy, with each line representing one of nine trials. MQT exhibits lower esti- mation errors than the classical Transformer for (b) LiH, (c) BeH2, and (d) H4. For (a) H2, the estimation errors of MQT are nearly identical to those of the classical Trans- former (note the differing y-axis scales across plots). The average estimation errors across all tested bond lengths for the classical Transformer ( ¯∆c) and MQT ( ¯∆q) are summarized in Tab. I. These results suggest that MQT performs comparably to the classical Transformer for H2 but outperforms it for other molecules, reducing the av- erage estimation error by 42% in LiH, 18% in BeH2, and 74% in H4 compared to the classical Transformer. In Fig. 4, we further compare ∆c and ∆q of LiH for dif- ferent embedding dimension demb ∈{4, 6, 8, 10}. MQT shows lower estimation error consistency with all demb 0 1 2 3 4 5 Bond length [Bohr] 10 4 10 3"
+  },
+  {
+    "paper_id": "2503.21686v2",
+    "title": "Molecular Quantum Transformer",
+    "page_num": 6,
+    "chunk_id": "2503.21686v2_page6_chunk3",
+    "text": "in H4 compared to the classical Transformer. In Fig. 4, we further compare ∆c and ∆q of LiH for dif- ferent embedding dimension demb ∈{4, 6, 8, 10}. MQT shows lower estimation error consistency with all demb 0 1 2 3 4 5 Bond length [Bohr] 10 4 10 3 10 2 10 1 ∆E w/ Pretrain (LiH) w/o Pretrain Zero-shot FIG. 5. Energy estimation errors (∆E) in nine trials show MQT trained on LiH with a few data points (few-shot learn- ing), comparing pretraining on H2, BeH2, and H4 (orange lines) versus no pretraining (dotted teal-blue lines) and zero- shot learning (green line with circle markers) across varying bond lengths. Here, zero-shot MQT is pretrained on H2, BeH2, and H4 but not fine-tuned on LiH. The pretrained MQT provides more accurate estimations in few-shot learning than MQT models relying solely on zero-shot learning or fine- tuning. It even outperforms the neural network-based meta- VQE [24] when trained from scratch, showing reductions in average error by approximately 19% and 11%, respectively. and achieves the saturated value when demb ≥6. Inter- estingly, even with demb = 786, the classical Transformer exhibits significantly higher estimation errors compared to MQT at much lower"
+  },
+  {
+    "paper_id": "2503.21686v2",
+    "title": "Molecular Quantum Transformer",
+    "page_num": 6,
+    "chunk_id": "2503.21686v2_page6_chunk4",
+    "text": "the neural network-based meta- VQE [24] when trained from scratch, showing reductions in average error by approximately 19% and 11%, respectively. and achieves the saturated value when demb ≥6. Inter- estingly, even with demb = 786, the classical Transformer exhibits significantly higher estimation errors compared to MQT at much lower demb. This discrepancy may be attributed to the optimization difficulty associated with the large number of parameters in the classical model, or it may indicate that MQT is inherently better suited to modeling molecular data. These findings underscore the potential advantages of integrating quantum structures into the Transformer framework. Estimating the potential energy curve with pretraining The MQT model, pretrained on multiple molecules (H2, BeH2, H4) is fine-tuned with a small number of data points for LiH. Here, a few-shot learning approach is per- formed to estimate the potential energy curve of LiH. During fine-tuning, the training mirrors the setting in the pretraining stage, employing the AdamW opti- mizer with a weight decay of 10−3 and a learning rate of 4 × 10−3. The training data for LiH consisted of five randomly selected bond lengths: {0.5, 1.5, 2.5, 3.5, 4.5} [Bohr]. The method in Ref. [36] is employed to run"
+  },
+  {
+    "paper_id": "2503.21686v2",
+    "title": "Molecular Quantum Transformer",
+    "page_num": 6,
+    "chunk_id": "2503.21686v2_page6_chunk5",
+    "text": "in the pretraining stage, employing the AdamW opti- mizer with a weight decay of 10−3 and a learning rate of 4 × 10−3. The training data for LiH consisted of five randomly selected bond lengths: {0.5, 1.5, 2.5, 3.5, 4.5} [Bohr]. The method in Ref. [36] is employed to run four processes in parallel on a single GPU, with each process performing 500 iterations, for a total of 2000 iterations for fine-tuning. After the fine-tuning, potential energy curves are estimated for bond lengths from 0.1 to 4.9"
+  },
+  {
+    "paper_id": "2503.21686v2",
+    "title": "Molecular Quantum Transformer",
+    "page_num": 7,
+    "chunk_id": "2503.21686v2_page7_chunk1",
+    "text": "7 Bohr in 0.1 Bohr increments. Figure 5 depicts the aver- age estimated error curves for pretraining and fine-tuning (orange lines, labeled “w/ Pretrain (LiH)”) and fine- tuning only (green lines, labeled “w/o Pretrain”) across nine trials. The pretrained model yields more accurate estimations in few-shot learning compared to only using fine-tuning, as indicated by reducing nearly 19% of error to the theoretical values from 7.6×10−3 (“w/o Pretrain”) to 6.2 × 10−3 (“w/ Pretrain (LiH)”). Notably, with the same number of training data points, our model achieves an 11% improvement in few-shot learning performance compared to the neural network-based meta-VQE [24], which yields an average estimation error of 7.0 × 10−3. The neural network-based meta-VQE, identified as the most effective method in Ref. [24], was reimplemented in our experiments on LiH. To further examine the effect of few-shot learning, we evaluate the zero-shot learning, where the pre-trained MQT is tested on LiH without fine-tuning. As shown in Fig. 5, the estimation errors of zero-shot MQT sig- nificantly exceed those of few-shot MQT, indicating that zero-shot learning is inadequate. At least a few data points (few-shot learning) are necessary during fine- tuning to enhance estimation accuracy. Discussion We proposed the MQT"
+  },
+  {
+    "paper_id": "2503.21686v2",
+    "title": "Molecular Quantum Transformer",
+    "page_num": 7,
+    "chunk_id": "2503.21686v2_page7_chunk2",
+    "text": "on LiH without fine-tuning. As shown in Fig. 5, the estimation errors of zero-shot MQT sig- nificantly exceed those of few-shot MQT, indicating that zero-shot learning is inadequate. At least a few data points (few-shot learning) are necessary during fine- tuning to enhance estimation accuracy. Discussion We proposed the MQT model, which leverages the quan- tum attention mechanism to revolutionize the calculation of ground-state energies. The key contribution is that MQT can be adapted to train on multiple molecules and multiple configurations without altering the model struc- ture. This approach can open new avenues in quantum chemistry and materials science, where an accurate un- derstanding of ground-state energies is crucial, but run- ning routines such as VQE and QPE independently for each molecule and configuration requires high cost. In our numerical experiment, we evaluated the perfor- mance of MQT in estimating potential energy curves for H2, LiH, BeH2, and H4, benchmarking it against a clas- sical Transformer. MQT consistently outperformed the classical model in estimation accuracy. We also investi- gated pretraining MQT on multiple molecules (H2, BeH2, and H4) and evaluated the few-shot learning capability on LiH. Results showed that pretraining modestly im- proved accuracy for the LiH potential energy"
+  },
+  {
+    "paper_id": "2503.21686v2",
+    "title": "Molecular Quantum Transformer",
+    "page_num": 7,
+    "chunk_id": "2503.21686v2_page7_chunk3",
+    "text": "benchmarking it against a clas- sical Transformer. MQT consistently outperformed the classical model in estimation accuracy. We also investi- gated pretraining MQT on multiple molecules (H2, BeH2, and H4) and evaluated the few-shot learning capability on LiH. Results showed that pretraining modestly im- proved accuracy for the LiH potential energy curve com- pared to an untrained model. In scenarios with small molecules and readily available training data, pretrain- ing MQT can significantly reduce the number of quan- tum circuit runs required for larger and more complex molecular systems. To maximize this pretraining advan- tage, designing suitable pretraining datasets for specific molecules is crucial. Ideally, with sufficiently high-quality pretraining data, MQT could estimate the potential en- ergy surface of a given molecule without a few-shot learn- ing on that molecule. Scaling MQT to larger molecules requires addressing several limitations. A primary bottleneck is the out- put quantum state representation via amplitude embed- ding, where direct state preparation is challenging due to the complexity scaling exponentially with the num- ber of qubits nq. The qRAM [11] scheme could reduce this complexity to near-linear in nq, but fault-tolerant qRAM remains an engineering challenge. Even with ef- ficient qRAM, preparing the state vector on"
+  },
+  {
+    "paper_id": "2503.21686v2",
+    "title": "Molecular Quantum Transformer",
+    "page_num": 7,
+    "chunk_id": "2503.21686v2_page7_chunk4",
+    "text": "embed- ding, where direct state preparation is challenging due to the complexity scaling exponentially with the num- ber of qubits nq. The qRAM [11] scheme could reduce this complexity to near-linear in nq, but fault-tolerant qRAM remains an engineering challenge. Even with ef- ficient qRAM, preparing the state vector on a classical computer prior to amplitude embedding demands mem- ory that grows exponentially with nq, hindering scala- bility. Inspired by the divide-and-conquer approach in VQE [38], we can concatenate MQTs to enable the appli- cation to large systems with strong intrasubsystem and weak inter-subsystem interactions on small-scale quan- tum computers. Thus, our method still offers a promising framework for tackling practically significant, large-scale problems in quantum chemistry. In this paper, MQT is developed to exploit the classical representation of a molecule and its associated Hamilto- nian, enabling efficient computation of electronic prop- erties within a quantum framework. This approach ne- cessitates an embedding procedure to transform the clas- sical representation into quantum features suitable for processing on quantum hardware. As a future direc- tion, MQT could be extended to integrate directly with quantum-native representations of molecular states, by- passing classical intermediaries. For instance, incorpo- rating the noisy ground state estimates"
+  },
+  {
+    "paper_id": "2503.21686v2",
+    "title": "Molecular Quantum Transformer",
+    "page_num": 7,
+    "chunk_id": "2503.21686v2_page7_chunk5",
+    "text": "cessitates an embedding procedure to transform the clas- sical representation into quantum features suitable for processing on quantum hardware. As a future direc- tion, MQT could be extended to integrate directly with quantum-native representations of molecular states, by- passing classical intermediaries. For instance, incorpo- rating the noisy ground state estimates obtained from VQE or the intermediate eigenstate data from the QPE process could enrich MQT with detailed quantum in- formation about the ground state and low-lying excited states. Such an integration promises to enhance the accu- racy of MQT by leveraging the intrinsic quantum corre- lations captured in these states, which are often inacces- sible to classical methods like DFT or CI. Furthermore, this approach could be combined with advanced quantum techniques, such as quantum denoising mechanisms [39] to mitigate errors from NISQ devices, or quantum cur- riculum learning algorithms [40] to optimize the training of quantum circuits. These enhancements could posi- tion MQT as a versatile tool for tackling the molecular electronic problem, potentially outperforming traditional hybrid quantum-classical workflows in both precision and scalability. In the near term, while improvements in the architec- tural completeness of Quantum Transformers and their compatibility with classical components are still neces- sary, establishing"
+  },
+  {
+    "paper_id": "2503.21686v2",
+    "title": "Molecular Quantum Transformer",
+    "page_num": 7,
+    "chunk_id": "2503.21686v2_page7_chunk6",
+    "text": "could posi- tion MQT as a versatile tool for tackling the molecular electronic problem, potentially outperforming traditional hybrid quantum-classical workflows in both precision and scalability. In the near term, while improvements in the architec- tural completeness of Quantum Transformers and their compatibility with classical components are still neces- sary, establishing a unified benchmarking framework is critical for accurately evaluating their real-world per- formance across different approaches. Generative tasks involving molecular data represent particularly promis- ing applications in this context. Looking ahead to the early era of fault-tolerant quantum computing, Quan- tum Transformer models based on quantum linear alge- bra offer strong theoretical potential [41–43]. As quan- tum hardware continues to evolve, Quantum Transform- ers are expected to play an increasingly impactful role in solving complex tasks, unlocking new possibilities in quantum-enhanced machine learning. In this per-"
+  },
+  {
+    "paper_id": "2503.21686v2",
+    "title": "Molecular Quantum Transformer",
+    "page_num": 8,
+    "chunk_id": "2503.21686v2_page8_chunk1",
+    "text": "8 spective, MQT serves as a compelling example of how quantum-enhanced architectures can go beyond tradi- tional text and image applications, addressing funda- mental challenges in quantum chemistry and materials science, domains where classical neural networks are in- herently limited. Methods The electronic structure problem Advanced methods in classical computation have ad- vanced our ability to approximate solutions to the molec- ular electronic problem. These include the configuration interaction (CI) method, which constructs wavefunctions as linear combinations of Slater determinants to capture electron correlation [26]; the coupled cluster (CC) ex- pansion [27], which employs an exponential ansatz to ac- count for electron correlation more efficiently than CI; and Møller–Plesset perturbation theory (MP) [28], which treats electron correlation as a perturbative correction to the Hartree-Fock solution. Density functional the- ory (DFT) [29], another cornerstone method, focuses on electron density rather than the wave function, of- fering a balance between accuracy and computational cost. The quantum Monte Carlo (QMC) [30] method provides a stochastic approach to sampling the wavefunc- tion, achieving high accuracy for small systems despite its computational intensity. The density matrix renor- malization group (DMRG) method [31], originally devel- oped for condensed matter physics, has been adapted to quantum chemistry"
+  },
+  {
+    "paper_id": "2503.21686v2",
+    "title": "Molecular Quantum Transformer",
+    "page_num": 8,
+    "chunk_id": "2503.21686v2_page8_chunk2",
+    "text": "computational cost. The quantum Monte Carlo (QMC) [30] method provides a stochastic approach to sampling the wavefunc- tion, achieving high accuracy for small systems despite its computational intensity. The density matrix renor- malization group (DMRG) method [31], originally devel- oped for condensed matter physics, has been adapted to quantum chemistry and is particularly effective for sys- tems with strong electron correlation [44]. In parallel, quantum computers have emerged as a promising alternative platform for addressing the molec- ular electronic problem, leveraging their ability to natu- rally represent and manipulate quantum states. Quan- tum computers offer the potential to overcome the limi- tations of classical algorithms, particularly for preparing ground states of quantum many-body systems that are intractable with traditional methods. Significant efforts have focused on developing quantum algorithms tailored to this task. Quantum Phase Estimation (QPE) [19, 20] extracts eigenvalues of a Hamiltonian with exponential precision, provided a good initial state is available. Vari- ational Quantum Eigensolver (VQE) [17, 18] adopts a hybrid quantum-classical approach to variationally min- imize the energy expectation value. Other approaches include adiabatic quantum computing, which evolves a system from a simple initial Hamiltonian to the target Hamiltonian [45]; imaginary-time evolution, which sim- ulates non-unitary dynamics"
+  },
+  {
+    "paper_id": "2503.21686v2",
+    "title": "Molecular Quantum Transformer",
+    "page_num": 8,
+    "chunk_id": "2503.21686v2_page8_chunk3",
+    "text": "state is available. Vari- ational Quantum Eigensolver (VQE) [17, 18] adopts a hybrid quantum-classical approach to variationally min- imize the energy expectation value. Other approaches include adiabatic quantum computing, which evolves a system from a simple initial Hamiltonian to the target Hamiltonian [45]; imaginary-time evolution, which sim- ulates non-unitary dynamics to converge to the ground state [46]; and subspace [47] and Lanczos [48] methods, which reduce the problem’s dimensionality by focusing on a subset of the Hilbert space. Among these quantum algorithms, QPE and VQE stand out as flagship algorithms due to their theoretical rigor and experimental feasibility, respectively. QPE is theoretically exact but requires deep circuits and large qubit counts, making it best suited for future error- corrected quantum computers. VQE, on the other hand, combines shallow quantum circuits with classical opti- mization to minimize the energy expectation value of a parameterized quantum state (ansatz). VQE is more fea- sible on NISQ devices, though its accuracy depends on the choice of ansatz and optimization strategy [22]. Classical Transformer The standard architecture of the Transformer is illus- trated in Fig. 6 with both the encoder and decoder components. The encoder processes the source se- quence through multiple layers, each combining"
+  },
+  {
+    "paper_id": "2503.21686v2",
+    "title": "Molecular Quantum Transformer",
+    "page_num": 8,
+    "chunk_id": "2503.21686v2_page8_chunk4",
+    "text": "sible on NISQ devices, though its accuracy depends on the choice of ansatz and optimization strategy [22]. Classical Transformer The standard architecture of the Transformer is illus- trated in Fig. 6 with both the encoder and decoder components. The encoder processes the source se- quence through multiple layers, each combining multi- head self-attention with position-wise feed-forward net- works. These layers are further enhanced with positional encodings, layer normalization, and residual connections (the arrows bypassing the main components, such as the attention and feed-forward layers) and to effectively capture sequential dependencies. The decoder employs masked multi-head self-attention to process the target se- quence while simultaneously leveraging multi-head cross- attention to incorporate context from the encoder. The output of the decoder is refined by an additional feed- forward network and a linear layer, which generates the predictions. In our MQT, we only rely on the encoder- only Transformer to transform the position sequence of molecules in different configurations into a set of rich and contextualized representations. Therefore, in the remain- der of this section, we focus on detailing the implemen- tation of encoder-only Transformer architectures. The encoder-only Transformer processes input se- quences by first embedding the tokens with positional encodings, then passing"
+  },
+  {
+    "paper_id": "2503.21686v2",
+    "title": "Molecular Quantum Transformer",
+    "page_num": 8,
+    "chunk_id": "2503.21686v2_page8_chunk5",
+    "text": "sequence of molecules in different configurations into a set of rich and contextualized representations. Therefore, in the remain- der of this section, we focus on detailing the implemen- tation of encoder-only Transformer architectures. The encoder-only Transformer processes input se- quences by first embedding the tokens with positional encodings, then passing them through multiple identical layers. Each layer applies multi-head self-attention to capture inter-token relationships, followed by a position- wise feed-forward network to refine the representations. Residual connections and layer normalization are em- ployed throughout to ensure stable training and effective gradient flow. This architecture enables efficient, paral- lelizable processing while capturing complex dependen- cies within the data. Tokenization and Input Representation Transformers employ tokenization to convert sequen- tial data into discrete units. Tokenization breaks a sequence into smaller units called tokens. Given an input sequence of tokens x1, x2, . . . , xn, each to- ken is first mapped into a continuous embedding vec- tor. Let the embedding function be e(·) so that E = [e(x1), e(x2), . . . , e(xn)]⊤, where demb is the embedding dimension. Transformers do not inherently encode token order. Instead, a positional encoding P ∈Rn×demb is added to the embeddings as Z(0) ="
+  },
+  {
+    "paper_id": "2503.21686v2",
+    "title": "Molecular Quantum Transformer",
+    "page_num": 8,
+    "chunk_id": "2503.21686v2_page8_chunk6",
+    "text": "into a continuous embedding vec- tor. Let the embedding function be e(·) so that E = [e(x1), e(x2), . . . , e(xn)]⊤, where demb is the embedding dimension. Transformers do not inherently encode token order. Instead, a positional encoding P ∈Rn×demb is added to the embeddings as Z(0) = E + P."
+  },
+  {
+    "paper_id": "2503.21686v2",
+    "title": "Molecular Quantum Transformer",
+    "page_num": 9,
+    "chunk_id": "2503.21686v2_page9_chunk1",
+    "text": "9 Norm Input Embedding V K Q Norm Multi-head Self-attention Feed-forward Network Norm Positional Encoding Norm Output Embedding V K Q Norm Masked Multi-head Self-attention Feed-forward Network Linear Positional Encoding Norm Multi-head Cross-attention V K Q Norm Predictions Source Sequence Shifted Target Sequence L layers FIG. 6. Standard architecture of classical Transformer with an encoder (left) and a decoder (right). The encoder pro- cesses the source sequence through layers that combine multi- head self-attention and position-wise feed-forward networks, enhanced with positional encodings, layer normalization, and residual (bypass) connections. The decoder applies masked multi-head self-attention to the target sequence and cross- attention to integrate encoder context, with its output refined by a feed-forward network and a linear layer to generate pre- dictions. The figure has been recreated to clearly detail the sequential operations originally shown in Ref. [1] and modi- fied in Ref. [49]. Self-attention and Encoder Layer The encoder is composed of L identical layers. Each layer has two main sub-layers: multi-head self-attention and a position-wise feed-forward network, with residual connections and layer normalization applied around each sub-layer. Self-attention is the core component of the Transformer architecture with the capability to model token interdependencies. It allows each token in the"
+  },
+  {
+    "paper_id": "2503.21686v2",
+    "title": "Molecular Quantum Transformer",
+    "page_num": 9,
+    "chunk_id": "2503.21686v2_page9_chunk2",
+    "text": "composed of L identical layers. Each layer has two main sub-layers: multi-head self-attention and a position-wise feed-forward network, with residual connections and layer normalization applied around each sub-layer. Self-attention is the core component of the Transformer architecture with the capability to model token interdependencies. It allows each token in the se- quence to dynamically incorporate information from all other tokens by computing inner-product-based attention scores. This operation, known as scaled dot-product at- tention, produces attention matrices that quantify the relevance of each token relative to the others, effec- tively capturing complex contextual relationships across the entire sequence. The Transformer also incorporates the multi-head attention mechanism, which extends self- attention by computing multiple attention matrices in parallel. Each attention head is trained to capture dif- ferent relationships between tokens in the sequence, al- lowing the model to process information from multiple embedding subspaces simultaneously. Typically, Trans- former uses high-dimensional embeddings, which are di- vided across several attention heads. For the l-th layer (l = 1, . . . , L) of the encoder, the input is Z(l−1) and the output is Z(l) = enl(Z(l−1)). The detailed computational steps of the l layer are: 1. Layer normalization and projections: The in- put"
+  },
+  {
+    "paper_id": "2503.21686v2",
+    "title": "Molecular Quantum Transformer",
+    "page_num": 9,
+    "chunk_id": "2503.21686v2_page9_chunk3",
+    "text": "are di- vided across several attention heads. For the l-th layer (l = 1, . . . , L) of the encoder, the input is Z(l−1) and the output is Z(l) = enl(Z(l−1)). The detailed computational steps of the l layer are: 1. Layer normalization and projections: The in- put Z(l−1) is normalized across the features for each individual data point to ˆZ(l−1) and then linearly projected to form queries Q, keys K, and values V . For each attention head i (i = 1, . . . , h), we have: Qi = ˆZ(l−1)W Q i , Ki = ˆZ(l−1)W K i , Vi = ˆZ(l−1)W V i , (5) where trainable parameters W Q i , W K i , W V i ∈ Rdemb×dk and typically dk = demb h . 2. Scaled dot-product attention: For each head, the attention output is computed as: headi = Attention(Qi, Ki, Vi) = softmax \u0012QiKT i √dk \u0013 Vi. (6) 3. Concatenation and projection: The outputs of all heads are concatenated and projected: MultiHead(Z(l−1)) = Concat (head1, . . . , headh) W O, (7) where trainable parameters W O ∈Rhdk×demb. 4. Residual connection and normalization: The output of the"
+  },
+  {
+    "paper_id": "2503.21686v2",
+    "title": "Molecular Quantum Transformer",
+    "page_num": 9,
+    "chunk_id": "2503.21686v2_page9_chunk4",
+    "text": "Ki, Vi) = softmax \u0012QiKT i √dk \u0013 Vi. (6) 3. Concatenation and projection: The outputs of all heads are concatenated and projected: MultiHead(Z(l−1)) = Concat (head1, . . . , headh) W O, (7) where trainable parameters W O ∈Rhdk×demb. 4. Residual connection and normalization: The output of the multi-head attention is added to the original input Z(l−1) (residual connection), and then normalized: ˆZ(l) = LayerNorm \u0010 Z(l−1) + MultiHead(Z(l−1)) \u0011 . (8) 5. Position-wise feed-forward network (FFN): The normalized output ˆZ(l) is processed by a two- layer FFN applied independently to each position: FFN( ˆZ(l)) = σ \u0010 ˆZ(l)W1 + b1 \u0011 W2 + b2, (9)"
+  },
+  {
+    "paper_id": "2503.21686v2",
+    "title": "Molecular Quantum Transformer",
+    "page_num": 10,
+    "chunk_id": "2503.21686v2_page10_chunk1",
+    "text": "10 where trainable parameters W1 ∈Rdemb×dff, b1 ∈ Rdff, W2 ∈Rdff×demb, b2 ∈Rdemb, and σ(x) is an activation function such as tanh(x) and ReLU(x) = max(0, x). Here, dff is the hidden dimension of the FFN, typically larger than demb 6. Residual connection: Z(l) = LayerNorm \u0010 ˆZ(l) + FFN( ˆZ(l)) \u0011 . (10) The final encoder output through L identical layers is: Z(L) = LayerNorm \u0010 enL \u0010 . . . en1 \u0000Z(0)\u0001 . . . \u0011\u0011 . (11) This output Z(L) is a set of context-rich representations for the input tokens, encapsulating both local and global dependencies, and can be used for various downstream tasks such as classification, regression, or serving as input to a decoder in sequence-to-sequence models. Molecular Quantum Transformer We explain the detailed steps of the Tokenization pro- cedure, the detailed structures of the Quantum Trans- former and Aggregation modules in MQT. Tokenization Figure 7(a) provides a detailed description of the to- kenization module and Quantum Transformer module. Following a token preparation approach similar to that in Ref. [50], each demb-dimensional feature input vector x in the token matrix is derived from a vector concate- nating the relative positions of electrons to each nucleus (pin"
+  },
+  {
+    "paper_id": "2503.21686v2",
+    "title": "Molecular Quantum Transformer",
+    "page_num": 10,
+    "chunk_id": "2503.21686v2_page10_chunk2",
+    "text": "provides a detailed description of the to- kenization module and Quantum Transformer module. Following a token preparation approach similar to that in Ref. [50], each demb-dimensional feature input vector x in the token matrix is derived from a vector concate- nating the relative positions of electrons to each nucleus (pin en) and their initial distances (rin en), processed through a fully-connected (FC) layer with trainable weights Wen. The computational steps to obtain pin en and rin en are out- lined as follows: • Input: The input consists of the positions of in- dividual atoms (nuclear coordinates) and electron identifiers (atomic orbital assignments). For exam- ple, in BeH2, the 3D coordinates of the Hydrogen (H) atoms are symmetrically positioned along the z-axis at (0, 0, −2.5) and (0, 0, 2.5), with the Beryl- lium (Be) atom at the origin (0, 0, 0). The nucleus position is an m × 3 matrix with m = 3, where the first and last rows correspond to the two H atoms. Electron identifiers are assigned as follows: [1] (1s) for the first H, [1] (1s), [2] (1s), [3] (2s), and [4] (2s) for Be, and [1] (1s) for the second H. • Embedding (1): Each"
+  },
+  {
+    "paper_id": "2503.21686v2",
+    "title": "Molecular Quantum Transformer",
+    "page_num": 10,
+    "chunk_id": "2503.21686v2_page10_chunk3",
+    "text": "with m = 3, where the first and last rows correspond to the two H atoms. Electron identifiers are assigned as follows: [1] (1s) for the first H, [1] (1s), [2] (1s), [3] (2s), and [4] (2s) for Be, and [1] (1s) for the second H. • Embedding (1): Each electron identifier is con- verted into a one-hot vector of dimension equal to the maximum identifier (4 in the BeH2 example). Thus, all n electron identifiers are represented as an n×4 binary matrix. This matrix is then multiplied by a 4 × 3 trainable weight matrix to produce an n × 3 matrix of electron relative positions. These positions are relative to their respective atoms, and the trainable weights ensure that electron positions adapt to changes in the molecular structure. • Adder (2): The absolute position of each electron is computed by adding its relative position to the position of its associated atom, resulting in an n×3 matrix. • Subtraction (3): The relative positions between all electrons and all nuclei are calculated. For each nucleus, an n × 3 matrix is obtained by subtract- ing the absolute positions of all electrons from that nucleus’s position, yielding an output matrix pin"
+  },
+  {
+    "paper_id": "2503.21686v2",
+    "title": "Molecular Quantum Transformer",
+    "page_num": 10,
+    "chunk_id": "2503.21686v2_page10_chunk4",
+    "text": "its associated atom, resulting in an n×3 matrix. • Subtraction (3): The relative positions between all electrons and all nuclei are calculated. For each nucleus, an n × 3 matrix is obtained by subtract- ing the absolute positions of all electrons from that nucleus’s position, yielding an output matrix pin en of shape n × m × 3. • Concatenation (4): The relative distance matrix rin en, with shape n×m×1, is derived from pin en where each element in rin en is the Euclidean norm of each position vector. Concatenating pin en with rin en pro- duces an n × m × 4 matrix. Quantum Transformer The architecture of the Quantum Transformer compo- nent in MQT is depicted in the lower panel of Fig. 7(a), consisting of L repeated layers. In each layer, the input features derived from the classical representation of the molecule are processed through the arccos, tanh, and am- plification Np modules. For each electron, this generates an m × demb features matrix corresponding to m tokens xj. Each demb-dimensional feature vector of token xj is embedded into a quantum state |ψj,0⟩via an angle em- bedding layer using demb qubits. Query, Key, and Value transformations, implemented with"
+  },
+  {
+    "paper_id": "2503.21686v2",
+    "title": "Molecular Quantum Transformer",
+    "page_num": 10,
+    "chunk_id": "2503.21686v2_page10_chunk5",
+    "text": "and am- plification Np modules. For each electron, this generates an m × demb features matrix corresponding to m tokens xj. Each demb-dimensional feature vector of token xj is embedded into a quantum state |ψj,0⟩via an angle em- bedding layer using demb qubits. Query, Key, and Value transformations, implemented with quantum ansatzes, are then applied to update the states |ψj,k−1⟩→|ψj,k⟩ (k = 1, . . . , m) through a quantum self-attention mecha- nism. The final quantum state |ψj,m⟩is measured in the computational basis and converted back into classical fea- tures of dimension m × demb, yielding an n × m × demb feature matrix for n blocks of n electrons. These features are added to the input features via a residual connection and normalization to produce the input for the next layer. The detailed of the update |ψj,k−1⟩→|ψj,k⟩is shown in Fig. 7(b). For an input token xj, angle embedding is performed using a RY rotation gate (Embed.) on a sec- ond auxiliary token register. This is followed by a Query transformation and the adjoint of Key transformation, both constructed with a single layer of strongly entan- gling (StrEnt) ansatz. Then the adjoint matrix of the angle embedding (Embed.†) for"
+  },
+  {
+    "paper_id": "2503.21686v2",
+    "title": "Molecular Quantum Transformer",
+    "page_num": 10,
+    "chunk_id": "2503.21686v2_page10_chunk6",
+    "text": "is performed using a RY rotation gate (Embed.) on a sec- ond auxiliary token register. This is followed by a Query transformation and the adjoint of Key transformation, both constructed with a single layer of strongly entan- gling (StrEnt) ansatz. Then the adjoint matrix of the angle embedding (Embed.†) for token xk is applied to compute the Hadamard product of the Query and Key, which resembles the single-head attention. This product is then transformed into a 1-qubit attention representa- tion using a 2-bond matrix product state (MPS) ansatz implemented with trainable RY and an additional ancilla"
+  },
+  {
+    "paper_id": "2503.21686v2",
+    "title": "Molecular Quantum Transformer",
+    "page_num": 11,
+    "chunk_id": "2503.21686v2_page11_chunk1",
+    "text": "11 + + FIG. 7. (a) Tokenization and Quantum Transformer module in the MQT. (Upper panel) Each token vector is derived from concatenated relative electron-nucleus positions (pin en) and distances (rin en), processed through a fully-connected (FC) layer with trainable weights Wen. (Lower panel) The Quantum Transformer comprises L repeated layers, processing input features with arccos, tanh, and amplification Np modules to generate an m × demb features matrix of m tokens xj for each electron. Each demb-dimensional feature vector of token xj is embedded into a quantum state |ψj,0⟩via an angle embedding layer using demb qubits, updated via Query, Key, and Value transformations (|ψj,k−1⟩→|ψj,k⟩(k = 1, . . . , m)) using a quantum self-attention mechanism. The measurement in the final state |ψj,m⟩yields an n × m × demb feature matrix for n blocks of n electrons. These features are added to the input features via a residual connection and normalization to produce the input for the next layer. (b) Quantum self-attention update (|ψj,k−1⟩→|ψj,k⟩). For token xj, angle embedding with RY rotation gate (Embed.) uses a second auxiliary token register, followed by Query and the adjoint Key transformations, which are constructed with a single layer of strongly entangling (StrEnt)"
+  },
+  {
+    "paper_id": "2503.21686v2",
+    "title": "Molecular Quantum Transformer",
+    "page_num": 11,
+    "chunk_id": "2503.21686v2_page11_chunk2",
+    "text": "and normalization to produce the input for the next layer. (b) Quantum self-attention update (|ψj,k−1⟩→|ψj,k⟩). For token xj, angle embedding with RY rotation gate (Embed.) uses a second auxiliary token register, followed by Query and the adjoint Key transformations, which are constructed with a single layer of strongly entangling (StrEnt) ansatz. Then the adjoint matrix of the angle embedding (Embed.†) for the token xk is applied to compute the Hadamard product of the Query and Key. This product is then transformed into a 1-qubit attention representation using a 2-bond matrix product state (MPS) ansatz implemented with an additional ancilla qubit. Value transformation for xk in the first auxiliary token register (a six-layer StrEnt ansatz after Embed.) and a controlled SWAP gate complete the update. The StrEnt and MPS ansatzes are depicted in the lower panel with the trainable rotation gates."
+  },
+  {
+    "paper_id": "2503.21686v2",
+    "title": "Molecular Quantum Transformer",
+    "page_num": 12,
+    "chunk_id": "2503.21686v2_page12_chunk1",
+    "text": "12 + + FIG. 8. The aggregation module transforming the Quantum Transformer output matrix y(L) (n × m × demb) into an 2demb- dimensional feature vector. The process applies amplification modules Np and Ampren, followed by an FC module yielding n × m × (2demb) features. These are processed along the nuclear dimension direction by Avg. and 1D-Conv. modules, summed into n × (2demb) features, and adjusted by Ampre using re (averaged value of ren). Further Avg. and 1D-Conv. modules along the electron dimension direction, followed by a normalization and Ampr, produce the final vector. qubit. Next, a Value transformation for xk is applied us- ing the first auxiliary token register, involving the angle embedding (Embed.) and a six-layer StrEnt ansatz. Fi- nally, a controlled SWAP gate updates the features based on the attention representation. Aggregation The outputs of all Quantum Transformer modules are summarized into a feature matrix y(L) of dimension n × m × demb, which is then transformed into a 2demb- dimensional feature vector via an aggregation module. We illustrate the aggregation module in Fig. 8. Initially, the amplification modules Np and Ampren are applied to y(L) without altering its dimension. Each element yijk (1 ≤i ≤n,"
+  },
+  {
+    "paper_id": "2503.21686v2",
+    "title": "Molecular Quantum Transformer",
+    "page_num": 12,
+    "chunk_id": "2503.21686v2_page12_chunk2",
+    "text": "of dimension n × m × demb, which is then transformed into a 2demb- dimensional feature vector via an aggregation module. We illustrate the aggregation module in Fig. 8. Initially, the amplification modules Np and Ampren are applied to y(L) without altering its dimension. Each element yijk (1 ≤i ≤n, 1 ≤j ≤m, 1 ≤k ≤demb) in y(L) is transformed as: yijk →e−ren(i,j,0)Npyijk, (12) where Np is the proton number, ren is the n × m × 1 electron-nucleus relative distance matrix with elements ren(i, j, 0) (1 ≤i ≤n, 1 ≤j ≤m). The relative dis- tance ren is updated from the initial distance rin en using the attention scheme through the following inversion: [pout en , rout en ] = \u0000W ⊤ en × Wen \u0001−1 × W ⊤ en × y(L), (13) ren = std(rin en) × rout en −mean(rout en ) std(rout en ) + mean(rin en), (14) where mean(A) and std(A) denote for the scalar mean and standard deviation of all elements in matrix A, and rin en and rout en share the n×m×1 dimension. Here, ×, +, − are broadcast operators applied element-wise to rout en . The output of Ampren with dimension n ×"
+  },
+  {
+    "paper_id": "2503.21686v2",
+    "title": "Molecular Quantum Transformer",
+    "page_num": 12,
+    "chunk_id": "2503.21686v2_page12_chunk3",
+    "text": "(14) where mean(A) and std(A) denote for the scalar mean and standard deviation of all elements in matrix A, and rin en and rout en share the n×m×1 dimension. Here, ×, +, − are broadcast operators applied element-wise to rout en . The output of Ampren with dimension n × m × demb is processed by an FC module with trainable weights to obtain features of dimension n × m × (2demb). These features are then separately processed along the nuclear dimension direction (second axis) by an averaging (Avg.) module and a one-dimensional convolutional (1D-Conv.) module (kernel size 2, stride 2), and the results are summed to produce an n × (2demb) feature matrix. This matrix is normalized and adjusted by the amplification module Ampre, where re (dimension n) is the average ren across its second dimension. The amplification mod- ule Ampre multiplies each element at the index (i, k) (1 ≤i ≤n, 1 ≤k ≤2demb) of the feature matrix to e−re(i) where re(i) is the i-element in re. The out- put is then separately processed by Avg. and 1D-Conv. modules along the electron dimension direction (the first axis), summed to form a 2demb-dimensional feature vec- tor, and further normalized"
+  },
+  {
+    "paper_id": "2503.21686v2",
+    "title": "Molecular Quantum Transformer",
+    "page_num": 12,
+    "chunk_id": "2503.21686v2_page12_chunk4",
+    "text": "(1 ≤i ≤n, 1 ≤k ≤2demb) of the feature matrix to e−re(i) where re(i) is the i-element in re. The out- put is then separately processed by Avg. and 1D-Conv. modules along the electron dimension direction (the first axis), summed to form a 2demb-dimensional feature vec- tor, and further normalized and amplified by Ampr. Here r is the scalar average of re, and each element of the vec- tor is multiplied by e−r."
+  },
+  {
+    "paper_id": "2503.21686v2",
+    "title": "Molecular Quantum Transformer",
+    "page_num": 13,
+    "chunk_id": "2503.21686v2_page13_chunk1",
+    "text": "13 [1] A. Vaswani, N. Shazeer, N. Parmar, J. Uszkoreit, L. Jones, A. N. Gomez, L. u. Kaiser, and I. Polosukhin, in Advances in Neural Information Processing Systems, Vol. 30 (Curran Associates, Inc., 2017). [2] V. Dunjko, J. M. Taylor, and H. J. Briegel, Phys. Rev. Lett. 117, 130501 (2016). [3] J. Biamonte, P. Wittek, N. Pancotti, P. Rebentrost, N. Wiebe, and S. Lloyd, Nature 549, 195 (2017). [4] V. Dunjko and P. Wittek, Quantum Views 4, 32 (2020). [5] M. Schuld and F. Petruccione, Machine Learning with Quantum Computers (Springer International Publishing, 2021). [6] V. Havl´ıˇcek, A. D. C´orcoles, K. Temme, A. W. Harrow, A. Kandala, J. M. Chow, and J. M. Gambetta, Nature 567, 209 (2019). [7] M. Schuld and N. Killoran, Phys. Rev. Lett. 122, 040504 (2019). [8] R. D. Sipio, J.-H. Huang, S. Y.-C. Chen, S. Mangini, and M. Worring, The dawn of quantum natural language processing (2021). [9] G. Li, X. Zhao, and X. Wang, Sci. China Inf. Sci. 67, 142501 (2024). [10] C. Xue, Z.-Y. Chen, X.-N. Zhuang, Y.-J. Wang, T.-P. Sun, J.-C. Wang, H.-Y. Liu, Y.-C. Wu, Z.-L. Wang, and G.-P. Guo, arXiv 10.48550/arxiv.2402.18940 (2024). [11] V. Giovannetti, S. Lloyd, and L. Maccone,"
+  },
+  {
+    "paper_id": "2503.21686v2",
+    "title": "Molecular Quantum Transformer",
+    "page_num": 13,
+    "chunk_id": "2503.21686v2_page13_chunk2",
+    "text": "processing (2021). [9] G. Li, X. Zhao, and X. Wang, Sci. China Inf. Sci. 67, 142501 (2024). [10] C. Xue, Z.-Y. Chen, X.-N. Zhuang, Y.-J. Wang, T.-P. Sun, J.-C. Wang, H.-Y. Liu, Y.-C. Wu, Z.-L. Wang, and G.-P. Guo, arXiv 10.48550/arxiv.2402.18940 (2024). [11] V. Giovannetti, S. Lloyd, and L. Maccone, Phys. Rev. Lett. 100, 160501 (2008). [12] E. A. Cherrat, I. Kerenidis, N. Mathur, J. Landman, M. Strahm, and Y. Y. Li, Quantum 8, 1265 (2024). [13] A. M. Smaldone, Y. Shee, G. W. Kyro, M. H. Farag, Z. Chandani, E. Kyoseva, and V. S. Batista, arXiv 10.48550/arxiv.2502.19214 (2025). [14] J. Zheng, Q. Gao, and Z. Miao, in 2023 IEEE Inter- national Conference on Systems, Man, and Cybernetics (SMC) (IEEE, 2023) p. 1058–1063. [15] E. N. Evans, M. Cook, Z. P. Bradshaw, and M. L. LaBorde, arXiv 10.48550/arxiv.2403.14753 (2025). [16] Nat. Mach. Intell. 5, 813–813 (2023). [17] A. Peruzzo, J. McClean, P. Shadbolt, M.-H. Yung, X.-Q. Zhou, P. J. Love, A. Aspuru-Guzik, and J. L. O’Brien, Nat. Commun. 5, 4213 (2014). [18] A. Kandala, A. Mezzacapo, K. Temme, M. Takita, M. Brink, J. M. Chow, and J. M. Gambetta, Nature 549, 242 (2017). [19] A. Y. Kitaev, Electron. Colloquium Comput."
+  },
+  {
+    "paper_id": "2503.21686v2",
+    "title": "Molecular Quantum Transformer",
+    "page_num": 13,
+    "chunk_id": "2503.21686v2_page13_chunk3",
+    "text": "McClean, P. Shadbolt, M.-H. Yung, X.-Q. Zhou, P. J. Love, A. Aspuru-Guzik, and J. L. O’Brien, Nat. Commun. 5, 4213 (2014). [18] A. Kandala, A. Mezzacapo, K. Temme, M. Takita, M. Brink, J. M. Chow, and J. M. Gambetta, Nature 549, 242 (2017). [19] A. Y. Kitaev, Electron. Colloquium Comput. Complex. TR96 (1995). [20] M. A. Nielsen and I. L. Chuang, Quantum Computation and Quantum Information, 10th ed. (Cambridge Univer- sity Press, 2010). [21] J. Lee, D. W. Berry, C. Gidney, W. J. Huggins, J. R. McClean, N. Wiebe, and R. Babbush, PRX Quantum 2, 030305 (2021). [22] J. Tilly, H. Chen, S. Cao, D. Picozzi, K. Setia, Y. Li, E. Grant, L. Wossnig, I. Rungger, G. H. Booth, and J. Tennyson, Physics Reports 986, 1 (2022), the Vari- ational Quantum Eigensolver: a review of methods and best practices. [23] J. F. Gonthier, M. D. Radin, C. Buda, E. J. Doskocil, C. M. Abuan, and J. Romero, Phys. Rev. Res. 4, 033154 (2022). [24] A. Cervera-Lierta, J. S. Kottmann, and A. Aspuru- Guzik, PRX Quantum 2, 020329 (2021). [25] J. Ceroni, T. F. Stetina, M. Kieferova, C. O. Marrero, J. M. Arrazola, and N. Wiebe, arXiv 10.48550/arXiv.2210.05489 (2023). [26] A."
+  },
+  {
+    "paper_id": "2503.21686v2",
+    "title": "Molecular Quantum Transformer",
+    "page_num": 13,
+    "chunk_id": "2503.21686v2_page13_chunk4",
+    "text": "Doskocil, C. M. Abuan, and J. Romero, Phys. Rev. Res. 4, 033154 (2022). [24] A. Cervera-Lierta, J. S. Kottmann, and A. Aspuru- Guzik, PRX Quantum 2, 020329 (2021). [25] J. Ceroni, T. F. Stetina, M. Kieferova, C. O. Marrero, J. M. Arrazola, and N. Wiebe, arXiv 10.48550/arXiv.2210.05489 (2023). [26] A. Szabo and N. S. Ostlund, Modern Quantum Chem- istry: Introduction to Advanced Electronic Structure The- ory (Dover Publications, 1996). [27] R. J. Bartlett and M. Musia l, Rev. Mod. Phys. 79, 291 (2007). [28] C. Møller and M. S. Plesset, Phys. Rev. 46, 618 (1934). [29] W. Kohn, A. D. Becke, and R. G. Parr, J. Phys. Chem. 100, 12974–12980 (1996). [30] B. L. Hammond, W. A. Lester, Jr., and P. J. Reynolds, Monte Carlo Methods in Ab Initio Quantum Chemistry (World Scientific, 1994). [31] S. R. White, Phys. Rev. Lett. 69, 2863 (1992). [32] J. T. Seeley, M. J. Richard, and P. J. Love, J. Chem. Phys. 137, 224109 (2012). [33] U. Azad, Pennylane quantum chemistry datasets, https: //pennylane.ai/datasets/collection/qchem (2023). [34] V. Bergholm and et al., arXiv 10.48550/arXiv.1811.04968 (2022). [35] I. Loshchilov and F. Hutter, in International Conference on Learning Representations (2019). [36] B. Recht, C. Re, S. Wright,"
+  },
+  {
+    "paper_id": "2503.21686v2",
+    "title": "Molecular Quantum Transformer",
+    "page_num": 13,
+    "chunk_id": "2503.21686v2_page13_chunk5",
+    "text": "Richard, and P. J. Love, J. Chem. Phys. 137, 224109 (2012). [33] U. Azad, Pennylane quantum chemistry datasets, https: //pennylane.ai/datasets/collection/qchem (2023). [34] V. Bergholm and et al., arXiv 10.48550/arXiv.1811.04968 (2022). [35] I. Loshchilov and F. Hutter, in International Conference on Learning Representations (2019). [36] B. Recht, C. Re, S. Wright, and F. Niu, in Advances in Neural Information Processing Systems, Vol. 24 (Curran Associates, Inc., 2011). [37] H. Wang, Y. Ding, J. Gu, Z. Li, Y. Lin, D. Z. Pan, F. T. Chong, and S. Han, in The 28th IEEE International Symposium on High-Performance Computer Architecture (HPCA-28) (2022). [38] K. Fujii, K. Mizuta, H. Ueda, K. Mitarai, W. Mizukami, and Y. O. Nakagawa, PRX Quantum 3, 010346 (2022). [39] Q. H. Tran, S. Kikuchi, and H. Oshima, Phys. Rev. Res. 6, 023181 (2024). [40] Q. H. Tran, Y. Endo, and H. Oshima, arXiv 10.48550/arXiv.2407.02419 (2024). [41] N. Guo, Z. Yu, M. Choi, A. Agrawal, K. Nakaji, A. Aspuru-Guzik, and P. Rebentrost, arXiv 10.48550/arxiv.2402.16714 (2024). [42] Y. Liao and C. Ferrie, arXiv 10.48550/arxiv.2403.09418 (2024). [43] N. Khatri, G. Matos, L. Coopmans, and S. Clark, arXiv 10.48550/arxiv.2406.04305 (2024). [44] G. K.-L. Chan and S. Sharma, Annu. Rev. Phys. Chem. 62, 465 (2011)."
+  },
+  {
+    "paper_id": "2503.21686v2",
+    "title": "Molecular Quantum Transformer",
+    "page_num": 13,
+    "chunk_id": "2503.21686v2_page13_chunk6",
+    "text": "M. Choi, A. Agrawal, K. Nakaji, A. Aspuru-Guzik, and P. Rebentrost, arXiv 10.48550/arxiv.2402.16714 (2024). [42] Y. Liao and C. Ferrie, arXiv 10.48550/arxiv.2403.09418 (2024). [43] N. Khatri, G. Matos, L. Coopmans, and S. Clark, arXiv 10.48550/arxiv.2406.04305 (2024). [44] G. K.-L. Chan and S. Sharma, Annu. Rev. Phys. Chem. 62, 465 (2011). [45] E. Farhi, J. Goldstone, S. Gutmann, and M. Sipser, arXiv 10.48550/arXiv.quant-ph/0001106 (2000). [46] S. McArdle, T. Jones, S. Endo, et al., npj Quantum Inf. 5, 75 (2019). [47] M. Motta, W. Kirby, I. Liepuoniute, K. J. Sung, J. Cohn, A. Mezzacapo, K. Klymko, N. Nguyen, N. Yoshioka, and J. E. Rice, arXiv 10.48550/arXiv.2312.00178 (2023). [48] W. Kirby, M. Motta, and A. Mezzacapo, Quantum 7, 1018 (2023). [49] dvgodoy, dl-visuals, https://github.com/dvgodoy/ dl-visuals (2020), accessed February 10, 2025. [50] I. von Glehn, J. S. Spencer, and D. Pfau, in The Eleventh International Conference on Learning Representations (2023)."
+  },
+  {
+    "paper_id": "2503.21686v2",
+    "title": "Molecular Quantum Transformer",
+    "page_num": 14,
+    "chunk_id": "2503.21686v2_page14_chunk1",
+    "text": "14 Acknowledgements The authors acknowledge Shintaro Sato, Koki Chinzei, and Nasa Matsumoto for their fruitful discussions. Spe- cial thanks are extended to Koki Chinzei for his valuable comments on the design of the MQT model. Author contributions Y.K. and Q.T. developed the theoretical aspects and re- search design of this work. Y.K. conducted the numerical experiments. Y.K., Q.T., Y.E., and H.O. contributed to the technical discussions and manuscript writing. Competing interests The authors declare no competing interests."
+  }
+]

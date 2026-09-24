@@ -1,0 +1,695 @@
+[
+  {
+    "paper_id": "2402.13572v2",
+    "title": "AlgoFormer: An Efficient Transformer Framework with Algorithmic Structures",
+    "page_num": 1,
+    "chunk_id": "2402.13572v2_page1_chunk1",
+    "text": "Published in Transactions on Machine Learning Research (01/2025) AlgoFormer: An Efficient Transformer Framework with Al- gorithmic Structures Yihang Gao1∗ Chuanyang Zheng2∗ Enze Xie3 Han Shi3 Tianyang Hu1 Yu Li2 Michael Ng4 Zhenguo Li3 Zhaoqiang Liu5† {gaoyh,t.hu}@nus.edu.sg {cyzheng21,liyu}@cse.cuhk.edu.hk {xieenze}@connenct.hku.hk {shi.ha,li.zhenguo}@huawei.com michael-ng@hkbu.edu.hk zqliu12@gmail.com 1National University of Singapore 2Chinese University of Hong Kong 3Huawei Noah’s Ark Lab 4Hong Kong Baptist University 5University of Electronic Science and Technology of China Reviewed on OpenReview: https://openreview.net/forum?id=oYP2Pd5aQt Abstract Besides natural language processing, transformers exhibit extraordinary performance in solving broader applications, including scientific computing and computer vision. Previ- ous works try to explain this from the expressive power and capability perspectives that standard transformers are capable of performing some algorithms. To empower transform- ers with algorithmic capabilities and motivated by the recently proposed looped transformer (Yang et al., 2024; Giannou et al., 2023), we design a novel transformer framework, dubbed Algorithm Transformer (abbreviated as AlgoFormer). We provide an insight that efficient transformer architectures can be designed by leveraging prior knowledge of tasks and the underlying structure of potential algorithms. Compared with the standard transformer and vanilla looped transformer, the proposed AlgoFormer can perform efficiently in algorithm representation in some specific tasks. In particular, inspired by the structure of"
+  },
+  {
+    "paper_id": "2402.13572v2",
+    "title": "AlgoFormer: An Efficient Transformer Framework with Algorithmic Structures",
+    "page_num": 1,
+    "chunk_id": "2402.13572v2_page1_chunk2",
+    "text": "insight that efficient transformer architectures can be designed by leveraging prior knowledge of tasks and the underlying structure of potential algorithms. Compared with the standard transformer and vanilla looped transformer, the proposed AlgoFormer can perform efficiently in algorithm representation in some specific tasks. In particular, inspired by the structure of human- designed learning algorithms, our transformer framework consists of a pre-transformer that is responsible for task preprocessing, a looped transformer for iterative optimization al- gorithms, and a post-transformer for producing the desired results after post-processing. We provide theoretical evidence of the expressive power of the AlgoFormer in solving some challenging problems, mirroring human-designed algorithms. Furthermore, some theoretical and empirical results are presented to show that the designed transformer has the poten- tial to perform algorithm representation and learning. Experimental results demonstrate the empirical superiority of the proposed transformer in that it outperforms the standard transformer and vanilla looped transformer in some specific tasks. An extensive experiment on real language tasks (e.g., neural machine translation of German and English, and text classification) further validates the expressiveness and effectiveness of AlgoFormer. 1 Introduction The emergence of the transformer architecture (Vaswani et al., 2017) marks the onset of a new era in natural"
+  },
+  {
+    "paper_id": "2402.13572v2",
+    "title": "AlgoFormer: An Efficient Transformer Framework with Algorithmic Structures",
+    "page_num": 1,
+    "chunk_id": "2402.13572v2_page1_chunk3",
+    "text": "some specific tasks. An extensive experiment on real language tasks (e.g., neural machine translation of German and English, and text classification) further validates the expressiveness and effectiveness of AlgoFormer. 1 Introduction The emergence of the transformer architecture (Vaswani et al., 2017) marks the onset of a new era in natural language processing. Transformer-based large language models (LLMs), such as BERT (Devlin et al., 2019) and GPT-3 (Brown et al., 2020), revolutionized impactful language-centric applications, including language translation (Vaswani et al., 2017; Raffel et al., 2020), text completion/generation (Radford et al., 2019; Brown et al., 2020), sentiment analysis (Devlin et al., 2019), and mathematical reasoning (Imani et al., 2023; Yu et al., 2024). Beyond the initial surge in LLMs, these transformer-based models have found extensive applications in diverse domains such as computer vision (Dosovitskiy et al., 2021), time series (Li et al., 2019), ∗Equal contribution. †Corresponding author. 1 arXiv:2402.13572v2 [cs.LG] 10 Jan 2025"
+  },
+  {
+    "paper_id": "2402.13572v2",
+    "title": "AlgoFormer: An Efficient Transformer Framework with Algorithmic Structures",
+    "page_num": 1,
+    "chunk_id": "2402.13572v2_page1_chunk4",
+    "text": "Jan 2025"
+  },
+  {
+    "paper_id": "2402.13572v2",
+    "title": "AlgoFormer: An Efficient Transformer Framework with Algorithmic Structures",
+    "page_num": 2,
+    "chunk_id": "2402.13572v2_page2_chunk1",
+    "text": "Published in Transactions on Machine Learning Research (01/2025) bioinformatics (Zhang et al., 2023b), and addressing various physical problems (Cao, 2021). While many studies have concentrated on employing transformer-based models to tackle challenging real-world tasks, yielding superior performances compared to earlier models, the mathematical understanding of transformers remains incomplete. Garg et al. (2022) empirically investigate the performance of transformers in in-context learning, where the input tokens are input-label pairs generated from classical machine learning models, e.g., (sparse) linear regression and decision tree. They find that transformers can perform comparably as standard human- designed machine learning algorithms. Some subsequent works try to explain the phenomenon. Akyürek et al. (2023) characterize decoder-based transformer as employing stochastic gradient descent for linear regression. Bai et al. (2023) demonstrate that transformers can address statistical learning problems and employ algorithm selection, such as ridge regression, Lasso, and classification problems. Zhang et al. (2023a) and Huang et al. (2023) simplify the transformer model with reduced active parameters, yet reveal that the simplified transformer retains sufficient expressiveness for in-context linear regression problems. In Ahn et al. (2023), transformers are extended to implement preconditioned gradient descent. The looped transformer is proposed in Giannou et al. (2023), and is shown to"
+  },
+  {
+    "paper_id": "2402.13572v2",
+    "title": "AlgoFormer: An Efficient Transformer Framework with Algorithmic Structures",
+    "page_num": 2,
+    "chunk_id": "2402.13572v2_page2_chunk2",
+    "text": "(2023) simplify the transformer model with reduced active parameters, yet reveal that the simplified transformer retains sufficient expressiveness for in-context linear regression problems. In Ahn et al. (2023), transformers are extended to implement preconditioned gradient descent. The looped transformer is proposed in Giannou et al. (2023), and is shown to have the potential to perform basic operations (e.g., addition and multiplication), as well as implicitly learn iterative algorithms Yang et al. (2024). More related and interesting studies can be found in Huang et al. (2023); Von Oswald et al. (2023); Mahankali et al. (2024). In this paper, inspired by the recently proposed looped transformer (Yang et al., 2024; Giannou et al., 2023), we propose a novel transformer framework, which we refer to as AlgoFormer, and strictly enforce it as an algorithm learner by the structure regularization on its architecture. The transformer framework consists of three modules (sub-transformers), i.e., the pre-, looped, and post-transformers, designed to perform distinct roles. The pre-transformer is responsible for preprocessing the input data, and formulating it into some mathematical problems. The looped transformer acts as an iterative algorithm in solving the hidden problems. Finally, the post-transformer handles suitable postprocessing to produce the desired results. In contrast"
+  },
+  {
+    "paper_id": "2402.13572v2",
+    "title": "AlgoFormer: An Efficient Transformer Framework with Algorithmic Structures",
+    "page_num": 2,
+    "chunk_id": "2402.13572v2_page2_chunk3",
+    "text": "looped, and post-transformers, designed to perform distinct roles. The pre-transformer is responsible for preprocessing the input data, and formulating it into some mathematical problems. The looped transformer acts as an iterative algorithm in solving the hidden problems. Finally, the post-transformer handles suitable postprocessing to produce the desired results. In contrast to standard transformers, the AlgoFormer is more likely to implement algorithms, due to its algorithmic structures shown in Figure 1. 2 Motivation and Proposed Method In this section, we mainly discuss the construction and intuition of the AlgoFormer. Its advantages over the standard transformer is then conveyed. Before going into details, we first elaborate the mathematical definition of transformer layers. 2.1 Preliminaries A one-layer transformer is mathematically formulated as: Attn (X) = X + h X i=1 W (i) V X · softmax \u0010 X⊤W (i)⊤ K W (i) Q X \u0011 , TF (X) = Attn (X) + W2ReLU (W1Attn (X) + b1) + b2, (1) where X ∈RD×N is the input tokens; h is the number of heads; {W (i) V , W (i) K , W (i) Q } denote value, key and query matrices at i-th head, respectively; {W2, W1, b2, b1} are parameters of the"
+  },
+  {
+    "paper_id": "2402.13572v2",
+    "title": "AlgoFormer: An Efficient Transformer Framework with Algorithmic Structures",
+    "page_num": 2,
+    "chunk_id": "2402.13572v2_page2_chunk4",
+    "text": "(W1Attn (X) + b1) + b2, (1) where X ∈RD×N is the input tokens; h is the number of heads; {W (i) V , W (i) K , W (i) Q } denote value, key and query matrices at i-th head, respectively; {W2, W1, b2, b1} are parameters of the shallow feed-forward ReLU neural network. The attention layer with softmax activation function mostly exchanges information between different tokens by the attention mechanism. Subsequently, the feed-forward ReLU neural network applies nonlinear transformations to each token vector and extracts more complicated and versatile representations. 2.2 Algorithmic Structures of Transformers As discussed in the introduction, rather than simply interpreting it as an implicit function approximator, the transformer may in-context execute some implicit algorithms learned from training data. However, it is still unverified whether the standard multi-layer transformer is exactly performing algorithms. AlgoFormer. As shown in the green part of Figure 1, vanilla looped transformers (Yang et al., 2024; Giannou et al., 2023) admit the same structure as iterative algorithms. However, real applications are usually 2"
+  },
+  {
+    "paper_id": "2402.13572v2",
+    "title": "AlgoFormer: An Efficient Transformer Framework with Algorithmic Structures",
+    "page_num": 2,
+    "chunk_id": "2402.13572v2_page2_chunk5",
+    "text": "transformers (Yang et al., 2024; Giannou et al., 2023) admit the same structure as iterative algorithms. However, real applications are usually 2"
+  },
+  {
+    "paper_id": "2402.13572v2",
+    "title": "AlgoFormer: An Efficient Transformer Framework with Algorithmic Structures",
+    "page_num": 3,
+    "chunk_id": "2402.13572v2_page3_chunk1",
+    "text": "Published in Transactions on Machine Learning Research (01/2025) 𝑇𝐹!\"# 𝑇𝐹$%%! 𝑇𝐹$%%! … … 𝑇𝐹$%%! 𝑇𝐹!%&' Pre-transformer Looped transformer Post-transformer Input prompt output Figure 1: Algorithmic structure of the AlgoFormer. Here, TFpre, TFloop, and TFpost are multi-layer trans- formers; “statements” represent some fundamental operations in classical algorithms. much more complicated. For example, given a task with data pairs, a well-trained researcher may first pre- process the data under some prior knowledge, and then formulate a mathematical (optimization) problem. Following that, some designed solvers, usually iterative algorithms, are performed. Finally, the desired results are obtained after further post-processing. The designed AlgoFormer (Algorithm Transformer), visualized in Figure 1, enjoys the same structure as wide classes of algorithms. Specifically, we separate the transformer framework into three parts, i.e., pre-transformer TFpre, looped transformer TFloop, and post-transformer TFpost. Here, those three sub-transformers are standard multi-layer transformers in Equation (1). Given the input token vectors X and the number of iteration steps T, the output admits: TFpost (TFloop (· · · TFloop | {z } T iterations (TFpre(X))) · · · ). (2) The looped transformer layers (TFloop) share the same set of weights, as they perform identical computa- tions during each iteration. In contrast, the pre-transformer"
+  },
+  {
+    "paper_id": "2402.13572v2",
+    "title": "AlgoFormer: An Efficient Transformer Framework with Algorithmic Structures",
+    "page_num": 3,
+    "chunk_id": "2402.13572v2_page3_chunk2",
+    "text": "the number of iteration steps T, the output admits: TFpost (TFloop (· · · TFloop | {z } T iterations (TFpre(X))) · · · ). (2) The looped transformer layers (TFloop) share the same set of weights, as they perform identical computa- tions during each iteration. In contrast, the pre-transformer (TFpre) and post-transformer (TFpost) utilize distinct weights and architectures to handle their specific computational roles. The hyperparameters for each transformer module (e.g., number of heads, layers, and hidden dimensions) are configured based on prior knowledge of the computational complexity of the target algorithms. Although we present AlgoFormer as in Equation (2), which consists of three modules, the key insight here is that the AlgoFormer can be designed flexibly based on the prior knowledge of the algorithm structure for the given task. Importantly, we do not restrict AlgoFormer to the specific form outlined in Equation (2). Compared with standard trans- formers, the AlgoFormer acts more as the algorithm learner, by strictly regularizing the loop structure. In contrast to Giannou et al. (2023) and Yang et al. (2024), which primarily focus on tasks solvable by iterative algorithms, our approach introduces additional transformer modules (e.g., pre- and post-transformers) for processing. These components are"
+  },
+  {
+    "paper_id": "2402.13572v2",
+    "title": "AlgoFormer: An Efficient Transformer Framework with Algorithmic Structures",
+    "page_num": 3,
+    "chunk_id": "2402.13572v2_page3_chunk3",
+    "text": "the AlgoFormer acts more as the algorithm learner, by strictly regularizing the loop structure. In contrast to Giannou et al. (2023) and Yang et al. (2024), which primarily focus on tasks solvable by iterative algorithms, our approach introduces additional transformer modules (e.g., pre- and post-transformers) for processing. These components are crucial for addressing the processing needs of real-world applications. This design makes the AlgoFormer capable of representing more complex algorithms and solving challenging tasks more efficiently. Additionally, one of the core insights of our work is that transformer architectures can be designed more efficiently, flexibly, and diversely by leveraging prior knowledge and the pre-defined structure of potential algorithms. This approach enables AlgoFormer to generalize across a broader range of applications while maintaining high efficiency and adaptability, such as representing algorithms involving nested loops, multiple loops, or multi-processing. 2.3 Training Strategy Our training strategy builds upon the methodology introduced in Yang et al. (2024). Let P i = [x1, f(x1), · · · , xi−1, f(xi−1), xi] represents the input prompt for 1 ≤i ≤N. We denote the AlgoFormer as TFt Algo(·; Θ), where f(·) is a task-specific function that varies across different sequences and t indicates the number of loops"
+  },
+  {
+    "paper_id": "2402.13572v2",
+    "title": "AlgoFormer: An Efficient Transformer Framework with Algorithmic Structures",
+    "page_num": 3,
+    "chunk_id": "2402.13572v2_page3_chunk4",
+    "text": "et al. (2024). Let P i = [x1, f(x1), · · · , xi−1, f(xi−1), xi] represents the input prompt for 1 ≤i ≤N. We denote the AlgoFormer as TFt Algo(·; Θ), where f(·) is a task-specific function that varies across different sequences and t indicates the number of loops (iterations) in Equation 2, and Θ represent the transformer parameters. Instead of evaluating the loss solely on TFT Algo(·; Θ) with T iterations, we minimize the expected loss over averaged iteration numbers: min Θ EP \" 1 T −T0 T X t=T0 1 N N X i=1 TFt Algo(P i; Θ) −f(xi) 2 2 # , (3) 3"
+  },
+  {
+    "paper_id": "2402.13572v2",
+    "title": "AlgoFormer: An Efficient Transformer Framework with Algorithmic Structures",
+    "page_num": 4,
+    "chunk_id": "2402.13572v2_page4_chunk1",
+    "text": "Published in Transactions on Machine Learning Research (01/2025) where T0 = max{T −∆T, 0} is the initial step for evaluating performance, T is the maximal loop iterations during training, and ∆T is the number of loop iterations included in the loss. To stabilize the training, we adopt the moving average over loop iterations from T0 to T in the loss. Incorporating the loss from T0 to T ensures that the transformer module faithfully applies iterative algorithms and generalizes beyond the number of training loops. This approach helps enhance the transformer’s capability for tasks requiring a varying number of iterations. Experimental results in Sections 5.2 and 5.3 further demonstrate that the transformer not only applies certain iterative algorithms but also generalizes well to longer loop iterations beyond those encountered during training. 3 Expressive Power In this section, we theoretically show by construction that AlgoFormer is capable of solving some challenging tasks, akin to human-designed algorithms. The core idea is as follows. Initially, the pre-transformer under- takes the crucial task of preprocessing the input data, such as representation transformation. The looped transformer is responsible for iterative algorithms in optimization problems. Finally, it is ready to output the desired result by the post-transformer."
+  },
+  {
+    "paper_id": "2402.13572v2",
+    "title": "AlgoFormer: An Efficient Transformer Framework with Algorithmic Structures",
+    "page_num": 4,
+    "chunk_id": "2402.13572v2_page4_chunk2",
+    "text": "akin to human-designed algorithms. The core idea is as follows. Initially, the pre-transformer under- takes the crucial task of preprocessing the input data, such as representation transformation. The looped transformer is responsible for iterative algorithms in optimization problems. Finally, it is ready to output the desired result by the post-transformer. Through the analysis of AlgoFormer’s expressive power in addressing these tasks, we expect its potential to make contributions to the communities of scientific computing and machine learning. Throughout the section, we assume that the maximal number of data samples is N and all sample observations (e.g., xi and yi) are bounded. 3.1 Regression with Representation We consider regression problems with representation, where the output behaves as a linear function of the input with a fixed representation function. Here, we adopt the L-layer MLPs with (leaky) ReLU activation function as the representation function Φ∗(·). Specifically, we generate each in-context sample by first sampling the linear weight A from the prior PA, and then generating the input-label pair {(xi, yi)} with xi ∈Rd ∼Px, yi = AΦ∗(xi) + ϵi and ϵi ∼N \u00000, σ2I \u0001 . We aim to find the test label ytest := AΦ∗(xtest), given the in-context samples and test"
+  },
+  {
+    "paper_id": "2402.13572v2",
+    "title": "AlgoFormer: An Efficient Transformer Framework with Algorithmic Structures",
+    "page_num": 4,
+    "chunk_id": "2402.13572v2_page4_chunk3",
+    "text": "first sampling the linear weight A from the prior PA, and then generating the input-label pair {(xi, yi)} with xi ∈Rd ∼Px, yi = AΦ∗(xi) + ϵi and ϵi ∼N \u00000, σ2I \u0001 . We aim to find the test label ytest := AΦ∗(xtest), given the in-context samples and test data {x1, y1, · · · , xN, yN, xtest}. Here, the weight matrix A varies across different sequences of in-context samples but remains constant within a single sequence, and is learned in-context. The representation function Φ∗, on the other hand, is fixed across all samples of sequences and is learned during training. A reliable solver is expected first to identify the representation function and transform the input data x to its representation Φ∗(x). Then it reduces to a regression problem, and some optimization algorithms are performed to find the weight matrix from in-context samples. Finally, it outputs the desired result ytest by applying transformations on the test data. We prove by construction that there exists an AlgoFormer that solves the task, akin to the human-designed reliable solver. Theorem 3.1. There exists a designed AlgoFormer with TFpre (an (L + 1)-layer two-head transformer), TFloop (a one-layer two-head transformer), and TFpost"
+  },
+  {
+    "paper_id": "2402.13572v2",
+    "title": "AlgoFormer: An Efficient Transformer Framework with Algorithmic Structures",
+    "page_num": 4,
+    "chunk_id": "2402.13572v2_page4_chunk4",
+    "text": "result ytest by applying transformations on the test data. We prove by construction that there exists an AlgoFormer that solves the task, akin to the human-designed reliable solver. Theorem 3.1. There exists a designed AlgoFormer with TFpre (an (L + 1)-layer two-head transformer), TFloop (a one-layer two-head transformer), and TFpost (a one-layer one-head transformer), that outputs AΦ∗(xtest) from the input-label pairs {x1, y1, · · · , xN, yN, xtest} by fitting the representation function and applying gradient descent for multi-variate regression. The emulation of each step is not exact, as there is some error introduced in each step. However, the error can be made arbitrarily close to zero by increasing the temperature of the softmax and adjusting another free parameter, neither of which affects the size of the network. Remarks. The detailed proof is available in Appendix A.1. Our construction of the transformer framework involves three distinct sub-transformers, each assigned specific responsibilities. The pre-transformer, char- acterized by identity attention, is dedicated to representation transformation through feed-forward neural networks. This stage reduces the task to a multivariate regression problem. Subsequently, the looped trans- former operates in-context to determine the optimal weight, effectively acting as an iterative solver. Finally, the post-transformer"
+  },
+  {
+    "paper_id": "2402.13572v2",
+    "title": "AlgoFormer: An Efficient Transformer Framework with Algorithmic Structures",
+    "page_num": 4,
+    "chunk_id": "2402.13572v2_page4_chunk5",
+    "text": "assigned specific responsibilities. The pre-transformer, char- acterized by identity attention, is dedicated to representation transformation through feed-forward neural networks. This stage reduces the task to a multivariate regression problem. Subsequently, the looped trans- former operates in-context to determine the optimal weight, effectively acting as an iterative solver. Finally, the post-transformer is responsible for the post-processing and generate the desired result AΦ∗(xtest). Here, the input prompt to the transformer is formulated as P =   x1 0 · · · xN 0 xtest 0 y1 · · · 0 yN 0 px 1 py 1 · · · px N py N px N+1  , where px i , and py i denote positional embeddings and will be specified in the proof. Due to the differing dimensions of the input x and its corresponding label y, zero padding is incorporated to reshape them into vectors of the 4"
+  },
+  {
+    "paper_id": "2402.13572v2",
+    "title": "AlgoFormer: An Efficient Transformer Framework with Algorithmic Structures",
+    "page_num": 5,
+    "chunk_id": "2402.13572v2_page5_chunk1",
+    "text": "Published in Transactions on Machine Learning Research (01/2025) same dimension. The structure of the prompt P aligns with similar formulations in previous works (Bai et al., 2023; Akyürek et al., 2023; Garg et al., 2022). For different input prompts P , the hidden linear weights A are distinct but the representation function Φ∗(·) is fixed. In comparison with the standard transformer adopted in Guo et al. (2024), which investigates similar tasks, the designed AlgoFormer has a significantly lower parameter size, making it closer to the envisioned human-designed algorithm. Notably, we construct the looped transformer to perform gradient descent for the multi-variate regression. However, the trans- former exhibits remarkable versatility, as it has the capability to apply (ridge) regularized regression and more effective optimization algorithms beyond gradient descent. For more details, please refer to Section 4. 3.2 AR(q) with Representation We consider the autoregressive model with representation. The dynamical (time series) system is generated by xt+1 = AΦ∗([xt+1−q, · · · , xt]) + ϵt, where Φ∗(·) is a fixed representation function (e.g., we take the L- layer MLPs), and the weight A varies from different sequences but remains constant within a single sequence. Our goal is to learn Φ∗(·) during"
+  },
+  {
+    "paper_id": "2402.13572v2",
+    "title": "AlgoFormer: An Efficient Transformer Framework with Algorithmic Structures",
+    "page_num": 5,
+    "chunk_id": "2402.13572v2_page5_chunk2",
+    "text": "system is generated by xt+1 = AΦ∗([xt+1−q, · · · , xt]) + ϵt, where Φ∗(·) is a fixed representation function (e.g., we take the L- layer MLPs), and the weight A varies from different sequences but remains constant within a single sequence. Our goal is to learn Φ∗(·) during training and to perform in-context learning of the weight matrix A. In standard AR(q) (multivariate autoregressive) models, the representation function Φ∗(·) is identity. Here, we investigate a more challenging situation in which the representation function is fixed but unknown. A well- behaved solver should first find the representation function and then translate it into a modified autoregressive model. With standard Gaussian priors on the white noise ϵt, the Bayesian estimator of the AR(q) model parameters admits arg maxA QN t=1 f(xt|xt−1, · · · , xt−q) = arg minA PN t=1 ∥xt −AΦ∗([xt−q, · · · , xt−1])∥2 2, where f(xt|xt−1, · · · , xt−q) is the conditional density function of xt, given previous q observations. A practical solver initially identifies the representation function and transforms the input time series into its representation, denoted as Φ∗(xt). Then the problem is reduced to an autoregressive form. Similar to the previous"
+  },
+  {
+    "paper_id": "2402.13572v2",
+    "title": "AlgoFormer: An Efficient Transformer Framework with Algorithmic Structures",
+    "page_num": 5,
+    "chunk_id": "2402.13572v2_page5_chunk3",
+    "text": "f(xt|xt−1, · · · , xt−q) is the conditional density function of xt, given previous q observations. A practical solver initially identifies the representation function and transforms the input time series into its representation, denoted as Φ∗(xt). Then the problem is reduced to an autoregressive form. Similar to the previous subsection, we prove by construction that there exists a AlgoFormer, akin to human-designed algorithms, capable of effectively solving the given task. Theorem 3.2. There exists a designed AlgoFormer with TFpre (a one-layer q-head transformer with an (L+1)-layer one-head transformer), TFloop (a one-layer two-head transformer), and TFpost (a one-layer one- head transformer), that predicts xN+1 from the data sequence {x1, x2, · · · , xN} by copying, transformation of the representation function and applying gradient descent for multi-variate regression. The emulation of each step is not exact, as there is some error introduced in each step. However, the error can be made arbitrarily close to zero by increasing the temperature of the softmax and adjusting another free parameter, neither of which affects the size of the network. Remarks. The detailed proof can be found in Appendix A.2. The technical details are similar to Theorem 3.1. The input prompt to the"
+  },
+  {
+    "paper_id": "2402.13572v2",
+    "title": "AlgoFormer: An Efficient Transformer Framework with Algorithmic Structures",
+    "page_num": 5,
+    "chunk_id": "2402.13572v2_page5_chunk4",
+    "text": "be made arbitrarily close to zero by increasing the temperature of the softmax and adjusting another free parameter, neither of which affects the size of the network. Remarks. The detailed proof can be found in Appendix A.2. The technical details are similar to Theorem 3.1. The input prompt to the transformer is formulated as P = \u0014 x1 x2 · · · xN px 1 px 2 · · · px N \u0015 , where px i denote positional embeddings and will be specified in the proof. Additionally, the pre-transformer copies the feature from the previous q tokens, utilizing q heads for parallel processing. 3.3 Chain-of-Thought with MLPs Chain-of-Thought (CoT) demonstrates exceptional performances in mathematical reasoning and text genera- tion (Wei et al., 2022). The success of CoT has been theoretically explored, shedding light on its effectiveness in toy cases (Li et al., 2023) and on its computational complexity (Feng et al., 2023). In this subsection, we revisit the intriguing toy examples of CoT generated by leaky ReLU MLPs, denoted as CoT with MLPs, as discussed in Li et al. (2023). We begin by constructing an L-layer MLP with leaky ReLU activation. For an initial data point x ∼Px, the"
+  },
+  {
+    "paper_id": "2402.13572v2",
+    "title": "AlgoFormer: An Efficient Transformer Framework with Algorithmic Structures",
+    "page_num": 5,
+    "chunk_id": "2402.13572v2_page5_chunk5",
+    "text": "et al., 2023). In this subsection, we revisit the intriguing toy examples of CoT generated by leaky ReLU MLPs, denoted as CoT with MLPs, as discussed in Li et al. (2023). We begin by constructing an L-layer MLP with leaky ReLU activation. For an initial data point x ∼Px, the CoT point sℓrepresents the output of the ℓ-th layer of the MLP. Consequently, the CoT sequence {x, s1, · · · , sL} is exactly generated as the output of each (hidden) layer of the MLP. The implicit L-layer MLP remains the same within a single sequence but varies across different sequences, and it is learned in-context. The target of CoT with MLPs problem is to find the next state ˆsℓ+1 based on the CoT samples {x1, s1 1, · · · , sL 1 , x2, · · · , xN, s1 N, · · · , sL N, xtest, ˆs1, · · · , ˆsℓ}, where {ˆs1, · · · , ˆsℓ} denotes the CoT prompting of xtest. We establish by construction in Theorem 3.3 that the AlgoFormer adeptly solves the CoT with MLPs problem, exhibiting a capability akin to human-designed algorithms. 5"
+  },
+  {
+    "paper_id": "2402.13572v2",
+    "title": "AlgoFormer: An Efficient Transformer Framework with Algorithmic Structures",
+    "page_num": 5,
+    "chunk_id": "2402.13572v2_page5_chunk6",
+    "text": "xtest, ˆs1, · · · , ˆsℓ}, where {ˆs1, · · · , ˆsℓ} denotes the CoT prompting of xtest. We establish by construction in Theorem 3.3 that the AlgoFormer adeptly solves the CoT with MLPs problem, exhibiting a capability akin to human-designed algorithms. 5"
+  },
+  {
+    "paper_id": "2402.13572v2",
+    "title": "AlgoFormer: An Efficient Transformer Framework with Algorithmic Structures",
+    "page_num": 6,
+    "chunk_id": "2402.13572v2_page6_chunk1",
+    "text": "Published in Transactions on Machine Learning Research (01/2025) Theorem 3.3. There exists a designed AlgoFormer with TFpre (a seven-layer two-head transformer), TFloop (a one-layer two-head transformer), and TFpost (a one-layer one-head transformer), that finds ˆsℓ+1 from samples {x1, s1 1, · · · , sL 1 , x2, · · · , xN, s1 N, · · · , sL N, xtest, ˆs1, · · · , ˆsℓ} by filtering and applying gradient descent for multi-variate regression. The emulation of each step is not exact, as there is some error introduced in each step. However, the error can be made arbitrarily close to zero by increasing the temperature of the softmax and adjusting another free parameter, neither of which affects the size of the network. Remarks. We put the proof in Appendix A.3. The pre-transformer first identifies the positional number ℓ, and subsequently filters the input sequence into {sℓ 1, sℓ+1 1 , sℓ 2, sℓ+1 2 , · · · , sℓ N, sℓ+1 N , ˆsℓ}. This filtering transfor- mation reduces the problem to a multi-variate regression problem. Compared with Li et al. (2023), where an assumption is made, we elaborate on the role of looped transformers in"
+  },
+  {
+    "paper_id": "2402.13572v2",
+    "title": "AlgoFormer: An Efficient Transformer Framework with Algorithmic Structures",
+    "page_num": 6,
+    "chunk_id": "2402.13572v2_page6_chunk2",
+    "text": "sℓ+1 1 , sℓ 2, sℓ+1 2 , · · · , sℓ N, sℓ+1 N , ˆsℓ}. This filtering transfor- mation reduces the problem to a multi-variate regression problem. Compared with Li et al. (2023), where an assumption is made, we elaborate on the role of looped transformers in implementing gradient descent. While the CoT with MLPs may not be explicitly equivalent to CoT tasks in real applications, Theorem 3.3 somewhat implies the potential of the AlgoFormer in solving CoT-related problems. 4 Extensions and Further Analysis In this section, we provide complementary insights to the results discussed in Section 3. Firstly, as discussed in the remark following Theorem 3.1, we construct the looped transformer that employs gradient descent to solve (regularized) multi-variate regression problems. However, in practical scenarios, the adoption of more efficient optimization algorithms is often preferred. Investigating the expressive power of transformers beyond gradient descent is both intriguing and appealing. As stated in Theorem 4.1, we demonstrate that the AlgoFormer can proficiently implement Newton’s method for solving linear regression problems. Secondly, the definition in Equation 1 implies the encoder-based transformer. In practical applications, a decoder- based transformer with causal attention, as seen in models like GPT-2 (Radford"
+  },
+  {
+    "paper_id": "2402.13572v2",
+    "title": "AlgoFormer: An Efficient Transformer Framework with Algorithmic Structures",
+    "page_num": 6,
+    "chunk_id": "2402.13572v2_page6_chunk3",
+    "text": "intriguing and appealing. As stated in Theorem 4.1, we demonstrate that the AlgoFormer can proficiently implement Newton’s method for solving linear regression problems. Secondly, the definition in Equation 1 implies the encoder-based transformer. In practical applications, a decoder- based transformer with causal attention, as seen in models like GPT-2 (Radford et al., 2019), may also be favored. For completeness, it is also compelling to examine the behavior of decoder-based transformers in algorithmic learning. Our findings, presented in Theorem 4.2, reveal that the decoder-based AlgoFormer can also implement gradient descent in linear regression problems. The primary distinction lies in the fact that the decoder-based transformer utilizes previously observed data to evaluate the gradient, while the encoder-based transformer calculates the gradient based on the full data samples. 4.1 Beyond the Gradient Descent Newton’s (second-order) methods enjoy superlinear convergence under some mild conditions, outperforming gradient descent with linear convergence. This raises a natural question: Can the transformer implement algorithms beyond gradient descent, including higher-order optimization algorithms? In this section, we address this question by demonstrating that the designed AlgoFormer can also realize Newton’s method in regression problems. Consider the linear regression problem given by: arg min w 1 2N N X i=1 \u0000w⊤xi"
+  },
+  {
+    "paper_id": "2402.13572v2",
+    "title": "AlgoFormer: An Efficient Transformer Framework with Algorithmic Structures",
+    "page_num": 6,
+    "chunk_id": "2402.13572v2_page6_chunk4",
+    "text": "question: Can the transformer implement algorithms beyond gradient descent, including higher-order optimization algorithms? In this section, we address this question by demonstrating that the designed AlgoFormer can also realize Newton’s method in regression problems. Consider the linear regression problem given by: arg min w 1 2N N X i=1 \u0000w⊤xi −yi \u00012 . (4) Denote X = [x1, x2, · · · , xN]⊤∈RN×d, y = [y1, y2, · · · , yN]⊤∈RN×1 and S = X⊤X. A typical Newton’s method for linear regression problems follows the update scheme: M0 = αS, where α ∈ \u0012 0, 2 ∥SS⊤∥2 \u0015 , Mk+1 = 2Mk −MkSMk, wNewton k = MkX⊤y. (5) As described in Söderström & Stewart (1974); Pan & Schreiber (1991), the above update scheme (Newton’s method) enjoys superlinear convergence, in contrast to the linear convergence of gradient descent. The following theorem states that Newton’s method in Equation 5 can be realized by the AlgoFormer. Theorem 4.1. There exists a designed AlgoFormer with TFpre (a one-layer two-head transformer), TFloop (a one-layer two-head transformer), and TFpost (a two-layer two-head transformer), that implements Newton’s method described by Equation 5 in solving regression problems. The emulation of each step is not exact, 6"
+  },
+  {
+    "paper_id": "2402.13572v2",
+    "title": "AlgoFormer: An Efficient Transformer Framework with Algorithmic Structures",
+    "page_num": 6,
+    "chunk_id": "2402.13572v2_page6_chunk5",
+    "text": "be realized by the AlgoFormer. Theorem 4.1. There exists a designed AlgoFormer with TFpre (a one-layer two-head transformer), TFloop (a one-layer two-head transformer), and TFpost (a two-layer two-head transformer), that implements Newton’s method described by Equation 5 in solving regression problems. The emulation of each step is not exact, 6"
+  },
+  {
+    "paper_id": "2402.13572v2",
+    "title": "AlgoFormer: An Efficient Transformer Framework with Algorithmic Structures",
+    "page_num": 7,
+    "chunk_id": "2402.13572v2_page7_chunk1",
+    "text": "Published in Transactions on Machine Learning Research (01/2025) as there is some error introduced in each step. However, the error can be made arbitrarily close to zero by increasing the temperature of the softmax and adjusting another free parameter, neither of which affects the size of the network. Remarks. The proof can be found in Appendix A.4. The pre-transformer performs preparative tasks, such as copying from neighboring tokens. The looped-transformer is responsible for updating and calculating Mkxi for each token xi at every step k. The post-transformer compute the final estimated weight wNewton T and outputs the desired the results wNewton⊤ T xtest, where T is the iteration number in Equation 2 and Equation 5. In a related study by Fu et al. (2023), similar topics are explored, indicating that transformers exactly perform higher-order optimization algorithms. However, our transformer architectures differ, and technical details are distinct. 4.2 Decoder-based Transformer In the preceding analysis, the encoder-based AlgoFormer (with full attention) demonstrates its capability to solve problems by performing algorithms. Previous studies (Giannou et al., 2023; Bai et al., 2023; Zhang et al., 2023a; Huang et al., 2023; Ahn et al., 2023) also focus on the encoder-based models. We opted for an"
+  },
+  {
+    "paper_id": "2402.13572v2",
+    "title": "AlgoFormer: An Efficient Transformer Framework with Algorithmic Structures",
+    "page_num": 7,
+    "chunk_id": "2402.13572v2_page7_chunk2",
+    "text": "the preceding analysis, the encoder-based AlgoFormer (with full attention) demonstrates its capability to solve problems by performing algorithms. Previous studies (Giannou et al., 2023; Bai et al., 2023; Zhang et al., 2023a; Huang et al., 2023; Ahn et al., 2023) also focus on the encoder-based models. We opted for an encoder-based transformer because full-batch data is available for estimating gradient and Hessian information. However, in practical applications, decoder-based models, like GPT-2, are sometimes more prevalent. In this subsection, we delve into the performance of the decoder-based model when executing iterative optimization algorithms, such as gradient descent, to solve regression problems. We consider the linear regression problem in Equation 4. Due to the limitations of the decoder-based transformer, which can only access previous tokens, implementing iterative algorithms based on the entire batch data is not feasible. However, it is important to note that the current token in a decoder-based transformer can access data from all previous tokens. To predict the label yi based on the input prompt P i = [x1, y1, · · · , xi], the empirical loss for the linear weight at xi is given by wi ∈arg min w L \u0000w; P i\u0001 := 1 2(i −1)"
+  },
+  {
+    "paper_id": "2402.13572v2",
+    "title": "AlgoFormer: An Efficient Transformer Framework with Algorithmic Structures",
+    "page_num": 7,
+    "chunk_id": "2402.13572v2_page7_chunk3",
+    "text": "access data from all previous tokens. To predict the label yi based on the input prompt P i = [x1, y1, · · · , xi], the empirical loss for the linear weight at xi is given by wi ∈arg min w L \u0000w; P i\u0001 := 1 2(i −1) i−1 X j=1 \u0000w⊤xj −yj \u00012 . (6) In essence, the linear weight is estimated using accessible data from the previous tokens, reflecting the restricted information available in the decoder-based transformer. Theorem 4.2. There exists a designed AlgoFormer with TFpre (a one-layer two-head transformer), TFloop (a one-layer two-head transformer), and TFpost (a two-layer two-head transformer), that outputs wi⊤ T xi for each input data xi, where wi T comes from arg minw L \u0000w; P i\u0001 after T steps of gradient descent. The emulation of each step is not exact, as there is some error introduced in each step. However, the error can be made arbitrarily close to zero by increasing the temperature of the softmax and adjusting another free parameter, neither of which affects the size of the network. Remarks. The detailed proof is available in Appendix A.5. The technical details closely resemble those in Theorem 3.1, with the"
+  },
+  {
+    "paper_id": "2402.13572v2",
+    "title": "AlgoFormer: An Efficient Transformer Framework with Algorithmic Structures",
+    "page_num": 7,
+    "chunk_id": "2402.13572v2_page7_chunk4",
+    "text": "the error can be made arbitrarily close to zero by increasing the temperature of the softmax and adjusting another free parameter, neither of which affects the size of the network. Remarks. The detailed proof is available in Appendix A.5. The technical details closely resemble those in Theorem 3.1, with the key distinction being that the decoder-based transformer can solely leverage data from previous tokens to determine the corresponding weight wi. Our findings align with those in Guo et al. (2024), although our transformer architectures and attention mechanisms differ. In a related study by Akyürek et al. (2023), similar topics are explored, demonstrating that the decoder-based transformer performs single-sample stochastic gradient descent, while our results exhibit greater strength with wi ∈arg minw L \u0000w; P i\u0001 . The construction of a decoder-based transformer for representing Newton’s method is more challenging. We left it as a potential topic for future investigation. 5 Experiments In this section, we conduct a comprehensive empirical evaluation of the performance of AlgoFormer in tackling challenging tasks, specifically addressing regression with representation, AR(q) with representation, and CoT with MLPs, as outlined in Section 2. Additionally, we also implement AlgoFormer on the neural machine translation of German and English"
+  },
+  {
+    "paper_id": "2402.13572v2",
+    "title": "AlgoFormer: An Efficient Transformer Framework with Algorithmic Structures",
+    "page_num": 7,
+    "chunk_id": "2402.13572v2_page7_chunk5",
+    "text": "Experiments In this section, we conduct a comprehensive empirical evaluation of the performance of AlgoFormer in tackling challenging tasks, specifically addressing regression with representation, AR(q) with representation, and CoT with MLPs, as outlined in Section 2. Additionally, we also implement AlgoFormer on the neural machine translation of German and English and AG News classification, demonstrating its expressiveness and effectiveness in real-world language tasks. 7"
+  },
+  {
+    "paper_id": "2402.13572v2",
+    "title": "AlgoFormer: An Efficient Transformer Framework with Algorithmic Structures",
+    "page_num": 8,
+    "chunk_id": "2402.13572v2_page8_chunk1",
+    "text": "Published in Transactions on Machine Learning Research (01/2025) 0 5 10 15 20 25 30 35 40 in-context samples 10 3 10 2 10 1 100 square error Standard Looped AlgoFormer (a) Regression with representation 0 5 10 15 20 25 30 35 40 in-context samples 10 2 10 1 square error Standard Looped AlgoFormer (b) AR(q) with representation 0 5 10 15 20 25 30 35 40 in-context samples 10 2 10 1 square error Standard Looped AlgoFormer (c) CoT with MLPs Figure 2: The validation error of trained models (the standard transformer, the vanilla looped transformer, and the AlgoFormer), assessed on regression with representation, AR(q) with representation, and CoT with MLPs tasks. By choosing suitable hyperparameters (i.e., we set (T, ∆T) = (20, 15)), the AlgoFormer has significantly better performance than the standard transformer and the vanilla looped transformer on those tasks. 5.1 Experimental Settings and Hyperparameters Experimental settings. In all experiments, we adopt the decoder-based AlgoFormer, standard transformer (GPT-2), and vanilla looped transformer Yang et al. (2024). For synthetic tasks, we utilize N = 40 in-context samples as input prompts and d = 20 dimensional vectors with D = 256 dimensional positional embeddings for all experiments. To"
+  },
+  {
+    "paper_id": "2402.13572v2",
+    "title": "AlgoFormer: An Efficient Transformer Framework with Algorithmic Structures",
+    "page_num": 8,
+    "chunk_id": "2402.13572v2_page8_chunk2",
+    "text": "settings. In all experiments, we adopt the decoder-based AlgoFormer, standard transformer (GPT-2), and vanilla looped transformer Yang et al. (2024). For synthetic tasks, we utilize N = 40 in-context samples as input prompts and d = 20 dimensional vectors with D = 256 dimensional positional embeddings for all experiments. To ensure fairness in comparisons, all models are trained using the Adam optimizer, with a learning rate η = 1e −4 and a total of 500K iterations to ensure convergence. The standard transformer is designed to have L = 12 layers while pre-, looped and post-transformers are all implemented in one- layer. The default setting for the AlgoFormer, as well as the vanilla looped transformer, involves setting (T, ∆T) = (20, 15). Here, the prompt formulation and the training loss in Equation (3) may slightly differ for different tasks. For example, in the AR(q) task, the input prompt is reformulated as P i = [x1, · · · , xi−1, xi] and xi+1 = f([xi+1−q, · · · , xi]) is the target for prediction. However, the training strategy can be easily transmitted to other tasks. Here, both the iteration numbers T0 and T are hyperparameters, which will be analyzed in"
+  },
+  {
+    "paper_id": "2402.13572v2",
+    "title": "AlgoFormer: An Efficient Transformer Framework with Algorithmic Structures",
+    "page_num": 8,
+    "chunk_id": "2402.13572v2_page8_chunk3",
+    "text": "P i = [x1, · · · , xi−1, xi] and xi+1 = f([xi+1−q, · · · , xi]) is the target for prediction. However, the training strategy can be easily transmitted to other tasks. Here, both the iteration numbers T0 and T are hyperparameters, which will be analyzed in the next subsection. Regression with representation. In this task, we instantiate a 3-layer leaky ReLU MLPs, denoted as Φ∗(·), which remains fixed across all tasks. The data generation process involves sampling a weight matrix A ∈R1×20. Subsequently, input-label pairs {(xi, yi)}40 i=1 are generated, where xi ∼N (0, I20), ϵi ∼N \u00000, σ2\u0001 and yi = AΦ∗(xi)+ϵi. In Figure 2a, we specifically set σ = 0. Additionally, we explore the impact of different noise levels by considering σ = 0.1 and σ = 1. Here, our target is to learn the representation function Φ∗(·) during training and to perform in-context learning of the weight matrix A. AR(q) with representation. For this task, we set q = 3 and employ a 3-layer leaky ReLU MLP denoted as Φ∗(·), consistent across all instances. The representation function accepts a 60-dimensional vector as input and produces 20-dimensional feature vectors. The time series sequence {xt}N"
+  },
+  {
+    "paper_id": "2402.13572v2",
+    "title": "AlgoFormer: An Efficient Transformer Framework with Algorithmic Structures",
+    "page_num": 8,
+    "chunk_id": "2402.13572v2_page8_chunk4",
+    "text": "learning of the weight matrix A. AR(q) with representation. For this task, we set q = 3 and employ a 3-layer leaky ReLU MLP denoted as Φ∗(·), consistent across all instances. The representation function accepts a 60-dimensional vector as input and produces 20-dimensional feature vectors. The time series sequence {xt}N t=1 is gener- ated by initially sampling A ∼N (0, I20×20). Then the sequence is auto-regressively determined, with xt+1 = AΦ∗([xt+1−q, · · · , xt]) + ϵt, where ϵt ∼N (0, I20). Here, our target is to learn the representation function Φ∗(·) during training and to perform in-context learning of the weight matrix A. CoT with MLPs. In this example, we generate a 6-layer leaky ReLU MLP to serve as a CoT sequence generator, determining the length of CoT steps for each sample to be six. The CoT sequence, denoted as {x, s1, · · · , sL} is generated by first sampling x ∼N (0, I20), where sℓ∈R20 represents the intermediate state output from the ℓ-th layer of the MLP. Here, our target is to perform in-context learning of the generator function (i.e., the 6-layer leaky ReLU MLP). 5.2 AlgoFormer Exhibits High Expressiveness In this subsection, we conduct"
+  },
+  {
+    "paper_id": "2402.13572v2",
+    "title": "AlgoFormer: An Efficient Transformer Framework with Algorithmic Structures",
+    "page_num": 8,
+    "chunk_id": "2402.13572v2_page8_chunk5",
+    "text": "generated by first sampling x ∼N (0, I20), where sℓ∈R20 represents the intermediate state output from the ℓ-th layer of the MLP. Here, our target is to perform in-context learning of the generator function (i.e., the 6-layer leaky ReLU MLP). 5.2 AlgoFormer Exhibits High Expressiveness In this subsection, we conduct a comparative analysis of the AlgoFormer against the standard and vanilla looped transformers across challenging tasks, as outlined in Section 3. Figure 2 illustrates the validation error trends, showcasing a decrease with an increasing number of in-context samples, aligning with our intuition. 8"
+  },
+  {
+    "paper_id": "2402.13572v2",
+    "title": "AlgoFormer: An Efficient Transformer Framework with Algorithmic Structures",
+    "page_num": 9,
+    "chunk_id": "2402.13572v2_page9_chunk1",
+    "text": "Published in Transactions on Machine Learning Research (01/2025) Crucially, the AlgoFormer consistently outperforms both the standard and the vanilla looped transformer across all tasks, highlighting its superior expressiveness in algorithm learning. Particularly in the CoT with MLPs task, both the AlgoFormer and the standard transformer significantly surpass the vanilla looped transformer. This further underscores the significance of preprocessing and postprocessing steps in handling complex real-world applications. The carefully designed algorithmic structure of the AlgoFormer emerges as an effective means of structural regularization, contributing to enhanced algorithm learning capabilities. 5.3 Impact of Hyperparameters In this subsection, we conduct the empirical analysis of the impact of the hyperparameters on the AlgoFormer. 0 25 50 75 100 125 150 175 200 loop iteration 0.0 0.2 0.4 0.6 0.8 1.0 1.2 square error T=12 T=20 T=30 T=50 (a) ∆T = 5 0 25 50 75 100 125 150 175 200 loop iteration 0.0 0.2 0.4 0.6 0.8 1.0 square error T=12 T=20 T=30 T=50 (b) ∆T = 10 0 25 50 75 100 125 150 175 200 loop iteration 0.0 0.2 0.4 0.6 0.8 1.0 square error T=12 T=20 T=30 T=50 (c) ∆T = 15 Figure 3: The validation error of trained models, evaluated"
+  },
+  {
+    "paper_id": "2402.13572v2",
+    "title": "AlgoFormer: An Efficient Transformer Framework with Algorithmic Structures",
+    "page_num": 9,
+    "chunk_id": "2402.13572v2_page9_chunk2",
+    "text": "0.4 0.6 0.8 1.0 square error T=12 T=20 T=30 T=50 (b) ∆T = 10 0 25 50 75 100 125 150 175 200 loop iteration 0.0 0.2 0.4 0.6 0.8 1.0 square error T=12 T=20 T=30 T=50 (c) ∆T = 15 Figure 3: The validation error of trained models, evaluated on regression with representation task, with varying hyperparameters T and ∆T. The AlgoFormers are trained for T loops, defined in Equation 3, and the evaluation focuses on square loss at longer iterations, where the number of loop iterations far exceeds T. 0 5 10 15 20 25 30 35 40 in-context samples 10 3 10 2 10 1 100 square error Standard L=3 Standard L=12 Standard L=14 Standard L=20 Standard L=22 AlgoFormer L=1 AlgoFormer L=2 (a) Varying numbers of layers 0 5 10 15 20 25 30 35 40 in-context samples 10 3 10 2 10 1 100 square error h=2 h=4 h=8 h=16 (b) Varying numbers of heads Figure 4: The validation error of trained models, evaluated on regression with representation task, with varying numbers of layers (denoted as L) and heads (denoted as h). In the context of AlgoFormer, the number of layers L corresponds to the layers"
+  },
+  {
+    "paper_id": "2402.13572v2",
+    "title": "AlgoFormer: An Efficient Transformer Framework with Algorithmic Structures",
+    "page_num": 9,
+    "chunk_id": "2402.13572v2_page9_chunk3",
+    "text": "h=2 h=4 h=8 h=16 (b) Varying numbers of heads Figure 4: The validation error of trained models, evaluated on regression with representation task, with varying numbers of layers (denoted as L) and heads (denoted as h). In the context of AlgoFormer, the number of layers L corresponds to the layers in the pre-, looped, and post-transformers, all of which are L-layer transformers. The AlgoFormers are trained with (T, ∆T) = (20, 15), defined in Equation 3. 0 5 10 15 20 25 30 35 40 in-context samples 10 3 10 2 10 1 100 101 square error Newton Iter=5 Newton Iter=10 Newton Iter=15 Newton Iter=20 GD Iter=5 GD Iter=10 GD Iter=15 GD Iter=20 AlgoFormer T=10 AlgoFormer T=20 (a) Linear regression, σ = 0 0 5 10 15 20 25 30 35 40 in-context samples 10 2 10 1 100 101 square error Newton Iter=5 Newton Iter=10 Newton Iter=15 Newton Iter=20 GD Iter=5 GD Iter=10 GD Iter=15 GD Iter=20 AlgoFormer T=10 AlgoFormer T=20 (b) Linear regression, σ = 0.1 0 5 10 15 20 25 30 35 40 in-context samples 100 101 square error Newton Iter=5 Newton Iter=10 Newton Iter=15 Newton Iter=20 GD Iter=5 GD Iter=10 GD Iter=15 GD Iter=20 AlgoFormer"
+  },
+  {
+    "paper_id": "2402.13572v2",
+    "title": "AlgoFormer: An Efficient Transformer Framework with Algorithmic Structures",
+    "page_num": 9,
+    "chunk_id": "2402.13572v2_page9_chunk4",
+    "text": "GD Iter=5 GD Iter=10 GD Iter=15 GD Iter=20 AlgoFormer T=10 AlgoFormer T=20 (b) Linear regression, σ = 0.1 0 5 10 15 20 25 30 35 40 in-context samples 100 101 square error Newton Iter=5 Newton Iter=10 Newton Iter=15 Newton Iter=20 GD Iter=5 GD Iter=10 GD Iter=15 GD Iter=20 AlgoFormer T=10 AlgoFormer T=20 (c) Linear regression, σ = 1.0 Figure 5: The validation error of trained AlgoFormer models and the linear regression models optimized by gradient descent and Newton’s method. The AlgoFormers are trained with (T, ∆T) = (20, 15) and (T, ∆T) = (10, 10), defined in Equation 3. Loop iterations. We conduct comprehensive experiments on the AlgoFormer with varying loop numbers, on solving the regression with representation task. The results highlight the crucial role of both T and ∆T 9"
+  },
+  {
+    "paper_id": "2402.13572v2",
+    "title": "AlgoFormer: An Efficient Transformer Framework with Algorithmic Structures",
+    "page_num": 10,
+    "chunk_id": "2402.13572v2_page10_chunk1",
+    "text": "Published in Transactions on Machine Learning Research (01/2025) in the performance of the AlgoFormer. It is observed that a larger ∆T contributes to the stable inference of transformers. Comparing Figure 3a with Figures 3b and 3c, it is evident that a larger ∆T enhances stable long-term inference. The number of loop iterations T determines the model capacity in expressing algorithms. However, it is important to note that there exists a trade-off between the iteration numbers (T, ∆T) and computational costs. Larger (T, ∆T) certainly increases model capacity but also leads to higher computational costs and challenges in model training, as reflected in Figure 3. Number of heads and layers. In our experiments on the AlgoFormer, we vary the numbers of heads and layers in TFloop while addressing the regression with representation task. The results reveal a consistent trend that an increase in both the number of heads and layers leads to lower errors. This aligns with our intuitive understanding, as transformers with greater numbers of heads and layers exhibit enhanced expressiveness. However, a noteworthy observation is that 4-layer and 16-head transformers may exhibit suboptimal performance, possibly due to increased optimization challenges during model training. This finding underscores the importance of"
+  },
+  {
+    "paper_id": "2402.13572v2",
+    "title": "AlgoFormer: An Efficient Transformer Framework with Algorithmic Structures",
+    "page_num": 10,
+    "chunk_id": "2402.13572v2_page10_chunk2",
+    "text": "to lower errors. This aligns with our intuitive understanding, as transformers with greater numbers of heads and layers exhibit enhanced expressiveness. However, a noteworthy observation is that 4-layer and 16-head transformers may exhibit suboptimal performance, possibly due to increased optimization challenges during model training. This finding underscores the importance of carefully selecting the model size, as a larger model, while offering higher expressiveness, may present additional training difficulties. The visualized results are shown in Figure 4. Moreover, compared with the standard transformer, even with the same number of layers, the AlgoFormer exhibits better performance in those tasks, mainly due to the introduced algorithmic structure. This finding highlights the role of the structure regularization of the model. Therefore, we have reasons to believe that the good performance of the AlgoFormer not only comes from the higher expressiveness with deeper layers but also from the structure regularization of model architecture, which facilitates easier training and good generalization. In Figure 3, we also provide insights into the behavior of AlgoFormer during inference. Although the Al- goFormer is trained with T=20 loop iterations, the inference is conducted with significantly longer loop iterations (e.g., T=200), As T increases beyond the training length, AlgoFormer demonstrates improved"
+  },
+  {
+    "paper_id": "2402.13572v2",
+    "title": "AlgoFormer: An Efficient Transformer Framework with Algorithmic Structures",
+    "page_num": 10,
+    "chunk_id": "2402.13572v2_page10_chunk3",
+    "text": "easier training and good generalization. In Figure 3, we also provide insights into the behavior of AlgoFormer during inference. Although the Al- goFormer is trained with T=20 loop iterations, the inference is conducted with significantly longer loop iterations (e.g., T=200), As T increases beyond the training length, AlgoFormer demonstrates improved performance and eventually stabilizes (i.e., converges). This behavior suggests that the inner looped trans- formers are effectively performing iterative computations that converge to a stable solution. 5.4 AlgoFormer and Human-Designed Algorithms In this subsection, we compare the AlgoFormer with Newton’s method and gradient descent in solving linear regression problems. We adopt the same default hyperparameters, with their selection grounded in a comprehensive grid search. As illustrated in Figure 5, we observe that in the noiseless case, the AlgoFormer outperforms both Newton’s method and gradient descent in the beginning stages. However, Newton’s method suddenly achieves nearly zero loss ( machine precision) later on, benefiting from its superlinear convergence. In contrast, our method maintains an error level around 1e −3. With increasing noise levels, both Newton’s method and gradient descent converge slowly, while our method exhibits better performance. Several aspects contribute to this phenomenon. Firstly, in the noiseless case, Newton’s method can"
+  },
+  {
+    "paper_id": "2402.13572v2",
+    "title": "AlgoFormer: An Efficient Transformer Framework with Algorithmic Structures",
+    "page_num": 10,
+    "chunk_id": "2402.13572v2_page10_chunk4",
+    "text": "later on, benefiting from its superlinear convergence. In contrast, our method maintains an error level around 1e −3. With increasing noise levels, both Newton’s method and gradient descent converge slowly, while our method exhibits better performance. Several aspects contribute to this phenomenon. Firstly, in the noiseless case, Newton’s method can precisely recover the weights through the linear regression objective in Equation 6, capitalizing on its superlinear convergence. On the other hand, the AlgoFormer operates as a black-box, trained from finite data. While we demonstrate good model expressiveness, the final generalization error of the trained transformer results from the model’s expressiveness, the finite number of training samples, and the optimization error. Despite exhibiting high expressiveness, the trained AlgoFormer cannot eliminate the last two errors entirely. This observation resonates with similar findings in solving partial differential equations (Raissi et al., 2019) and large linear systems (Gu & Ng, 2023) using deep learning models. Secondly, with larger noise levels, Newton’s method shows suboptimal results. This is partly due to the inclusion of noise, which slows down the convergence rate, and Newton’s method experiences convergence challenges when moving away from the local solution. In terms of global convergence, the AlgoFormer demonstrates superior performance compared"
+  },
+  {
+    "paper_id": "2402.13572v2",
+    "title": "AlgoFormer: An Efficient Transformer Framework with Algorithmic Structures",
+    "page_num": 10,
+    "chunk_id": "2402.13572v2_page10_chunk5",
+    "text": "models. Secondly, with larger noise levels, Newton’s method shows suboptimal results. This is partly due to the inclusion of noise, which slows down the convergence rate, and Newton’s method experiences convergence challenges when moving away from the local solution. In terms of global convergence, the AlgoFormer demonstrates superior performance compared to Newton’s method. Human-designed algorithms, backed by problem priors and precise computation, achieve irreplaceable per- formance. It’s important to note that deep learning models, including transformers, are specifically designed for solving black-box tasks where there is limited prior knowledge but sufficient observation samples. We 10"
+  },
+  {
+    "paper_id": "2402.13572v2",
+    "title": "AlgoFormer: An Efficient Transformer Framework with Algorithmic Structures",
+    "page_num": 11,
+    "chunk_id": "2402.13572v2_page11_chunk1",
+    "text": "Published in Transactions on Machine Learning Research (01/2025) expect that transformers, with their substantial expressiveness, hold the potential to contribute to designing implicit algorithms in solving scientific computing tasks. 5.5 Applications to Language Tasks In this subsection, we extend the evaluation of the proposed AlgoFormer to real-world language tasks, com- plementing its performance in real applications. Specifically, we focus on Neural Machine Translation using the IWSLT 2015 German-English dataset. The experimental setup includes a standard Transformer with 12 layers, 8 attention heads, a feature dimension of 256, and a learning rate of 5e-5. The pre-, looped, and post-transformers are all implemented as single layers, with T set to 10 and ∆T to 10 (see the hyperpa- rameters in Equation 3 for training). The input German text is treated as a prefix, and the output English text is generated autoregressively using decoder-based transformers for all three models. The translation performance is evaluated using cross-entropy loss, where lower values indicate better results. Additionally, BLEU (Bilingual Evaluation Understudy) is a widely used metric for measuring the quality of translation tasks, with higher scores indicating better performance. The results are presented in the table below: Model Standard Looped AlgoFormer Cross entropy 4.99 4.73 4.61"
+  },
+  {
+    "paper_id": "2402.13572v2",
+    "title": "AlgoFormer: An Efficient Transformer Framework with Algorithmic Structures",
+    "page_num": 11,
+    "chunk_id": "2402.13572v2_page11_chunk2",
+    "text": "evaluated using cross-entropy loss, where lower values indicate better results. Additionally, BLEU (Bilingual Evaluation Understudy) is a widely used metric for measuring the quality of translation tasks, with higher scores indicating better performance. The results are presented in the table below: Model Standard Looped AlgoFormer Cross entropy 4.99 4.73 4.61 BLUE 9.30 10.56 14.72 Table 1: Quality of Transformer models on machine translation. We also implement the proposed AlgoFormer on the text classification task using various datasets (AG News, IMDB, DBPedia, Yelp Review, and Yahoo News) to evaluate its performance on a real-world language application. The experimental setup includes a standard Transformer with 12 layers, 1 attention head, a feature dimension of 32, and a learning rate of 1e-3. The pre-, looped, and post-transformers are all implemented as single layers with one attention head, with (T, ∆T) = (10, 10). The input news text data is processed using encoder-based transformers, and the output classification is generated. Classification accuracy, where higher accuracy indicates better performance, is used as the evaluation metric. The results are summarized in the table below: Model Standard Looped AlgoFormer AG News 92.07 91.04 97.92 IMDB 75.00 77.50 77.50 DBPedia 99.21 99.11 98.21 Yelp Review 66.25 53.57 57.50"
+  },
+  {
+    "paper_id": "2402.13572v2",
+    "title": "AlgoFormer: An Efficient Transformer Framework with Algorithmic Structures",
+    "page_num": 11,
+    "chunk_id": "2402.13572v2_page11_chunk3",
+    "text": "and the output classification is generated. Classification accuracy, where higher accuracy indicates better performance, is used as the evaluation metric. The results are summarized in the table below: Model Standard Looped AlgoFormer AG News 92.07 91.04 97.92 IMDB 75.00 77.50 77.50 DBPedia 99.21 99.11 98.21 Yelp Review 66.25 53.57 57.50 Yahoo News 73.96 69.79 81.25 Table 2: Accuracy (%) of Transformer models on text classification across different datasets. As shown in the results, AlgoFormer outperforms and performs comparably with the standard Transformer and the vanilla looped Transformer in the Neural Machine Translation and Text Classification tasks, sug- gesting that conventional models may have inherent redundancies. This aligns with recent findings on the redundancy in large language models (Chen et al., 2024; Frantar & Alistarh, 2023; Xia et al., 2024). These preliminary results indicate the potential of AlgoFormer, which is designed as an algorithmic conductor, in real-world language tasks. 5.6 Computation Comparison The additional computational costs and complexity introduced by AlgoFormer over the standard transformer and the vanilla looped transformer depend on the specific structure of the AlgoFormer framework. In our experimental settings, these costs are negligible. Compared to the standard transformer, the total computation overhead is primarily determined by the"
+  },
+  {
+    "paper_id": "2402.13572v2",
+    "title": "AlgoFormer: An Efficient Transformer Framework with Algorithmic Structures",
+    "page_num": 11,
+    "chunk_id": "2402.13572v2_page11_chunk4",
+    "text": "Comparison The additional computational costs and complexity introduced by AlgoFormer over the standard transformer and the vanilla looped transformer depend on the specific structure of the AlgoFormer framework. In our experimental settings, these costs are negligible. Compared to the standard transformer, the total computation overhead is primarily determined by the loop iterations T and the number of loops ∆T included in the training loss. Since T in our experiments is comparable to the number of layers in the standard transformer, the dominant additional computation comes from ∆T. This overhead can be mitigated by using smaller batch sizes, ensuring that the proposed method does not introduce significant computational 11"
+  },
+  {
+    "paper_id": "2402.13572v2",
+    "title": "AlgoFormer: An Efficient Transformer Framework with Algorithmic Structures",
+    "page_num": 12,
+    "chunk_id": "2402.13572v2_page12_chunk1",
+    "text": "Published in Transactions on Machine Learning Research (01/2025) overhead compared to the standard transformer. The main complexity lies in the training strategy outlined in Equation 3, which ensures stable training. When compared to the vanilla looped transformer, the computational overhead comes from the pre- and post-transformer modules. However, if these modules are of similar size to the looped transformer, the additional computational cost is negligible, especially when the loop iteration T is much greater than the number of layers in these modules. For instance, in our experiments, we set the pre-, looped-, and post- transformer layers to 1, with T = 20 during training. In this scenario, the additional computation introduced by the pre- and post-transformer modules constitutes approximately 1/10 of the total computation. During inference, where T is typically much larger than during training (e.g., T=200 loop iterations in Figure 3), the additional computational overhead is further reduced to about 1/100. 6 Conclusion and Discussion In this paper, we introduce a novel AlgoFormer, an algorithm learner designed from the looped trans- former, distinguished by its algorithmic structures. We provide an insight that the efficient transformer framework can be designed by considering the prior knowledge of the task and the"
+  },
+  {
+    "paper_id": "2402.13572v2",
+    "title": "AlgoFormer: An Efficient Transformer Framework with Algorithmic Structures",
+    "page_num": 12,
+    "chunk_id": "2402.13572v2_page12_chunk2",
+    "text": "about 1/100. 6 Conclusion and Discussion In this paper, we introduce a novel AlgoFormer, an algorithm learner designed from the looped trans- former, distinguished by its algorithmic structures. We provide an insight that the efficient transformer framework can be designed by considering the prior knowledge of the task and the structure of potential algorithms. Comprising three sub-transformers, each playing a distinct role in algorithm learning, the Al- goFormer demonstrates expressiveness and efficiency while maintaining a low parameter size. Theoretical analysis establishes that the AlgoFormer can tackle challenging in-context learning tasks, mirroring human- designed algorithms. Our experiments further validate our claim, showing that the proposed transformer outperforms both the standard transformer and the vanilla looped transformer in specific algorithm learning and real-world language tasks. While the proposed AlgoFormer framework offers flexibility and efficiency, several potential limitations and challenges warrant discussion. First, the dependence on prior knowledge for designing concrete architecture. The design of the AlgoFormer framework relies heavily on prior knowledge of tasks and the structure of potential algorithms. In scientific computing tasks, where problems are often well-formulated and informed by domain knowledge, this reliance can be an advantage, enabling the design of task-specific, efficient architectures. However, for real-world language tasks,"
+  },
+  {
+    "paper_id": "2402.13572v2",
+    "title": "AlgoFormer: An Efficient Transformer Framework with Algorithmic Structures",
+    "page_num": 12,
+    "chunk_id": "2402.13572v2_page12_chunk3",
+    "text": "design of the AlgoFormer framework relies heavily on prior knowledge of tasks and the structure of potential algorithms. In scientific computing tasks, where problems are often well-formulated and informed by domain knowledge, this reliance can be an advantage, enabling the design of task-specific, efficient architectures. However, for real-world language tasks, the abstract and unstructured nature of the problems often limits the availability of such prior knowledge. This can make it challenging to design an optimal AlgoFormer architecture for these tasks. While the insights of AlgoFormer can significantly benefit the scientific computing community, extending its design principles to language tasks may require more advanced techniques, such as automated architecture search or meta-learning, to determine suitable architectures without extensive prior knowledge. Second, the training complexity of AlgoFormer with more complicated algorithmic structures. Although incorporating more complex algorithmic structures into AlgoFormer, such as nested looped transformers, enhances its expressiveness, training AlgoFormer can become more challenging. It inevitably introduces additional computational costs and requires adjustments to the training strategy. These challenges could limit the usability of AlgoFormer in scenarios where algorithmic structures are complicated to model. Third, the scalability of AlgoFormer to large-scale applications. The scaling behavior of AlgoFormer has not been thoroughly investigated"
+  },
+  {
+    "paper_id": "2402.13572v2",
+    "title": "AlgoFormer: An Efficient Transformer Framework with Algorithmic Structures",
+    "page_num": 12,
+    "chunk_id": "2402.13572v2_page12_chunk4",
+    "text": "more challenging. It inevitably introduces additional computational costs and requires adjustments to the training strategy. These challenges could limit the usability of AlgoFormer in scenarios where algorithmic structures are complicated to model. Third, the scalability of AlgoFormer to large-scale applications. The scaling behavior of AlgoFormer has not been thoroughly investigated in this paper. The tasks studied are primarily hand-generated scientific problems or toy cases, and the language task considered is of medium scale. Similarly, the model sizes used in this study are relatively small compared to state-of-the-art large language models (LLMs). To fully assess the potential of AlgoFormer, future research should explore its scalability to larger, more challenging tasks and datasets, as well as the associated computational and memory requirements when deploying AlgoFormer at scale. Acknowledgements M. Ng’s research is partly supported by the National Key Research and Development Program of China under Grant 2024YFE0202900; HKRGC GRF 17201020 and 17300021, HKRGC CRF C7004-21GF, and Joint NSFC and RGC N-HKU769/21. 12"
+  },
+  {
+    "paper_id": "2402.13572v2",
+    "title": "AlgoFormer: An Efficient Transformer Framework with Algorithmic Structures",
+    "page_num": 12,
+    "chunk_id": "2402.13572v2_page12_chunk5",
+    "text": "HKRGC CRF C7004-21GF, and Joint NSFC and RGC N-HKU769/21. 12"
+  },
+  {
+    "paper_id": "2402.13572v2",
+    "title": "AlgoFormer: An Efficient Transformer Framework with Algorithmic Structures",
+    "page_num": 13,
+    "chunk_id": "2402.13572v2_page13_chunk1",
+    "text": "Published in Transactions on Machine Learning Research (01/2025) References Kwangjun Ahn, Xiang Cheng, Hadi Daneshmand, and Suvrit Sra. Transformers learn to implement pre- conditioned gradient descent for in-context learning. Advances in Neural Information Processing Systems, 2023. URL https://openreview.net/forum?id=LziniAXEI9. Ekin Akyürek, Dale Schuurmans, Jacob Andreas, Tengyu Ma, and Denny Zhou. What learning algorithm is in-context learning? investigations with linear models. In International Conference on Learning Repre- sentations, 2023. URL https://openreview.net/forum?id=0g0X4H8yN4I. Yu Bai, Fan Chen, Huan Wang, Caiming Xiong, and Song Mei. Transformers as statisticians: Provable in- context learning with in-context algorithm selection. Advances in Neural Information Processing Systems, 2023. URL https://openreview.net/forum?id=liMSqUuVg9. Tom Brown, Benjamin Mann, Nick Ryder, Melanie Subbiah, Jared D Kaplan, Prafulla Dhariwal, Arvind Neelakantan, Pranav Shyam, Girish Sastry, Amanda Askell, et al. Language models are few-shot learners. Advances in Neural Information Processing Systems, 33:1877–1901, 2020. URL https://proceedings. neurips.cc/paper_files/paper/2020/file/1457c0d6bfcb4967418bfb8ac142f64a-Paper.pdf. Shuhao Cao. Choose a transformer: Fourier or galerkin. Advances in Neural Information Pro- cessing Systems, 34:24924–24940, 2021. URL https://proceedings.neurips.cc/paper/2021/hash/ d0921d442ee91b896ad95059d13df618-Abstract.html. Xiaodong Chen, Yuxuan Hu, and Jing Zhang. Compressing large language models by streamlining the unimportant layer. arXiv preprint arXiv:2403.19135, 2024. Jacob Devlin, Ming-Wei Chang, Kenton Lee, and Kristina Toutanova. Bert: Pre-training of deep bidirectional transformers for language understanding. Proceedings of the"
+  },
+  {
+    "paper_id": "2402.13572v2",
+    "title": "AlgoFormer: An Efficient Transformer Framework with Algorithmic Structures",
+    "page_num": 13,
+    "chunk_id": "2402.13572v2_page13_chunk2",
+    "text": "Information Pro- cessing Systems, 34:24924–24940, 2021. URL https://proceedings.neurips.cc/paper/2021/hash/ d0921d442ee91b896ad95059d13df618-Abstract.html. Xiaodong Chen, Yuxuan Hu, and Jing Zhang. Compressing large language models by streamlining the unimportant layer. arXiv preprint arXiv:2403.19135, 2024. Jacob Devlin, Ming-Wei Chang, Kenton Lee, and Kristina Toutanova. Bert: Pre-training of deep bidirectional transformers for language understanding. Proceedings of the 2019 Conference of the North American Chapter of the Association for Computational Linguistics: Human Language Technologies, 1:4171–4186, 2019. URL https://aclanthology.org/N19-1423. Alexey Dosovitskiy, Lucas Beyer, Alexander Kolesnikov, Dirk Weissenborn, Xiaohua Zhai, Thomas Un- terthiner, Mostafa Dehghani, Matthias Minderer, Georg Heigold, Sylvain Gelly, Jakob Uszkoreit, and Neil Houlsby. An image is worth 16x16 words: Transformers for image recognition at scale. In International Conference on Learning Representations, 2021. URL https://openreview.net/forum?id=YicbFdNTTy. Guhao Feng, Yuntian Gu, Bohang Zhang, Haotian Ye, Di He, and Liwei Wang. Towards revealing the mystery behind chain of thought: a theoretical perspective. Advances in Neural Information Processing Systems, 2023. URL https://openreview.net/forum?id=qHrADgAdYu. Elias Frantar and Dan Alistarh. Sparsegpt: Massive language models can be accurately pruned in one-shot. In International Conference on Machine Learning, pp. 10323–10337. PMLR, 2023. Deqing Fu, Tian-Qi Chen, Robin Jia, and Vatsal Sharan. Transformers learn higher-order optimization methods for in-context learning: A study with linear models. arXiv preprint arXiv:2310.17086,"
+  },
+  {
+    "paper_id": "2402.13572v2",
+    "title": "AlgoFormer: An Efficient Transformer Framework with Algorithmic Structures",
+    "page_num": 13,
+    "chunk_id": "2402.13572v2_page13_chunk3",
+    "text": "Elias Frantar and Dan Alistarh. Sparsegpt: Massive language models can be accurately pruned in one-shot. In International Conference on Machine Learning, pp. 10323–10337. PMLR, 2023. Deqing Fu, Tian-Qi Chen, Robin Jia, and Vatsal Sharan. Transformers learn higher-order optimization methods for in-context learning: A study with linear models. arXiv preprint arXiv:2310.17086, 2023. Shivam Garg, Dimitris Tsipras, Percy S Liang, and Gregory Valiant. What can transformers learn in- context? a case study of simple function classes. Advances in Neural Information Processing Systems, 35: 30583–30598, 2022. URL https://openreview.net/forum?id=flNZJ2eOet. Angeliki Giannou, Shashank Rajput, Jy-Yong Sohn, Kangwook Lee, Jason D. Lee, and Dimitris Papailiopou- los. Looped transformers as programmable computers. In International Conference on Machine Learning, volume 202, pp. 11398–11442. PMLR, 2023. URL https://proceedings.mlr.press/v202/giannou23a. html. Yiqi Gu and Michael K Ng. Deep neural networks for solving large linear systems arising from high- dimensional problems. SIAM Journal on Scientific Computing, 45(5):A2356–A2381, 2023. 13"
+  },
+  {
+    "paper_id": "2402.13572v2",
+    "title": "AlgoFormer: An Efficient Transformer Framework with Algorithmic Structures",
+    "page_num": 14,
+    "chunk_id": "2402.13572v2_page14_chunk1",
+    "text": "Published in Transactions on Machine Learning Research (01/2025) Tianyu Guo, Wei Hu, Song Mei, Huan Wang, Caiming Xiong, Silvio Savarese, and Yu Bai. How do transform- ers learn in-context beyond simple functions? a case study on learning with representations. International Conference on Learning Representations, 2024. URL https://openreview.net/forum?id=ikwEDva1JZ. Yu Huang, Yuan Cheng, and Yingbin Liang. In-context convergence of transformers. arXiv preprint arXiv:2310.05249, 2023. Shima Imani, Liang Du, and Harsh Shrivastava. MathPrompter: Mathematical reasoning using large lan- guage models. In Proceedings of the 61st Annual Meeting of the Association for Computational Lin- guistics (Volume 5: Industry Track), pp. 37–42. Association for Computational Linguistics, 2023. URL https://aclanthology.org/2023.acl-industry.4. Amirhossein Kazemnejad, Inkit Padhi, Karthikeyan Natesan Ramamurthy, Payel Das, and Siva Reddy. The impact of positional encoding on length generalization in transformers. Advances in Neural Information Processing Systems, 2023. URL https://openreview.net/forum?id=Drrl2gcjzl. Shiyang Li, Xiaoyong Jin, Yao Xuan, Xiyou Zhou, Wenhu Chen, Yu-Xiang Wang, and Xifeng Yan. Enhancing the locality and breaking the memory bottleneck of transformer on time series forecasting. Advances in Neural Information Processing Systems, 32, 2019. URL https://papers.neurips.cc/paper_files/ paper/2019/hash/6775a0635c302542da2c32aa19d86be0-Abstract.html. Yingcong Li, Kartik Sreenivasan, Angeliki Giannou, Dimitris Papailiopoulos, and Samet Oymak. Dissecting chain-of-thought: Compositionality through in-context filtering and learning. In Advances in Neural Information Processing"
+  },
+  {
+    "paper_id": "2402.13572v2",
+    "title": "AlgoFormer: An Efficient Transformer Framework with Algorithmic Structures",
+    "page_num": 14,
+    "chunk_id": "2402.13572v2_page14_chunk2",
+    "text": "Enhancing the locality and breaking the memory bottleneck of transformer on time series forecasting. Advances in Neural Information Processing Systems, 32, 2019. URL https://papers.neurips.cc/paper_files/ paper/2019/hash/6775a0635c302542da2c32aa19d86be0-Abstract.html. Yingcong Li, Kartik Sreenivasan, Angeliki Giannou, Dimitris Papailiopoulos, and Samet Oymak. Dissecting chain-of-thought: Compositionality through in-context filtering and learning. In Advances in Neural Information Processing Systems, 2023. URL https://openreview.net/forum?id=xEhKwsqxMa. Arvind Mahankali, Tatsunori B Hashimoto, and Tengyu Ma. One step of gradient descent is provably the optimal in-context learner with one layer of linear self-attention. International Conference on Learning Representations, 2024. URL https://openreview.net/forum?id=8p3fu56lKc. Santiago Ontanon, Joshua Ainslie, Zachary Fisher, and Vaclav Cvicek. Making transformers solve composi- tional tasks. In Proceedings of the 60th Annual Meeting of the Association for Computational Linguistics (Volume 1: Long Papers), pp. 3591–3607, 2022. URL https://aclanthology.org/2022.acl-long.251. Victor Pan and Robert Schreiber. An improved newton iteration for the generalized inverse of a matrix, with applications. SIAM Journal on Scientific and Statistical Computing, 12(5):1109–1130, 1991. Ofir Press, Noah Smith, and Mike Lewis. Train short, test long: Attention with linear biases enables input length extrapolation. In International Conference on Learning Representations, 2022. URL https: //openreview.net/forum?id=R8sQPpGCv0. Alec Radford, Jeffrey Wu, Rewon Child, David Luan, Dario Amodei, Ilya Sutskever, et al. Language models are unsupervised multitask learners."
+  },
+  {
+    "paper_id": "2402.13572v2",
+    "title": "AlgoFormer: An Efficient Transformer Framework with Algorithmic Structures",
+    "page_num": 14,
+    "chunk_id": "2402.13572v2_page14_chunk3",
+    "text": "1991. Ofir Press, Noah Smith, and Mike Lewis. Train short, test long: Attention with linear biases enables input length extrapolation. In International Conference on Learning Representations, 2022. URL https: //openreview.net/forum?id=R8sQPpGCv0. Alec Radford, Jeffrey Wu, Rewon Child, David Luan, Dario Amodei, Ilya Sutskever, et al. Language models are unsupervised multitask learners. OpenAI blog, 1(8):9, 2019. Colin Raffel, Noam Shazeer, Adam Roberts, Katherine Lee, Sharan Narang, Michael Matena, Yanqi Zhou, Wei Li, and Peter J Liu. Exploring the limits of transfer learning with a unified text-to-text trans- former. Journal of Machine Learning Research, 21(1):5485–5551, 2020. URL https://jmlr.org/papers/ volume21/20-074/20-074.pdf. Maziar Raissi, Paris Perdikaris, and George E Karniadakis. Physics-informed neural networks: A deep learn- ing framework for solving forward and inverse problems involving nonlinear partial differential equations. Journal of Computational Physics, 378:686–707, 2019. Torsten Söderström and GW Stewart. On the numerical properties of an iterative method for computing the moore–penrose generalized inverse. SIAM Journal on Numerical Analysis, 11(1):61–74, 1974. Ashish Vaswani, Noam Shazeer, Niki Parmar, Jakob Uszkoreit, Llion Jones, Aidan N Gomez, Łukasz Kaiser, and Illia Polosukhin. Attention is all you need. Advances in Neural Information Pro- cessing Systems, 30, 2017. URL https://proceedings.neurips.cc/paper_files/paper/2017/hash/ 3f5ee243547dee91fbd053c1c4a845aa-Abstract.html. 14"
+  },
+  {
+    "paper_id": "2402.13572v2",
+    "title": "AlgoFormer: An Efficient Transformer Framework with Algorithmic Structures",
+    "page_num": 14,
+    "chunk_id": "2402.13572v2_page14_chunk4",
+    "text": "on Numerical Analysis, 11(1):61–74, 1974. Ashish Vaswani, Noam Shazeer, Niki Parmar, Jakob Uszkoreit, Llion Jones, Aidan N Gomez, Łukasz Kaiser, and Illia Polosukhin. Attention is all you need. Advances in Neural Information Pro- cessing Systems, 30, 2017. URL https://proceedings.neurips.cc/paper_files/paper/2017/hash/ 3f5ee243547dee91fbd053c1c4a845aa-Abstract.html. 14"
+  },
+  {
+    "paper_id": "2402.13572v2",
+    "title": "AlgoFormer: An Efficient Transformer Framework with Algorithmic Structures",
+    "page_num": 15,
+    "chunk_id": "2402.13572v2_page15_chunk1",
+    "text": "Published in Transactions on Machine Learning Research (01/2025) Johannes Von Oswald, Eyvind Niklasson, Ettore Randazzo, João Sacramento, Alexander Mordvintsev, An- drey Zhmoginov, and Max Vladymyrov. Transformers learn in-context by gradient descent. In Interna- tional Conference on Machine Learning, pp. 35151–35174. PMLR, 2023. URL https://proceedings. mlr.press/v202/von-oswald23a.html. Jason Wei, Xuezhi Wang, Dale Schuurmans, Maarten Bosma, Fei Xia, Ed Chi, Quoc V Le, Denny Zhou, et al. Chain-of-thought prompting elicits reasoning in large language models. Advances in Neural Information Processing Systems, 35:24824–24837, 2022. URL https://openreview.net/forum?id=_VjQlMeSB_J. Mengzhou Xia, Tianyu Gao, Zhiyuan Zeng, and Danqi Chen. Sheared LLaMA: Accelerating language model pre-training via structured pruning. In The Twelfth International Conference on Learning Representations, 2024. URL https://openreview.net/forum?id=09iOdaeOzp. Liu Yang, Kangwook Lee, Robert D Nowak, and Dimitris Papailiopoulos. Looped transformers are better at learning learning algorithms. In International Conference on Learning Representations, 2024. URL https://openreview.net/forum?id=HHbRxoDTxE. Longhui Yu, Weisen Jiang, Han Shi, Jincheng Yu, Zhengying Liu, Yu Zhang, James T Kwok, Zhen- guo Li, Adrian Weller, and Weiyang Liu. Metamath: Bootstrap your own mathematical questions for large language models. International Conference on Learning Representations, 2024. URL https: //openreview.net/forum?id=N8N0hgNDRt. Ruiqi Zhang, Spencer Frei, and Peter L Bartlett. Trained transformers learn linear models in-context. arXiv preprint arXiv:2306.09927, 2023a. Shuang Zhang,"
+  },
+  {
+    "paper_id": "2402.13572v2",
+    "title": "AlgoFormer: An Efficient Transformer Framework with Algorithmic Structures",
+    "page_num": 15,
+    "chunk_id": "2402.13572v2_page15_chunk2",
+    "text": "James T Kwok, Zhen- guo Li, Adrian Weller, and Weiyang Liu. Metamath: Bootstrap your own mathematical questions for large language models. International Conference on Learning Representations, 2024. URL https: //openreview.net/forum?id=N8N0hgNDRt. Ruiqi Zhang, Spencer Frei, and Peter L Bartlett. Trained transformers learn linear models in-context. arXiv preprint arXiv:2306.09927, 2023a. Shuang Zhang, Rui Fan, Yuti Liu, Shuang Chen, Qiao Liu, and Wanwen Zeng. Applications of transformer- based language models in bioinformatics: a survey. Bioinformatics Advances, 3(1):vbad001, 2023b. 15"
+  },
+  {
+    "paper_id": "2402.13572v2",
+    "title": "AlgoFormer: An Efficient Transformer Framework with Algorithmic Structures",
+    "page_num": 16,
+    "chunk_id": "2402.13572v2_page16_chunk1",
+    "text": "Published in Transactions on Machine Learning Research (01/2025) A Technical Proofs In this section, we provide comprehensive proofs for all theorems stated in the main content. Notation. We use boldface capital and lowercase letters to denote matrices and vectors respectively. Non- bold letters represent the elements of matrices or vectors, or scalars. For example, Ai,j denotes the (i, j)-th element of the matrix A. We use ∥· ∥2 to denote the 2-norm (or the maximal singular value) of a matrix. A.1 Proof for Theorem 3.1 Positional embedding. The role of positional embedding is pivotal in the performance of transformers. Several studies have investigated its impact on natural language processing tasks, as referenced in (Kazem- nejad et al., 2023; Ontanon et al., 2022; Press et al., 2022). In our theoretical construction, we deviate from empirical settings by using quasi-orthogonal vectors as positional embedding in each token vector. This choice, also employed by Li et al. (2023); Giannou et al. (2023), is made for theoretical convenience. Lemma A.1 (Quasi-orthogonal vectors). For any fixed ϵ > 0, there exists a set of vectors {p1, p2, · · · , pN} of dimension O (log N) such that p⊤ i pi > p⊤ i"
+  },
+  {
+    "paper_id": "2402.13572v2",
+    "title": "AlgoFormer: An Efficient Transformer Framework with Algorithmic Structures",
+    "page_num": 16,
+    "chunk_id": "2402.13572v2_page16_chunk2",
+    "text": "by Li et al. (2023); Giannou et al. (2023), is made for theoretical convenience. Lemma A.1 (Quasi-orthogonal vectors). For any fixed ϵ > 0, there exists a set of vectors {p1, p2, · · · , pN} of dimension O (log N) such that p⊤ i pi > p⊤ i pj + ϵ for all i ̸= j. Before going through the details, the following lemma is crucial for understanding transformers as algorithm learners. Lemma A.2. A one-layer two-head transformer exhibits the capability to implement a single step of gradient descent in multivariate regression. Proof. Let us consider the input prompt with positional embedding as follows: P :=   x1 0 · · · xN 0 xtest 0 0 y1 · · · 0 yN 0 0 1 N x1 0 · · · 1 N xN 0 0 0 Akx1 −y1 0 · · · AkxN −yN 0 Akxtest 0 1 0 · · · 1 0 1 0 0 1 · · · 0 1 0 1 0 0 · · · 0 0 1 0 0 0 · · · 0 0 0 1   , where the 0-1 indicators are used to identify features,"
+  },
+  {
+    "paper_id": "2402.13572v2",
+    "title": "AlgoFormer: An Efficient Transformer Framework with Algorithmic Structures",
+    "page_num": 16,
+    "chunk_id": "2402.13572v2_page16_chunk3",
+    "text": "Akxtest 0 1 0 · · · 1 0 1 0 0 1 · · · 0 1 0 1 0 0 · · · 0 0 1 0 0 0 · · · 0 0 0 1   , where the 0-1 indicators are used to identify features, labels, and the test data, respectively. We denote the loss function for the multi-variate regression given samples {x1, y1, · · · , xN, yN} as L (A) = 1 2N N X j=1 ∥Axj −yj∥2 2 , then ∂L ∂A(Ak) = 1 N N X j=1 (Akxj −yj) x⊤ j . Now, let us define WQP = \u0014 cx1 0 · · · cxN 0 cxtest 0 1 1 · · · 1 1 1 1 \u0015 , WKP = \u0014 1 N x1 0 · · · 1 N xN 0 0 0 0 0 · · · 0 0 0 C \u0015 , and WV P = eC \u0002 Akx1 −y1 0 · · · AkxN −yN 0 Akxtest 0 \u0003 , 16"
+  },
+  {
+    "paper_id": "2402.13572v2",
+    "title": "AlgoFormer: An Efficient Transformer Framework with Algorithmic Structures",
+    "page_num": 16,
+    "chunk_id": "2402.13572v2_page16_chunk4",
+    "text": "0 0 0 C \u0015 , and WV P = eC \u0002 Akx1 −y1 0 · · · AkxN −yN 0 Akxtest 0 \u0003 , 16"
+  },
+  {
+    "paper_id": "2402.13572v2",
+    "title": "AlgoFormer: An Efficient Transformer Framework with Algorithmic Structures",
+    "page_num": 17,
+    "chunk_id": "2402.13572v2_page17_chunk1",
+    "text": "Published in Transactions on Machine Learning Research (01/2025) for some scalers C, c > 0. Here, we denote Z := P ⊤W ⊤ K WQP =   c N x⊤ 1 x1 0 · · · c N x⊤ 1 xN 0 c N x⊤ 1 xtest 0 ... ... ... ... ... ... ... c N x⊤ Nx1 0 · · · c N x⊤ NxN 0 c N x⊤ Nxtest 0 0 0 · · · 0 0 0 0 0 0 · · · 0 0 0 0 C C · · · C C C C   , then eC · softmax (Z2i−1,2j−1) ≈1 + c N x⊤ i xj, where the two sides of the “≈” can be arbitrarily close if C > 0 is sufficiently large and c > 0 is sufficiently small. The constant here can be canceled by introducing another head. Therefore, the output of the attention layer is 2 X i=1 W (i) V P · softmax \u0010 P ⊤W (i)⊤ K W (i) Q P \u0011 ≈c \u0002 ∂L ∂A(Ak)x1 0 · · · ∂L ∂A(Ak)xN 0 ∂L ∂A(Ak)xtest 0 \u0003 . The transformer layer’s output, after passing"
+  },
+  {
+    "paper_id": "2402.13572v2",
+    "title": "AlgoFormer: An Efficient Transformer Framework with Algorithmic Structures",
+    "page_num": 17,
+    "chunk_id": "2402.13572v2_page17_chunk2",
+    "text": "head. Therefore, the output of the attention layer is 2 X i=1 W (i) V P · softmax \u0010 P ⊤W (i)⊤ K W (i) Q P \u0011 ≈c \u0002 ∂L ∂A(Ak)x1 0 · · · ∂L ∂A(Ak)xN 0 ∂L ∂A(Ak)xtest 0 \u0003 . The transformer layer’s output, after passing through the feed-forward neural network, is expressed as:   x1 0 · · · xN 0 xtest 0 0 y1 · · · 0 yN 0 0 Ak+1x1 −y1 0 · · · Ak+1xN −yN 0 Ak+1xtest 0 1 0 · · · 1 0 1 0 0 1 · · · 0 1 0 1 0 0 · · · 0 0 1 0 0 0 · · · 0 0 0 1   . This signifies the completion of one step of gradient descent with Ak+1 = Ak −η ∂L ∂A(Ak) and a positive step size η > 0. Proof for Theorem 3.1. We start by showing that L-layer transformer can represent L-layer MLPs. It is observed that the identity operation (i.e., Attn (X) = X) can be achieved by setting WV = 0 due to the residual connection in the attention layer. Each feed-forward neural"
+  },
+  {
+    "paper_id": "2402.13572v2",
+    "title": "AlgoFormer: An Efficient Transformer Framework with Algorithmic Structures",
+    "page_num": 17,
+    "chunk_id": "2402.13572v2_page17_chunk3",
+    "text": "η > 0. Proof for Theorem 3.1. We start by showing that L-layer transformer can represent L-layer MLPs. It is observed that the identity operation (i.e., Attn (X) = X) can be achieved by setting WV = 0 due to the residual connection in the attention layer. Each feed-forward neural network in a transformer layer can represent a one-layer MLP. Consequently, the representation function Φ∗(·) can be realized by L-layer transformers. At the output layer of the L-th layer transformer, let A0 be an initial guess for the weight. The current output token vectors are then given by: P :=   Φ∗(x1) 0 · · · Φ∗(xN) 0 Φ∗(xtest) 0 0 y1 · · · 0 yN 0 0 A0Φ∗(x1) 0 · · · A0Φ∗(xN) 0 Ak+1Φ∗(xtest) 0 p1 p1 · · · pN pN pN+1 pN+1 1 N 1 N · · · 1 N 1 N 0 0 1 0 · · · 1 0 1 0 0 1 · · · 0 1 0 1 0 0 · · · 0 0 1 0 0 0 · · · 0 0 0 1   . Here, the set of quasi-orthogonal vectors {p1, · · ·"
+  },
+  {
+    "paper_id": "2402.13572v2",
+    "title": "AlgoFormer: An Efficient Transformer Framework with Algorithmic Structures",
+    "page_num": 17,
+    "chunk_id": "2402.13572v2_page17_chunk4",
+    "text": "0 1 0 · · · 1 0 1 0 0 1 · · · 0 1 0 1 0 0 · · · 0 0 1 0 0 0 · · · 0 0 0 1   . Here, the set of quasi-orthogonal vectors {p1, · · · , pN+1} is generated, according to Lemma A.1. The next transformer layer is designed to facilitate the exchange of information between neighboring tokens. Let WKP = WQP = \u0002 p1 p1 · · · pN pN pN+1 pN+1 \u0003 and WV P = \u0002 0 y1 · · · 0 yN 0 0 \u0003 , 17"
+  },
+  {
+    "paper_id": "2402.13572v2",
+    "title": "AlgoFormer: An Efficient Transformer Framework with Algorithmic Structures",
+    "page_num": 18,
+    "chunk_id": "2402.13572v2_page18_chunk1",
+    "text": "Published in Transactions on Machine Learning Research (01/2025) then WV P · softmax \u0000P ⊤W ⊤ K WQP \u0001 ≈ \u0002 1 2y1 1 2y1 · · · 1 2yN 1 2yN 0 0 \u0003 , where the two sides of the “≈” can be arbitrarily close if the temperature of the softmax function is sufficiently large, due to the nearly orthogonality of positional embedding vectors. It’s important to note that the feed- forward neural network is capable of approximating nonlinear functions, such as multiplication. Here, we construct a shallow neural network that calculates the multiplication between the first d elements and the value 1 N in each token. Passing through the feed-forward neural network together with the indicators, we obtain the final output of the first (L + 1)-layer transformer TFpre:   Φ∗(x1) 0 · · · Φ∗(xN) 0 Φ∗(xtest) 0 0 y1 · · · 0 yN 0 0 1 N Φ∗(x1) 0 · · · 1 N Φ∗(xN) 0 0 0 A0Φ∗(x1) −y1 0 · · · A0Φ∗(xN) −yN 0 A0Φ∗(xtest) 0 p1 p1 · · · pN pN pN+1 pN+1 1 0 · · · 1 0 1 0 0 1 · · · 0"
+  },
+  {
+    "paper_id": "2402.13572v2",
+    "title": "AlgoFormer: An Efficient Transformer Framework with Algorithmic Structures",
+    "page_num": 18,
+    "chunk_id": "2402.13572v2_page18_chunk2",
+    "text": "0 0 1 N Φ∗(x1) 0 · · · 1 N Φ∗(xN) 0 0 0 A0Φ∗(x1) −y1 0 · · · A0Φ∗(xN) −yN 0 A0Φ∗(xtest) 0 p1 p1 · · · pN pN pN+1 pN+1 1 0 · · · 1 0 1 0 0 1 · · · 0 1 0 1 0 0 · · · 0 0 1 0 0 0 · · · 0 0 0 1   . According to the construction outlined in Lemma A.2, there exists a one-layer, two-head transformer TFloop, independent of the exact values of input data samples (tokens), that can implement gradient descent for finding the optimal weight A∗in the context of multivariate regression. The optimization aims to minimize the following empirical loss: min A 1 2N N X i=1 ∥AΦ∗(xi) −yi∥2 2 . After k-steps of looped transformer TFloop, which corresponds to applying k steps of gradient descent, the resulting token vectors follows   Φ∗(x1) 0 · · · Φ∗(xN) 0 Φ∗(xtest) 0 0 y1 · · · 0 yN 0 0 1 N Φ∗(x1) 0 · · · 1 N Φ∗(xN) 0 0 0 AkΦ∗(x1) −y1 0 · · · AkΦ∗(xN) −yN 0 AkΦ∗(xtest) 0 p1"
+  },
+  {
+    "paper_id": "2402.13572v2",
+    "title": "AlgoFormer: An Efficient Transformer Framework with Algorithmic Structures",
+    "page_num": 18,
+    "chunk_id": "2402.13572v2_page18_chunk3",
+    "text": "the resulting token vectors follows   Φ∗(x1) 0 · · · Φ∗(xN) 0 Φ∗(xtest) 0 0 y1 · · · 0 yN 0 0 1 N Φ∗(x1) 0 · · · 1 N Φ∗(xN) 0 0 0 AkΦ∗(x1) −y1 0 · · · AkΦ∗(xN) −yN 0 AkΦ∗(xtest) 0 p1 p1 · · · pN pN pN+1 pN+1 1 0 · · · 1 0 1 0 0 1 · · · 0 1 0 1 0 0 · · · 0 0 1 0 0 0 · · · 0 0 0 1   . These token vectors are then ready for processing by the output transformer layer TFpost. The post- transformer is designed to facilitate communication between the last two tokens and position the desired result AkΦ∗(xtest) in the appropriate position. We can similarly set WKP = WQP = \u0002 p1 p1 · · · pN pN pN+1 pN+1 \u0003 , WV P = \u0002 AkΦ∗(x1) −y1 0 · · · AkΦ∗(xN) −yN 0 AkΦ∗(xtest) 0 \u0003 , and pass it through the feed-forward neural network. This results in the final output: \u0014 Φ∗(x1) 0 · · · Φ∗(xN) 0 Φ∗(xtest) 0 0 y1 · · ·"
+  },
+  {
+    "paper_id": "2402.13572v2",
+    "title": "AlgoFormer: An Efficient Transformer Framework with Algorithmic Structures",
+    "page_num": 18,
+    "chunk_id": "2402.13572v2_page18_chunk4",
+    "text": "pN+1 pN+1 \u0003 , WV P = \u0002 AkΦ∗(x1) −y1 0 · · · AkΦ∗(xN) −yN 0 AkΦ∗(xtest) 0 \u0003 , and pass it through the feed-forward neural network. This results in the final output: \u0014 Φ∗(x1) 0 · · · Φ∗(xN) 0 Φ∗(xtest) 0 0 y1 · · · 0 yN 0 AkΦ∗(xtest) \u0015 , which completes the proof. 18"
+  },
+  {
+    "paper_id": "2402.13572v2",
+    "title": "AlgoFormer: An Efficient Transformer Framework with Algorithmic Structures",
+    "page_num": 19,
+    "chunk_id": "2402.13572v2_page19_chunk1",
+    "text": "Published in Transactions on Machine Learning Research (01/2025) A.2 Proof for Theorem 3.2 The following lemma highlights the intrinsic “copying\" capability of transformers, a pivotal feature for autoregressive models, especially in the context of time series analysis. Lemma A.3. A one-layer transformer with q heads possesses the ability to effectively copy information from the previous q tokens to the present token. Proof. We construct the input prompt with positional embedding as follows:   x0 x1 x2 · · · xN p0 p1 p2 · · · pN p−1 p0 p1 · · · pN−1 ... ... ... ... ... p−q p1−q p2−q · · · pN−q 0 1 2 · · · N   . The i-th head aims to connect and communicate the current token with the previous i-th token. Specifically, we let W (i) K P = \u0002 p0 p1 p2 · · · pN \u0003 , W (i) Q P = \u0002 p−i p1−i p2−i · · · pN−i \u0003 , and W (i) V P = \u0002 x0 x1 x2 · · · xN \u0003 , we have W (i) V P · softmax \u0010 P ⊤W (i)⊤ K W (i) Q P \u0011"
+  },
+  {
+    "paper_id": "2402.13572v2",
+    "title": "AlgoFormer: An Efficient Transformer Framework with Algorithmic Structures",
+    "page_num": 19,
+    "chunk_id": "2402.13572v2_page19_chunk2",
+    "text": ", W (i) Q P = \u0002 p−i p1−i p2−i · · · pN−i \u0003 , and W (i) V P = \u0002 x0 x1 x2 · · · xN \u0003 , we have W (i) V P · softmax \u0010 P ⊤W (i)⊤ K W (i) Q P \u0011 ≈ \u0002 ∗ x1−i x2−i · · · xN−i \u0003 . Here, we use “*” to mask some unimportant token values. Therefore, the q-head attention layer outputs   x0 x1 x2 · · · xN ∗ x0 x1 · · · xN−1 ∗ ∗ x0 · · · xN−2 ... ... ... ... ... ∗ ∗ ∗ · · · xN−q 0 1 2 · · · N   . Here, the samples are only supported on {xt} with 0 ≤t ≤N. It is common to alternatively define xt = 0 for t < 0. Passing through the feed-forward neural network, together with the indicators at the last row, we can filter out the undefined elements, i.e.,   x0 x1 x2 · · · xN 0 x0 x1 · · · xN−1 0 0 x0 · · · xN−2 ... ... ... ... ... 0 0 0"
+  },
+  {
+    "paper_id": "2402.13572v2",
+    "title": "AlgoFormer: An Efficient Transformer Framework with Algorithmic Structures",
+    "page_num": 19,
+    "chunk_id": "2402.13572v2_page19_chunk3",
+    "text": "feed-forward neural network, together with the indicators at the last row, we can filter out the undefined elements, i.e.,   x0 x1 x2 · · · xN 0 x0 x1 · · · xN−1 0 0 x0 · · · xN−2 ... ... ... ... ... 0 0 0 · · · xN−q 0 1 2 · · · N   . Proof for Theorem 3.2 According to Lemma A.3 and Theorem 3.1, the (L+2)-layer pre-transformer TFpre is able to do copying and transformation of the representation function. The output after the preprocessing is given by \u0014 x0 x1 x2 · · · xN Φ∗(x1−q:0) Φ∗(x2−q:1) Φ∗(x3−q:2) · · · Φ∗(xN+1−q:N) \u0015 , where we denote xi:j as the concatenation [xi, xi+1, · · · , xj] for notational simplicity. Similar to the construc- tion in Lemma A.2, a one-layer two-head transformer TFloop is capable of implementing gradient descent on the multivariate regression. Finally, the post-transformer TFpost moves the desired result to the output. 19"
+  },
+  {
+    "paper_id": "2402.13572v2",
+    "title": "AlgoFormer: An Efficient Transformer Framework with Algorithmic Structures",
+    "page_num": 19,
+    "chunk_id": "2402.13572v2_page19_chunk4",
+    "text": "descent on the multivariate regression. Finally, the post-transformer TFpost moves the desired result to the output. 19"
+  },
+  {
+    "paper_id": "2402.13572v2",
+    "title": "AlgoFormer: An Efficient Transformer Framework with Algorithmic Structures",
+    "page_num": 20,
+    "chunk_id": "2402.13572v2_page20_chunk1",
+    "text": "Published in Transactions on Machine Learning Research (01/2025) A.3 Proof for Theorem 3.3 According to Lemma 5 in (Li et al., 2023), a seven-layer, two-head pre-transformer TFpre is introduced for preprocessing the input CoT sequence. This pre-transformer performs filtering, transforming the input sequence into the structured form given by Equation 7.   0 · · · sℓ−1 1 0 · · · sℓ−1 2 0 · · · 0 0 · · · ˆsℓ−1 0 · · · 0 sℓ 1 · · · 0 sℓ 2 · · · 0 0 · · · 0 0 · · · 1 0 · · · 1 0 · · · 0 0 · · · 1 0 · · · 0 1 · · · 0 1 · · · 0 0 · · · 0 0 · · · 0 0 · · · 0 0 · · · 0 0 · · · 1   . (7) Specifically, it identifies the positional index ℓ−1 of the last token ˆsℓ−1, retains only sℓ−1 i and sℓ i for 1 ≤i ≤N, and filters out all other irrelevant tokens. In this context, the representation function Φ∗(·) corresponds to"
+  },
+  {
+    "paper_id": "2402.13572v2",
+    "title": "AlgoFormer: An Efficient Transformer Framework with Algorithmic Structures",
+    "page_num": 20,
+    "chunk_id": "2402.13572v2_page20_chunk2",
+    "text": "· 0 0 · · · 1   . (7) Specifically, it identifies the positional index ℓ−1 of the last token ˆsℓ−1, retains only sℓ−1 i and sℓ i for 1 ≤i ≤N, and filters out all other irrelevant tokens. In this context, the representation function Φ∗(·) corresponds to L-layer leaky ReLU MLPs. Notably, the transformation siℓ= σ \u0000W ℓsiℓ−1\u0001 is expressed, where W ℓdenotes the weight matrix at the ℓ-th layer, and σ(·) represents the leaky ReLU activation function. Given the reversibility and piecewise linearity of the leaky ReLU activation, we can assume, without loss of generality, that sℓ i = W ℓsℓ−1 i in Equation 7. Consequently, the problem is reduced to a multi-variate regression, and a one-layer two-head transformer TFloop is demonstrated to effectively implement gradient descent for determining the weight matrix W ℓ, as shown in Lemma A.2. Subsequently, the post-transformer TFpost produces the desired result σ \u0000W ℓˆsiℓ−1\u0001 . A.4 Proof for Theorem 4.1 In this section, we first show that the one-layer two-head transformer can implement a single step of Newton’s method in Equation 5, with the special form of input token vectors. Then, we introduce the pre-transformer, designed to convert general input"
+  },
+  {
+    "paper_id": "2402.13572v2",
+    "title": "AlgoFormer: An Efficient Transformer Framework with Algorithmic Structures",
+    "page_num": 20,
+    "chunk_id": "2402.13572v2_page20_chunk3",
+    "text": "result σ \u0000W ℓˆsiℓ−1\u0001 . A.4 Proof for Theorem 4.1 In this section, we first show that the one-layer two-head transformer can implement a single step of Newton’s method in Equation 5, with the special form of input token vectors. Then, we introduce the pre-transformer, designed to convert general input tokens into the prescribed format conducive to the transformer’s operation. Finally, the post-transformer facilitates the extraction of the desired results through additional computations, given that the output from the looped-transformer corresponds to an intermediate product. Lemma A.4. A transformer with one layer and two heads is capable of implementing one step of Newton’s method in the linear regression problem in Equation 4. Proof. Let us consider the input prompt with positional embedding as follows: P :=   x1 0 · · · xN 0 xtest 0 0 y1 · · · 0 yN 0 0 Mkx1 0 · · · MkxN 0 0 0 1 0 · · · 1 0 0 0 0 1 · · · 0 1 0 0 0 0 · · · 0 0 1 0 0 0 · · · 0 0 0 1   . Let WQP = \u0014 Mkx1 0"
+  },
+  {
+    "paper_id": "2402.13572v2",
+    "title": "AlgoFormer: An Efficient Transformer Framework with Algorithmic Structures",
+    "page_num": 20,
+    "chunk_id": "2402.13572v2_page20_chunk4",
+    "text": "· MkxN 0 0 0 1 0 · · · 1 0 0 0 0 1 · · · 0 1 0 0 0 0 · · · 0 0 1 0 0 0 · · · 0 0 0 1   . Let WQP = \u0014 Mkx1 0 · · · MkxN 0 0 0 1 1 · · · 1 1 1 1 \u0015 , WKP = \u0014 cx1 0 · · · cxN 0 cxtest 0 0 0 · · · 0 0 0 C \u0015 , and WV P = eC \u0002 Mkx1 0 · · · MkxN 0 0 0 \u0003 . Similarly, denote Z := P ⊤W ⊤ K WQP , we can establish that eCsoftmax (Z2i−1,2j−1) ≈1 + cx⊤ i Mkxj. (8) 20"
+  },
+  {
+    "paper_id": "2402.13572v2",
+    "title": "AlgoFormer: An Efficient Transformer Framework with Algorithmic Structures",
+    "page_num": 21,
+    "chunk_id": "2402.13572v2_page21_chunk1",
+    "text": "Published in Transactions on Machine Learning Research (01/2025) To nullify the constant term, an additional attention head can be incorporated. Therefore, the output takes the form: WV P softmax \u0000P ⊤W ⊤ K WQP \u0001 ≈ \u0002 cMkSMkx1 ∗ · · · cMkSMkxN ∗ ∗\u0003 . Here, we use “*” to mask some unimportant token values. Upon passing through the feed-forward neural network with indicator \u0002 1 0 · · · 1 0 0 0 \u0003 and weight 1/c, the resulting output is   x1 0 · · · xN 0 xtest 0 0 y1 · · · 0 yN 0 0 Mk+1x1 0 · · · Mk+1xN 0 0 0 1 0 · · · 1 0 0 0 0 1 · · · 0 1 0 0 0 0 · · · 0 0 1 0 0 0 · · · 0 0 0 1   , where Mk+1 = 2Mk −MkSMk. Proof for Theorem 4.1. For TFpre, we adopt the following configurations: WQP = \u0014 x1 0 · · · xN 0 0 0 1 1 · · · 1 1 1 1 \u0015 , WKP = \u0014 cx1 0 · · · cxN 0"
+  },
+  {
+    "paper_id": "2402.13572v2",
+    "title": "AlgoFormer: An Efficient Transformer Framework with Algorithmic Structures",
+    "page_num": 21,
+    "chunk_id": "2402.13572v2_page21_chunk2",
+    "text": ", where Mk+1 = 2Mk −MkSMk. Proof for Theorem 4.1. For TFpre, we adopt the following configurations: WQP = \u0014 x1 0 · · · xN 0 0 0 1 1 · · · 1 1 1 1 \u0015 , WKP = \u0014 cx1 0 · · · cxN 0 cxtest 0 0 0 · · · 0 0 0 C \u0015 , and WV P = eC \u0002 x1 0 · · · xN 0 0 0 \u0003 . Denote Z := P ⊤W ⊤ K WQP , we can show that eCsoftmax (Z2i−1,2j−1) ≈1 + cx⊤ i xj. We may include another attention head to remove the constant. Therefore, the output is formulated as WV P softmax \u0000P ⊤W ⊤ K WQP \u0001 ≈ \u0002 cSx1 ∗ · · · cSxN ∗ ∗\u0003 . After passing through the feed-forward neural network with indicators \u0002 1 0 · · · 1 0 0 0 \u0003 and weight α/c, the resulting output becomes:   x1 0 · · · xN 0 xtest 0 0 y1 · · · 0 yN 0 0 M0x1 0 · · · M0xN 0 0 0 1 0 · · · 1 0 0"
+  },
+  {
+    "paper_id": "2402.13572v2",
+    "title": "AlgoFormer: An Efficient Transformer Framework with Algorithmic Structures",
+    "page_num": 21,
+    "chunk_id": "2402.13572v2_page21_chunk3",
+    "text": "· 1 0 0 0 \u0003 and weight α/c, the resulting output becomes:   x1 0 · · · xN 0 xtest 0 0 y1 · · · 0 yN 0 0 M0x1 0 · · · M0xN 0 0 0 1 0 · · · 1 0 0 0 0 1 · · · 0 1 0 0 0 0 · · · 0 0 1 0 0 0 · · · 0 0 0 1   , where M0 = αS. As illustrated in Lemma A.4, after T iterations of the looped transformer TFloop, it produces the following output:   x1 0 · · · xN 0 xtest 0 0 y1 · · · 0 yN 0 0 MT x1 0 · · · MT xN 0 0 0 1 0 · · · 1 0 0 0 0 1 · · · 0 1 0 0 0 0 · · · 0 0 1 0 0 0 · · · 0 0 0 1   . 21"
+  },
+  {
+    "paper_id": "2402.13572v2",
+    "title": "AlgoFormer: An Efficient Transformer Framework with Algorithmic Structures",
+    "page_num": 21,
+    "chunk_id": "2402.13572v2_page21_chunk4",
+    "text": "0 0 0 0 · · · 0 0 1 0 0 0 · · · 0 0 0 1   . 21"
+  },
+  {
+    "paper_id": "2402.13572v2",
+    "title": "AlgoFormer: An Efficient Transformer Framework with Algorithmic Structures",
+    "page_num": 22,
+    "chunk_id": "2402.13572v2_page22_chunk1",
+    "text": "Published in Transactions on Machine Learning Research (01/2025) In the post-transformer, additional positional embeddings are introduced to address technical considerations. The input is structured as follows:   x1 0 · · · xN 0 xtest 0 0 y1 · · · 0 yN 0 0 MT x1 0 · · · MT xN 0 0 0 p1 p1 · · · pN pN pN+1 pN+1 1 0 · · · 1 0 0 0 0 1 · · · 0 1 0 0 0 0 · · · 0 0 1 0 0 0 · · · 0 0 0 1   , where the positional embedding vectors p1, · · · , pN+1 are designed to be nearly orthogonal (Lemma A.1). To initiate the weight wNewton T , we propagate the target label y to adjacent tokens using the following attention mechanism: WKP = WQP = \u0002 p1 p1 · · · pN pN pN+1 pN+1 \u0003 and WV P = 2 \u0002 0 y1 · · · 0 yN 0 0 \u0003 . This operation results in the attention layer producing the following output:   x1 0 · · · xN 0 xtest 0 y1"
+  },
+  {
+    "paper_id": "2402.13572v2",
+    "title": "AlgoFormer: An Efficient Transformer Framework with Algorithmic Structures",
+    "page_num": 22,
+    "chunk_id": "2402.13572v2_page22_chunk2",
+    "text": "p1 p1 · · · pN pN pN+1 pN+1 \u0003 and WV P = 2 \u0002 0 y1 · · · 0 yN 0 0 \u0003 . This operation results in the attention layer producing the following output:   x1 0 · · · xN 0 xtest 0 y1 y1 · · · yN yN 0 0 MT x1 0 · · · MT xN 0 0 0 p1 p1 · · · pN pN pN+1 pN+1 1 0 · · · 1 0 0 0 0 1 · · · 0 1 0 0 0 0 · · · 0 0 1 0 0 0 · · · 0 0 0 1   . In the next layer, analogous to the construction in Equation 8, we define the following transformations: WQP = \u0014 cx1 0 · · · cxN 0 cxtest 0 1 1 · · · 1 1 1 1 \u0015 , WKP = \u0014 MT x1 0 · · · MT xN 0 0 0 0 0 · · · 0 0 0 C \u0015 , and WV P = eC \u0002 y1 y1 · · · yN yN 0 0 \u0003 , for some"
+  },
+  {
+    "paper_id": "2402.13572v2",
+    "title": "AlgoFormer: An Efficient Transformer Framework with Algorithmic Structures",
+    "page_num": 22,
+    "chunk_id": "2402.13572v2_page22_chunk3",
+    "text": "1 1 1 1 \u0015 , WKP = \u0014 MT x1 0 · · · MT xN 0 0 0 0 0 · · · 0 0 0 C \u0015 , and WV P = eC \u0002 y1 y1 · · · yN yN 0 0 \u0003 , for some C, c > 0. Defining the matrix Z := P ⊤W ⊤ K WQP =   cx⊤ 1 MT x1 0 · · · cx⊤ 1 MT xN 0 cx⊤ 1 MT xtest 0 ... ... ... ... ... ... ... cx⊤ NMT x1 0 · · · cx⊤ NMT xN 0 cx⊤ NMT xtest 0 0 0 · · · 0 0 0 0 0 0 · · · 0 0 0 0 C C · · · C C C C   , we can show that eC · softmax (Z2i−1,2j−1) ≈1 + cx⊤ i MT xj, where the closeness of the two sides of the approximation “≈” can be achieved by selecting C > 0 sufficiently large and c > 0 sufficiently small. The constant term can be removed by introducing another head. Therefore, the output of the attention layer is expressed as 2 X"
+  },
+  {
+    "paper_id": "2402.13572v2",
+    "title": "AlgoFormer: An Efficient Transformer Framework with Algorithmic Structures",
+    "page_num": 22,
+    "chunk_id": "2402.13572v2_page22_chunk4",
+    "text": "xj, where the closeness of the two sides of the approximation “≈” can be achieved by selecting C > 0 sufficiently large and c > 0 sufficiently small. The constant term can be removed by introducing another head. Therefore, the output of the attention layer is expressed as 2 X i=1 W (i) V X · softmax \u0010 X⊤W (i)⊤ K W (i) Q X \u0011 ≈c \u0002 ∗ ∗ · · · ∗ ∗ wNewton⊤ T xtest ∗ \u0003 . Finally, the feed-forward neural network yields the desired prediction wNewton⊤ T xtest. 22"
+  },
+  {
+    "paper_id": "2402.13572v2",
+    "title": "AlgoFormer: An Efficient Transformer Framework with Algorithmic Structures",
+    "page_num": 23,
+    "chunk_id": "2402.13572v2_page23_chunk1",
+    "text": "Published in Transactions on Machine Learning Research (01/2025) A.5 Proof for Theorem 4.2 In this section, we extend the realization of gradient descent, as demonstrated in Lemma A.2 for encoder- based transformers, to decoder-based transformers. Although the construction is similar, the key distinction lies in the decoder-based transformer’s utilization of previously viewed data for regression, consistent with our intuitive understanding. The following lemma is enough to conclude the proof for Theorem 4.2. Lemma A.5. The one-layer two-head decoder-based transformer can implement one step of gradient descent in linear regression problems in Equation 6. Proof. We consider the input prompt with positional embedding as follows:   x1 0 · · · xi−1 0 xi 0 y1 · · · 0 yi−1 0 0 x1 · · · 0 xi−1 0 w1 k 0 · · · wi−1 k 0 wi k 0 0 · · · 1 i−2 0 1 i−1 1 0 · · · 1 0 1 1 0 · · · 0 0 0 0 1 · · · 0 0 0   . We construct the attention layer with WQP i = \u0014 w1 k 0 · · · wi−1 k 0 wi k 1"
+  },
+  {
+    "paper_id": "2402.13572v2",
+    "title": "AlgoFormer: An Efficient Transformer Framework with Algorithmic Structures",
+    "page_num": 23,
+    "chunk_id": "2402.13572v2_page23_chunk2",
+    "text": "i−1 1 0 · · · 1 0 1 1 0 · · · 0 0 0 0 1 · · · 0 0 0   . We construct the attention layer with WQP i = \u0014 w1 k 0 · · · wi−1 k 0 wi k 1 1 · · · 1 1 1 \u0015 , WKP i = \u0014 cx1 0 · · · cxi−1 0 cxi 0 C · · · 0 0 0 \u0015 , and WV P i = eC/c \u0002 x1 0 · · · xi−1 0 xi \u0003 . Here, we adopt causal attention, where the attention mechanism can only attend to previous tokens. The output is h ∗ ∗ · · · Pi−2 j=1 wi−1⊤ k xjxj ∗ Pi−1 j=1 wi⊤ k xjxj i . For the second head, we similarly let WQP i = \u0014 1 0 · · · 1 0 1 1 0 · · · 1 0 1 \u0015 , WKP i = \u0014 0 cy1 · · · 0 cyi−1 0 C 0 · · · 0 0 0 \u0015 , and WV P i = −eC/c \u0002 0 x1 · · · 0 xi−1"
+  },
+  {
+    "paper_id": "2402.13572v2",
+    "title": "AlgoFormer: An Efficient Transformer Framework with Algorithmic Structures",
+    "page_num": 23,
+    "chunk_id": "2402.13572v2_page23_chunk3",
+    "text": "· 1 0 1 1 0 · · · 1 0 1 \u0015 , WKP i = \u0014 0 cy1 · · · 0 cyi−1 0 C 0 · · · 0 0 0 \u0015 , and WV P i = −eC/c \u0002 0 x1 · · · 0 xi−1 0 \u0003 . Then, we have the output h ∗ ∗ · · · −Pi−2 j=1 yjxj ∗ −Pi−1 j=1 yjxj i The attention layer outputs   x1 0 · · · xi−1 0 xi 0 y1 · · · 0 yi−1 0 0 x1 · · · 0 xi−1 0 w1 k 0 · · · wi−1 k 0 wi k ∗ ∗ · · · Pi−2 j=1 \u0000wi−1⊤ k xj −yj \u0001 xj ∗ Pi−1 j=1 \u0000wi⊤ k xj −yj \u0001 xj 0 0 · · · 1 i−2 0 1 i−1 1 0 · · · 1 0 1 1 0 · · · 0 0 0 0 1 · · · 0 0 0   . 23"
+  },
+  {
+    "paper_id": "2402.13572v2",
+    "title": "AlgoFormer: An Efficient Transformer Framework with Algorithmic Structures",
+    "page_num": 23,
+    "chunk_id": "2402.13572v2_page23_chunk4",
+    "text": "1 0 1 1 0 · · · 0 0 0 0 1 · · · 0 0 0   . 23"
+  },
+  {
+    "paper_id": "2402.13572v2",
+    "title": "AlgoFormer: An Efficient Transformer Framework with Algorithmic Structures",
+    "page_num": 24,
+    "chunk_id": "2402.13572v2_page24_chunk1",
+    "text": "Published in Transactions on Machine Learning Research (01/2025) Since the feed-forward layer is capable of approximating nonlinear functions, e.g., multiplication, the trans- former layer outputs   x1 0 · · · xi−1 0 xi 0 y1 · · · 0 yi−1 0 0 x1 · · · 0 xi−1 0 w1 k+1 0 · · · wi−1 k+1 0 wi k+1 0 0 · · · 1 i−2 0 1 i−1 1 0 · · · 1 0 1 1 0 · · · 0 0 0 0 1 · · · 0 0 0   , where wj k+1 = wj k −η ∂L ∂w \u0010 wj k; P j\u0011 = wj k − η j−1 Pj−1 h=1 \u0000wh⊤ k xh −yh \u0001 xh. 24"
+  }
+]

@@ -1,0 +1,569 @@
+[
+  {
+    "paper_id": "2308.16552v1",
+    "title": "Prompt-enhanced Hierarchical Transformer Elevating Cardiopulmonary Resuscitation Instruction via Temporal Action Segmentation",
+    "page_num": 1,
+    "chunk_id": "2308.16552v1_page1_chunk1",
+    "text": "Prompt-enhanced Hierarchical Transformer Elevating Cardiopulmonary Resuscitation Instruction via Temporal Action Segmentation Yang Liua, Xiaoyun Zhonga,b, Shiyao Zhaia,b, Zhicheng Dua,b, Zhenyuan Gaoc, Qiming Huangd, Canyang Zhanga, Bin Jiange, Vijay Kumar Pandeya,b, Sanyang Hana, Runming Wanga, Yuxing Hanf, Peiwu Qina,b,∗ aInsititute of Biopharmaceutics and Health Engineering, Tsinghua Shenzhen International Graduate School, Shenzhen, 518055, China bCenter of Precision Medicine and Healthcare, Tsinghua-Berkeley Shenzhen Institute, Shenzhen, 518055, China cMiragestars Inc., Tianjin, 300392, China dShenzhen ZNV Technology Co., Ltd, Shenzhen, 518057, China eSchool of Mechanical, Electrical & Information Engineering, Shandong University, Weihai 264209, China fTsinghua Shenzhen International Graduate School, Shenzhen, 518055, China Abstract The vast majority of people who suffer unexpected cardiac arrest are per- formed cardiopulmonary resuscitation (CPR) by passersby in a desperate attempt to restore life, but endeavors turn out to be fruitless on account of disqualification. Fortunately, many pieces of research manifest that disci- plined training will help to elevate the success rate of resuscitation, which constantly desires a seamless combination of novel techniques to yield further advancement. To this end, we collect a custom CPR video dataset in which trainees make efforts to behave resuscitation on mannequins independently in adherence to approved guidelines, thereby devising an auxiliary toolbox to assist supervision"
+  },
+  {
+    "paper_id": "2308.16552v1",
+    "title": "Prompt-enhanced Hierarchical Transformer Elevating Cardiopulmonary Resuscitation Instruction via Temporal Action Segmentation",
+    "page_num": 1,
+    "chunk_id": "2308.16552v1_page1_chunk2",
+    "text": "rate of resuscitation, which constantly desires a seamless combination of novel techniques to yield further advancement. To this end, we collect a custom CPR video dataset in which trainees make efforts to behave resuscitation on mannequins independently in adherence to approved guidelines, thereby devising an auxiliary toolbox to assist supervision and rectification of intermediate potential issues via modern deep learning methodologies. Our research empirically views this problem as a temporal action segmentation (TAS) task in computer vision, which aims to segment an untrimmed video at a frame-wise level. Here, we ∗Corresponding author. Email address: pwqin@sz.tsinghua.edu.cn (Peiwu Qin) Preprint submitted to Computers in Biology and Medicine September 1, 2023 arXiv:2308.16552v1 [cs.CV] 31 Aug 2023"
+  },
+  {
+    "paper_id": "2308.16552v1",
+    "title": "Prompt-enhanced Hierarchical Transformer Elevating Cardiopulmonary Resuscitation Instruction via Temporal Action Segmentation",
+    "page_num": 2,
+    "chunk_id": "2308.16552v1_page2_chunk1",
+    "text": "propose a Prompt-enhanced hierarchical Transformer (PhiTrans) that inte- grates three indispensable modules, including a textual prompt-based Video Features Extractor (VFE), a transformer-based Action Segmentation Execu- tor (ASE), and a regression-based Prediction Refinement Calibrator (PRC). The backbone of the model preferentially derives from applications in three approved public datasets (GTEA, 50Salads, and Breakfast) collected for TAS tasks, which accounts for the excavation of the segmentation pipeline on the CPR dataset. In general, we unprecedentedly probe into a feasible pipeline that genuinely elevates the CPR instruction qualification via action segmen- tation in conjunction with cutting-edge deep learning techniques. Associated experiments advocate our implementation with multiple metrics surpassing 91.0%. Keywords: Instructional cardiopulmonary resuscitation, Temporal action segmentation, Transformer, Prompt, Boundary regression refinement 1. Introduction Out-of-hospital cardiac arrest (OHCA) is a universal public health is- sue undergone by about 3.8 million people annually, with only 8% to 12% surviving hospital discharge [1]. Characterized as blood flow or breathing stops, OHCA induces permanent brain damage or death happens acutely. Performing cardiopulmonary resuscitation (CPR) could serve as an emer- gency procedure for OHCA, which maintains the blood flow and breathing until advanced medical help arrives [2]. There has been a large volume of re- search and practice"
+  },
+  {
+    "paper_id": "2308.16552v1",
+    "title": "Prompt-enhanced Hierarchical Transformer Elevating Cardiopulmonary Resuscitation Instruction via Temporal Action Segmentation",
+    "page_num": 2,
+    "chunk_id": "2308.16552v1_page2_chunk2",
+    "text": "flow or breathing stops, OHCA induces permanent brain damage or death happens acutely. Performing cardiopulmonary resuscitation (CPR) could serve as an emer- gency procedure for OHCA, which maintains the blood flow and breathing until advanced medical help arrives [2]. There has been a large volume of re- search and practice for decades to investigate CPR [3, 4, 5]. In 1891, the first chest compression on a human being were performed by Friedrich Maass [4]. The first guidelines for CPR were released about 50 years ago [3]. Despite a long history of deploying CPR against OHCA, survival remains dismally low. There are indications that CPR performance influences the outcome [6, 7]. From this perspective, a great deal of research [8, 9, 10] seeks and proves the positive effects of CPR instruction. Besides, the increasing number of people suffering OHCA worldwide makes intensive CPR education even more imperative. To enable CPR education as a mandatory part of society, not only should we cultivate the awareness of social responsibility, but employ more comprehensive approaches [8]. Specifically, traditional assessment of CPR skills involves strenuous manual efforts, which lacks efficiency and re- peatability [8, 9]. Extensive attempts to revive those who sustain OHCA 2"
+  },
+  {
+    "paper_id": "2308.16552v1",
+    "title": "Prompt-enhanced Hierarchical Transformer Elevating Cardiopulmonary Resuscitation Instruction via Temporal Action Segmentation",
+    "page_num": 2,
+    "chunk_id": "2308.16552v1_page2_chunk3",
+    "text": "as a mandatory part of society, not only should we cultivate the awareness of social responsibility, but employ more comprehensive approaches [8]. Specifically, traditional assessment of CPR skills involves strenuous manual efforts, which lacks efficiency and re- peatability [8, 9]. Extensive attempts to revive those who sustain OHCA 2"
+  },
+  {
+    "paper_id": "2308.16552v1",
+    "title": "Prompt-enhanced Hierarchical Transformer Elevating Cardiopulmonary Resuscitation Instruction via Temporal Action Segmentation",
+    "page_num": 3,
+    "chunk_id": "2308.16552v1_page3_chunk1",
+    "text": "will be probably further improved with the combination of promising novel computer techniques and widespread application. One most relevant specific research [11] emerges by collecting a dataset of real-world instruction videos from the Internet, containing performing CPR and four non-medical tasks. However, the work intends to address the prob- lem of automatically learning the main steps to complete a certain task, neither implemented particularly for formal CPR behaviors nor designed for CPR instruction. Given the aforementioned dataset, several subsequent works focus on action segmentation in an unsupervised [12] or weakly su- pervised way [13] without proposing concrete challenges pertaining to CPR instruction. The positive impacts of CPR action segmentation are not clearly defined yet. Therefore, we evoke one ensuing challenge: How better could we elevate CPR instruction with action segmentation? To this end, we resort to investigating a specific realm called temporal action segmentation (TAS), which has gradually developed into one of the high-profile research spotlights in computer vision. The universal goal of the TAS task is to identify activities in untrimmed videos at a frame-wise level. It has promoted a wealth of applications in human behavior analy- sis from video summarization [14], video surveillance [15], action recognition [16, 17],"
+  },
+  {
+    "paper_id": "2308.16552v1",
+    "title": "Prompt-enhanced Hierarchical Transformer Elevating Cardiopulmonary Resuscitation Instruction via Temporal Action Segmentation",
+    "page_num": 3,
+    "chunk_id": "2308.16552v1_page3_chunk2",
+    "text": "one of the high-profile research spotlights in computer vision. The universal goal of the TAS task is to identify activities in untrimmed videos at a frame-wise level. It has promoted a wealth of applications in human behavior analy- sis from video summarization [14], video surveillance [15], action recognition [16, 17], to skill assessment [18]. With prosperous computing power rein- forcement, understanding single-semantics short video clips has been gradu- ally outmoded in the TAS task in favor of larger, more complex untrimmed videos [19, 20], which requires both intrinsic and extrinsic correlations of ac- tions. Conventional segmentation methods [21] like Temporal Convolutional Networks (TCNs) consider single frames or short video segments for feature representation. They overlook the latent relationship among contextual ac- tions, leading to poor performance, especially in long videos. Accordingly, some studies [22, 23] exploit Recurrent Neural Networks (RNNs) to model each action clip to maintain local dependencies but still struggle to handle longer videos effectively due to the inherent spatio-temporal complexity of RNN. To equip the model with relational reasoning, methods utilizing Graph Convolutional Networks (GCNs) regard each action as a single node on the graph and edges represent the contextual relationship [24, 25]. However, these preceding works"
+  },
+  {
+    "paper_id": "2308.16552v1",
+    "title": "Prompt-enhanced Hierarchical Transformer Elevating Cardiopulmonary Resuscitation Instruction via Temporal Action Segmentation",
+    "page_num": 3,
+    "chunk_id": "2308.16552v1_page3_chunk3",
+    "text": "still struggle to handle longer videos effectively due to the inherent spatio-temporal complexity of RNN. To equip the model with relational reasoning, methods utilizing Graph Convolutional Networks (GCNs) regard each action as a single node on the graph and edges represent the contextual relationship [24, 25]. However, these preceding works all adopt frame-wise features extracted by pre-trained I3D [26] network, which might not be adequate enough to excavate effec- tive representations of videos. In the past few years, it can be witnessed that both transformer-based [27, 28] and prompt-based architectures [29, 30] have flourished in artificial intelligence, which tremendously lightens our research 3"
+  },
+  {
+    "paper_id": "2308.16552v1",
+    "title": "Prompt-enhanced Hierarchical Transformer Elevating Cardiopulmonary Resuscitation Instruction via Temporal Action Segmentation",
+    "page_num": 4,
+    "chunk_id": "2308.16552v1_page4_chunk1",
+    "text": "on addressing deficiencies of preceding methods. Particularly in visual appli- cations, Transformer-based architectures hold the potential to integrate the information between sequential elements that are far from each other with powerful scalability. Prompt-based architectures could enhance the visual features with representative linguistic semantics. Now we attempt to yield a feasible resolution for the proposed challenge: We preliminarily establish a custom CPR dataset involving videos of par- ticipants performing the whole process of CPR in a standard green screen laboratory environment. After that, we devise a crafted architecture to per- form action segmentation. Specifically, we propose a Prompt-enhanced hier- archical Transformer (PhiTrans) that integrates three integral modules: 1) a textual prompt-based Video Features Extractor (VFE) module that extracts abundant frame-wise features; 2) a transformer-based Action Segmentation Executor (ASE) module that deduces the contextual relationship while adap- tive to long frame sequences; 3) a regression-based Prediction Refinement Calibrator (PRC) module that further alleviates the over-segmentation issues highlighted in the TAS task. Finally, we observe the model performance on the custom CPR dataset and claim that it can serve as an auxiliary toolbox applied in action segmentation for assisting CPR instruction by automati- cally identifying potential omission, repetition, or out-of-order situations at a"
+  },
+  {
+    "paper_id": "2308.16552v1",
+    "title": "Prompt-enhanced Hierarchical Transformer Elevating Cardiopulmonary Resuscitation Instruction via Temporal Action Segmentation",
+    "page_num": 4,
+    "chunk_id": "2308.16552v1_page4_chunk2",
+    "text": "alleviates the over-segmentation issues highlighted in the TAS task. Finally, we observe the model performance on the custom CPR dataset and claim that it can serve as an auxiliary toolbox applied in action segmentation for assisting CPR instruction by automati- cally identifying potential omission, repetition, or out-of-order situations at a frame-wise level, allowing trainees to rectify the workflow in real-time free of experts. Our main contributions are chronologically three-fold: • We collect a custom CPR dataset covering videos of the entire car- diopulmonary resuscitation evaluation performed by each participant, along with corresponding frame-level semantic annotation. • We propose an integrated model, called PhiTrans, especially applied for CPR action segmentation, including three integral modules: Video Features Extractor, Action Segmentation Executor, and Prediction Re- finement Calibrator. • To the best of our knowledge, we unprecedentedly probe into a feasi- ble pipeline that genuinely elevates the CPR instruction qualification via action segmentation in conjunction with cutting-edge deep learning techniques. 4"
+  },
+  {
+    "paper_id": "2308.16552v1",
+    "title": "Prompt-enhanced Hierarchical Transformer Elevating Cardiopulmonary Resuscitation Instruction via Temporal Action Segmentation",
+    "page_num": 4,
+    "chunk_id": "2308.16552v1_page4_chunk3",
+    "text": "conjunction with cutting-edge deep learning techniques. 4"
+  },
+  {
+    "paper_id": "2308.16552v1",
+    "title": "Prompt-enhanced Hierarchical Transformer Elevating Cardiopulmonary Resuscitation Instruction via Temporal Action Segmentation",
+    "page_num": 5,
+    "chunk_id": "2308.16552v1_page5_chunk1",
+    "text": "2. Related Work 2.1. Temporal Action Segmentation Temporal action segmentation (TAS), one of the most challenging topics in advanced video comprehension, aims to extract frame-wise features from untrimmed videos and categorize them chronologically with pre-defined ac- tion labels. Action localization, video summarization, and other downstream applications benefit from products of the TAS task as input. Over the past decade, a multitude of methods [31, 32, 33, 21, 34, 35] have leveraged mod- els for action prediction with the extracted frame-wise features. Traditional paradigms involve sliding windows with non-maximum suppression [31], Hid- den Markov Models (HMM) [32], Linear Dynamical Systems (LDS) [33], and Bayesian Non-parametric Models (BNM) [21]. These methods encounter common obstacles to modeling long-range de- pendencies. To alleviate this issue, RNNs [23] and TCNs [34] are deployed to capture global dependencies and the contextual information of adjacent frames. After that, Multi-Stage Temporal Convolutional Network (MS-TCN) [20] combines TCNs with multi-stage patterns to make remarkable progress in the TAS task, wherein plural stages are stacked to refine the predictions from the preceding output successively. In addition, other methods aim to model the TAS task from a unique perspective. Self-Supervised Temporal Domain Adaptation (SSTDA) [36] trains with two auxiliary tasks of"
+  },
+  {
+    "paper_id": "2308.16552v1",
+    "title": "Prompt-enhanced Hierarchical Transformer Elevating Cardiopulmonary Resuscitation Instruction via Temporal Action Segmentation",
+    "page_num": 5,
+    "chunk_id": "2308.16552v1_page5_chunk2",
+    "text": "multi-stage patterns to make remarkable progress in the TAS task, wherein plural stages are stacked to refine the predictions from the preceding output successively. In addition, other methods aim to model the TAS task from a unique perspective. Self-Supervised Temporal Domain Adaptation (SSTDA) [36] trains with two auxiliary tasks of binary and sequential domain prediction. Dilated Temporal Graph Reasoning Mod- ule (DTGRM) [24] builds multi-level dilated temporal graphs to simulate temporal dependencies between video frames at different timescales. These exceptive methods lose portability on account of complex task patterns. Con- sidering the spatio-temporal complexity of CPR action segmentation and accessibility for downstream design, we follow the same philosophy of multi- stages for iterative refinement. 2.2. Transformer-based Architecture Initially designed for Natural Language Processing (NLP) related tasks, Transformer [27] has motivated a tremendous leap forward in capabilities for pre-training on larger datasets and fine-tuning on smaller task-specific datasets with computational efficiency and scalability. The visual applica- tion [28] of Transformer constantly challenges the dominant status of Con- volutional Neural Networks (CNNs)[37, 38, 39, 40, 41, 42, 43, 44, 45]. Vision 5"
+  },
+  {
+    "paper_id": "2308.16552v1",
+    "title": "Prompt-enhanced Hierarchical Transformer Elevating Cardiopulmonary Resuscitation Instruction via Temporal Action Segmentation",
+    "page_num": 5,
+    "chunk_id": "2308.16552v1_page5_chunk3",
+    "text": "and scalability. The visual applica- tion [28] of Transformer constantly challenges the dominant status of Con- volutional Neural Networks (CNNs)[37, 38, 39, 40, 41, 42, 43, 44, 45]. Vision 5"
+  },
+  {
+    "paper_id": "2308.16552v1",
+    "title": "Prompt-enhanced Hierarchical Transformer Elevating Cardiopulmonary Resuscitation Instruction via Temporal Action Segmentation",
+    "page_num": 6,
+    "chunk_id": "2308.16552v1_page6_chunk1",
+    "text": "Transformers require less vision-specific inductive bias and maintain more global information relying on the Multi-head Self-Attention (MSA). Witnessed the success of Transformer in image classification, image seg- mentation, and other vision tasks, one study [46] explores the transfer im- plementation of Transformer on the TAS task. The work presents major concerns underwent and accordingly proposes local connectivity inductive bias and hierarchical representation pattern, allowing vanilla Transformer scale to the TAS task. Such adaptions produce a hybrid Transformer ar- chitecture with temporal convolution included, which leads to fine-grained loss between adjacent frames as the depth layers increase. Most recently, follow-up works tend to improve this issue in two ways: establish a pure Transformer model [47] or refine temporal convolutions [48]. Although these efforts seem favorable, the robustness remains to be verified due to the lack of open sources. Therefore, our approach preserves the backbone and excavates promising performance with extensive optimization. Particularly, considering the resemblance among CPR actions, we enjoy a specific action segmenta- tion refinement framework [49], laying the foundation for our endeavors to alleviate over-segmentation errors highlighted in the TAS task. 2.3. Prompt-based Learning Served as an evolutionary group of Machine Learning (ML) model train- ing approaches, prompt-based learning"
+  },
+  {
+    "paper_id": "2308.16552v1",
+    "title": "Prompt-enhanced Hierarchical Transformer Elevating Cardiopulmonary Resuscitation Instruction via Temporal Action Segmentation",
+    "page_num": 6,
+    "chunk_id": "2308.16552v1_page6_chunk2",
+    "text": "Particularly, considering the resemblance among CPR actions, we enjoy a specific action segmenta- tion refinement framework [49], laying the foundation for our endeavors to alleviate over-segmentation errors highlighted in the TAS task. 2.3. Prompt-based Learning Served as an evolutionary group of Machine Learning (ML) model train- ing approaches, prompt-based learning preliminarily allows people linguisti- cally specify a certain task for the pre-trained Large Language Model (LLM) to compile and complete [29]. To present a more intuitive perception of prompt-based learning, this section primarily introduces the identification of prompt and prompt engineering. Essentially, a prompt is an instruction depicted in natural language for the model to execute. The procedure of building the ideal prompt for a specific task is called prompt engineering. Subsequently, prompt-based learning involves training a language model on the converted prompt-based dataset. The essence of prompt-based learning is to modify the input into prompts and embed the anticipated output as unfilled blanks within the prompt. To investigate the effects of prompt-based design in visual applications, models like CLIP [30] and ALIGN [50] have achieved remarkable performance on image recognition tasks. They formulate the objectives as descriptive texts and transit the classification problem into video-text matching. Besides, Ac- tionCLIP"
+  },
+  {
+    "paper_id": "2308.16552v1",
+    "title": "Prompt-enhanced Hierarchical Transformer Elevating Cardiopulmonary Resuscitation Instruction via Temporal Action Segmentation",
+    "page_num": 6,
+    "chunk_id": "2308.16552v1_page6_chunk3",
+    "text": "output as unfilled blanks within the prompt. To investigate the effects of prompt-based design in visual applications, models like CLIP [30] and ALIGN [50] have achieved remarkable performance on image recognition tasks. They formulate the objectives as descriptive texts and transit the classification problem into video-text matching. Besides, Ac- tionCLIP [51] proposes a prompt-based paradigm specific to action recog- nition tasks, aiming to recognize single actions in short video clips. These 6"
+  },
+  {
+    "paper_id": "2308.16552v1",
+    "title": "Prompt-enhanced Hierarchical Transformer Elevating Cardiopulmonary Resuscitation Instruction via Temporal Action Segmentation",
+    "page_num": 7,
+    "chunk_id": "2308.16552v1_page7_chunk1",
+    "text": "methods demonstrate the potential of prompt-based learning to motivate the development of visual tasks with multi-modal feature representation. To this end, we attempt to rethink the effectiveness of frame-wise feature extraction in the TAS task, for which previous action segmentation meth- ods uniformly utilize the pre-trained I3D [26] model. Although the I3D-based features maintain advantageous capacity due to integrating information from the RGB stream and optical-flow stream, they might not be sufficient to construct representative embeddings experiencing complex scenarios, partic- ularly for CPR actions. One closely related work [52] that arose recently, called Br-Prompt, is of significant importance for instructing the feature ex- traction model equipped with a prompt-based paradigm. On top of that, our approach extends more details elaborated for effective feature extraction of CPR actions in favor of downstream tasks. 3. Methods In this section, we introduce the proposed Prompt-enhanced hierarchical Transformer (PhiTrans) with clear motivation and objective. Then we distill its integral modules. 3.1. Overall Pipeline As declared in Section 1, our motivation is to investigate how better could we elevate CPR instruction with action segmentation, which nails down our objective of devising an exact architecture for CPR action segmentation to excavate its positive effects on CPR"
+  },
+  {
+    "paper_id": "2308.16552v1",
+    "title": "Prompt-enhanced Hierarchical Transformer Elevating Cardiopulmonary Resuscitation Instruction via Temporal Action Segmentation",
+    "page_num": 7,
+    "chunk_id": "2308.16552v1_page7_chunk2",
+    "text": "Then we distill its integral modules. 3.1. Overall Pipeline As declared in Section 1, our motivation is to investigate how better could we elevate CPR instruction with action segmentation, which nails down our objective of devising an exact architecture for CPR action segmentation to excavate its positive effects on CPR instruction. The overall pipeline of our approach is illustrated in Fig. 1. We first apply Video Features Extractor (VFE) to extract frame-wise features represent- ing potentially involved CPR actions and transition semantics. After that, Action Segmentation Executor (ASE) generates an initial prediction for the input video, explicitly identifying ordinal CPR actions. Finally, to effectively alleviate over-segmentation issues that might give rise to the misclassifica- tion of CPR actions, we adopt Prediction Refinement Calibrator (PRC) to refine the performance, thereby producing a final assessment enclosing less boundary ambiguity. We argue that the aforementioned modules are indispensable, separately playing distinct roles and ultimately bringing down-to-earth performance to the intact model. To support our claims, more module details and corre- sponding impacts are described below. 7"
+  },
+  {
+    "paper_id": "2308.16552v1",
+    "title": "Prompt-enhanced Hierarchical Transformer Elevating Cardiopulmonary Resuscitation Instruction via Temporal Action Segmentation",
+    "page_num": 7,
+    "chunk_id": "2308.16552v1_page7_chunk3",
+    "text": "ultimately bringing down-to-earth performance to the intact model. To support our claims, more module details and corre- sponding impacts are described below. 7"
+  },
+  {
+    "paper_id": "2308.16552v1",
+    "title": "Prompt-enhanced Hierarchical Transformer Elevating Cardiopulmonary Resuscitation Instruction via Temporal Action Segmentation",
+    "page_num": 8,
+    "chunk_id": "2308.16552v1_page8_chunk1",
+    "text": "3.2. Video Features Extractor The Video Features Extractor (VFE) module is responsible for extracting discriminative frame-wise features of CPR videos, which subsequently be- come the input of the action segmentation module. As demonstrated at the bottom of Fig. 1, raw video frames are primarily sampled into neat clips with fixed lengths for local recognition and training efficiency. On top of retaining pre-established semantics by prompt engineering, the VFE module imple- ments visual-linguistic contrastive learning to fuse multi-modal knowledge. Ternary Transformer encoders unify the framework and the synchronous training finally empowers the vision Transformer encoder to produce rep- resentative frame-wise features for input videos. 3.2.1. Sampling strategy To unify the inputs and mitigate the footprint burden, we implement a sampling strategy for the raw CPR videos to generate a series of video clips. Specifically, a frame-wise sliding window approach is carried out with the downsampling rate (ds) of frames in each window and the overlapping rate (ol) between windows. The configuration of ds and ol will be illuminated in Section 5.3. The sampling strategy allows the VFE module to concentrate on local dependencies with a fixed video length. Each generated video clip involves one or multiple CPR actions, leading to diverse"
+  },
+  {
+    "paper_id": "2308.16552v1",
+    "title": "Prompt-enhanced Hierarchical Transformer Elevating Cardiopulmonary Resuscitation Instruction via Temporal Action Segmentation",
+    "page_num": 8,
+    "chunk_id": "2308.16552v1_page8_chunk2",
+    "text": "window and the overlapping rate (ol) between windows. The configuration of ds and ol will be illuminated in Section 5.3. The sampling strategy allows the VFE module to concentrate on local dependencies with a fixed video length. Each generated video clip involves one or multiple CPR actions, leading to diverse receptive fields to feature extraction with training efficiency. Moreover, this strategy is vital for augmenting data and empowers the robustness of the VFE module. 3.2.2. Prompt engineering In order to acquire informative semantic merits for a CPR video clip, prompt engineering resorts to the idea of embedding the expected output string into the input template in a cloze test-like form. We simulate the implementation inspired by Br-Prompt that is non-discriminatorily applied to TAS tasks. In particular, we establish 15 advantageous semantics for the CPR actions appeared in the custom dataset. Therefore, four types of prompts are available to record properties of CPR behaviors such as location, quantity, semantics, and integrality. More specifically, The ordinal prompt zi ord adopts the format as “this is the {ith} action in the video” to simply captures the position of each state. The statistical prompt zstat counts the number of CPR actions of a sequence"
+  },
+  {
+    "paper_id": "2308.16552v1",
+    "title": "Prompt-enhanced Hierarchical Transformer Elevating Cardiopulmonary Resuscitation Instruction via Temporal Action Segmentation",
+    "page_num": 8,
+    "chunk_id": "2308.16552v1_page8_chunk3",
+    "text": "of CPR behaviors such as location, quantity, semantics, and integrality. More specifically, The ordinal prompt zi ord adopts the format as “this is the {ith} action in the video” to simply captures the position of each state. The statistical prompt zstat counts the number of CPR actions of a sequence with a neat format as “this video clip contains {number of CPR behaviors} actions in total”. To investigate pronounced semantic analysis, we utilize the format “{ith}, the person is 8"
+  },
+  {
+    "paper_id": "2308.16552v1",
+    "title": "Prompt-enhanced Hierarchical Transformer Elevating Cardiopulmonary Resuscitation Instruction via Temporal Action Segmentation",
+    "page_num": 9,
+    "chunk_id": "2308.16552v1_page9_chunk1",
+    "text": "performing the action step of {a certain CPR behavior}” as the semantic prompt zi sem focusing on adjacence and interspersion of actions. Eventually, we regard aggregated semantic prompts in a CPR video clip as the integrated prompt zinteg, representing global semantic information. The motivation of prompt engineering aims to learn inter- and intra- affinities of behaviors within CPR videos. 3.2.3. Visual-linguistic contrastive learning Given massive prompts by the prompt engineering, the VFE module pon- ders fabulous representation of the CPR video clips through visual-linguistic contrastive learning. To be legible, video clip c and its text description t are introduced to a visual encoder and a text encoder to obtain the correspond- ing representation zc and zt, respectively, and the cosine similarity between the two is expressed as: s(zc, zt) = zc · zt |zc||zt| (1) The batch similarity matrix S for the video clip feature Zc and the text feature Zt with batch size B is: S(Zc, Zt) =   s(zc1, zt1) · · · s(zc1, ztB) ... ... ... s(zcB, zt1) · · · s(zcB, ztB)   (2) We define the ground-truth batch similarity matrix GT, where the sim- ilarity of the correct pair is set to"
+  },
+  {
+    "paper_id": "2308.16552v1",
+    "title": "Prompt-enhanced Hierarchical Transformer Elevating Cardiopulmonary Resuscitation Instruction via Temporal Action Segmentation",
+    "page_num": 9,
+    "chunk_id": "2308.16552v1_page9_chunk2",
+    "text": "Zt with batch size B is: S(Zc, Zt) =   s(zc1, zt1) · · · s(zc1, ztB) ... ... ... s(zcB, zt1) · · · s(zcB, ztB)   (2) We define the ground-truth batch similarity matrix GT, where the sim- ilarity of the correct pair is set to 1, and contrastively the error pair is set to 0. The objective of learning is to maximize the similarity between S and GT. Here we adopt the KL divergence (Kullback–Leibler divergence) as the contrastive loss. For instance, N × N matrices P and Q, its brief form is defined: DKL(P∥Q) = 1 N 2 N X i=1 N X j=1 Pij log Pij Qij (3) In this way, given dual modal similarity matrix SC and ST, we leverage the visual-linguistic contrastive loss as: L = 1 2[DKL(SC∥GT) + DKL(ST∥GT)] (4) 9"
+  },
+  {
+    "paper_id": "2308.16552v1",
+    "title": "Prompt-enhanced Hierarchical Transformer Elevating Cardiopulmonary Resuscitation Instruction via Temporal Action Segmentation",
+    "page_num": 10,
+    "chunk_id": "2308.16552v1_page10_chunk1",
+    "text": "To explain comprehensive details while avoiding ambiguous perplexity, we first employ a semantic loss Li sem, in which visual features zi c involv- ing ordinal contents of the video clip contend against commensurate textual semantic representation zi sem, thereby maintaining substantial semantic con- cernments. Meanwhile, the average pooling video clip features zc containing ordinal collections compete with integrated prompts representation zinteg via the integrated loss Linteg to allow holistic demonstration. Furthermore, to transparently exert a profound influence on the quantitive information, a statistical loss Lstat is applied by way of contrasting average pooling enumer- ation features z[CNT] with statistical prompts representation zstat. We ablate these loss components in Section 5.4.3. Finally, the united loss of the model is manifested as: L = K X i=1 Li sem + Linteg + Lstat (5) 3.3. Action Segmentation Executor The Action Segmentation Executor (ASE) module takes frame-wise fea- tures derived from the VFE module as input and produces moderate CPR action segmentation predictions. The structure of the ASE module is illus- trated in the upper left of Fig. 1. Generally, the ensemble is a hierarchical encoder-decoder architecture, wherein the output of the encoder as initial predictions will flow in ternary decoders for distillation."
+  },
+  {
+    "paper_id": "2308.16552v1",
+    "title": "Prompt-enhanced Hierarchical Transformer Elevating Cardiopulmonary Resuscitation Instruction via Temporal Action Segmentation",
+    "page_num": 10,
+    "chunk_id": "2308.16552v1_page10_chunk2",
+    "text": "module as input and produces moderate CPR action segmentation predictions. The structure of the ASE module is illus- trated in the upper left of Fig. 1. Generally, the ensemble is a hierarchical encoder-decoder architecture, wherein the output of the encoder as initial predictions will flow in ternary decoders for distillation. At the same time, the ASE module attempts to acquire hierarchical perception with window- perceptive self-attention and dilated temporal convolution throughout the framework. 3.3.1. Hierarchical encoder-decoder ASE module is composed of one encoder and three identical decoders. Each of them contains nine blocks to provide hierarchical representation. After generating the initial prediction by the encoder, three decoders perform a refinement process to boost the performance. The input to the encoder is a sequence of pre-extracted frame-wise features in sizes D × S, where D refers to the feature dimension of each frame and S represents the total number of frames of the input video. The first layer of the encoder uses a fully connected layer to adjust the input feature dimension. Subsequently, each encoder block utilizes a dilated temporal convolution as a feed-forward layer, which is followed by a ReLU activation function and instance normalization, 10"
+  },
+  {
+    "paper_id": "2308.16552v1",
+    "title": "Prompt-enhanced Hierarchical Transformer Elevating Cardiopulmonary Resuscitation Instruction via Temporal Action Segmentation",
+    "page_num": 10,
+    "chunk_id": "2308.16552v1_page10_chunk3",
+    "text": "of the input video. The first layer of the encoder uses a fully connected layer to adjust the input feature dimension. Subsequently, each encoder block utilizes a dilated temporal convolution as a feed-forward layer, which is followed by a ReLU activation function and instance normalization, 10"
+  },
+  {
+    "paper_id": "2308.16552v1",
+    "title": "Prompt-enhanced Hierarchical Transformer Elevating Cardiopulmonary Resuscitation Instruction via Temporal Action Segmentation",
+    "page_num": 11,
+    "chunk_id": "2308.16552v1_page11_chunk1",
+    "text": "connecting the single-head self-attention layer. A residual concatenation is taken between the two layers, and then the output dimension is reshaped by 1 × 1 convolution to join the next encoder block. The final encoder block outputs the initial prediction pe ∈RS×C by passing a fully connected layer, where C represents the number of action categories. Afterward, the decoder takes the initial prediction as input and is arranged in accordance with the encoder as a whole, except for the cross-attention layer. The cross- attention layer combines the results from the encoder with the output from the previous layer, treating the aggregation as the query Q and the key K, and the output from the previous layer as the value V . The advantage of this manner is that the frame-wise confidence scores from the encoder can be involved in the refinement stage by generating attention weights, and these attention weights are utilized for linear concatenation, without affecting the feature space V itself. In the end, the model makes the best use of three identical decoders to hierarchically produce the final prediction. 3.3.2. Hierarchical perception Two hierarchical strategies are simultaneously adopted to scratch multi- scale receptive fields by enlarging the window"
+  },
+  {
+    "paper_id": "2308.16552v1",
+    "title": "Prompt-enhanced Hierarchical Transformer Elevating Cardiopulmonary Resuscitation Instruction via Temporal Action Segmentation",
+    "page_num": 11,
+    "chunk_id": "2308.16552v1_page11_chunk2",
+    "text": "are utilized for linear concatenation, without affecting the feature space V itself. In the end, the model makes the best use of three identical decoders to hierarchically produce the final prediction. 3.3.2. Hierarchical perception Two hierarchical strategies are simultaneously adopted to scratch multi- scale receptive fields by enlarging the window size of the self-attention layer and dilated temporal convolution throughout the ASE module. Considering videos in the CPR dataset tend to cover thousands of frames, it is fairly demanding to seize significant vision plots for the self-attention layer within each block of the encoder or the decoders. We follow the spirit of hierarchical representation patterns proposed in [46] to mitigate this issue. Concretely, such a strategy first concentrates on the local semantics and then gradu- ally enlarges the receptive field to acquire the global concepts, allowing the model to learn extrinsic-to-intrinsic knowledge of CPR actions displayed in the videos. In addition, both apparent differences and subtle discrepancies are taken into account, yielding a more specific fashion to the traits of CPR actions. Practically, the window-perceptive self-attention layer calculates at- tention weights with each particular frame within its local window at a w scale, which is doubled as the blocks stack"
+  },
+  {
+    "paper_id": "2308.16552v1",
+    "title": "Prompt-enhanced Hierarchical Transformer Elevating Cardiopulmonary Resuscitation Instruction via Temporal Action Segmentation",
+    "page_num": 11,
+    "chunk_id": "2308.16552v1_page11_chunk3",
+    "text": "addition, both apparent differences and subtle discrepancies are taken into account, yielding a more specific fashion to the traits of CPR actions. Practically, the window-perceptive self-attention layer calculates at- tention weights with each particular frame within its local window at a w scale, which is doubled as the blocks stack deeper (i.e., w = 2i, i = 1, 2, . . .). Similarly, to introduce constructive local inductive bias, we follow the dilated temporal convolution as utilized in the TAS task by expanding the kernel size consistent with the self-attention layer. 11"
+  },
+  {
+    "paper_id": "2308.16552v1",
+    "title": "Prompt-enhanced Hierarchical Transformer Elevating Cardiopulmonary Resuscitation Instruction via Temporal Action Segmentation",
+    "page_num": 12,
+    "chunk_id": "2308.16552v1_page12_chunk1",
+    "text": "3.4. Prediction Refinement Calibrator The Prediction Refinement Calibrator (PRC) module intends to remark- ably alleviate over-segmentation errors of the predictions from the ASE mod- ule. The PRC module allies with and refines the ASE module by duplicating the segmentation pipeline but replacing the objective from action predictions with boundary probabilities. In particular, a comprehensive loss function serves as the motivation for jointly training the ASE and PRC modules. The overall loss function is a combination of the action segmentation loss and the boundary regression loss, with correlative ablation conducted in Section 5.4.3. As shown in the upper right of Fig. 1, the generated boundary probability curves further calibrate the action predictions from the ASE module with less over-segmentation issues and present the final CPR action segmentation predictions. 3.4.1. Boundary probability calibration To clarify the assets of the PRC module, we depict its intrinsic concept for boundary probability calibration. During the inference period, the PRC module regresses frame-wise action boundary possibilities P ∈[0, 1]S. Sub- sequently, the action boundaries B ∈{0, 1}S are determined by electing multiple Ps from P as the local maximum and simultaneously fulfilling the exceeding condition of the threshold p = 0.5. In practice, the ASE module"
+  },
+  {
+    "paper_id": "2308.16552v1",
+    "title": "Prompt-enhanced Hierarchical Transformer Elevating Cardiopulmonary Resuscitation Instruction via Temporal Action Segmentation",
+    "page_num": 12,
+    "chunk_id": "2308.16552v1_page12_chunk2",
+    "text": "inference period, the PRC module regresses frame-wise action boundary possibilities P ∈[0, 1]S. Sub- sequently, the action boundaries B ∈{0, 1}S are determined by electing multiple Ps from P as the local maximum and simultaneously fulfilling the exceeding condition of the threshold p = 0.5. In practice, the ASE module primarily generates initial predictions by assigning the action categories to the action segments with potential over- segmentation issues. Then the calculated action boundaries B compartmen- talize the video clip into refined action segments, each of which contains only one action both theoretically and practically. The retained action categories by majority voting for each action segment reach the final prediction of the entire model. 3.4.2. Action segmentation loss The overall action segmentation loss is defined as: Las = 1 G X g \u0000L∗ cls + Lsmo \u0001 (6) More specifically, the classification loss L∗ cls utilizes median frequency balancing, where the action weights of each action category in the temporal action segmentation task are calculated by dividing the mean frequency of 12"
+  },
+  {
+    "paper_id": "2308.16552v1",
+    "title": "Prompt-enhanced Hierarchical Transformer Elevating Cardiopulmonary Resuscitation Instruction via Temporal Action Segmentation",
+    "page_num": 12,
+    "chunk_id": "2308.16552v1_page12_chunk3",
+    "text": "action weights of each action category in the temporal action segmentation task are calculated by dividing the mean frequency of 12"
+  },
+  {
+    "paper_id": "2308.16552v1",
+    "title": "Prompt-enhanced Hierarchical Transformer Elevating Cardiopulmonary Resuscitation Instruction via Temporal Action Segmentation",
+    "page_num": 13,
+    "chunk_id": "2308.16552v1_page13_chunk1",
+    "text": "each action category by the frequency of each action class. Concerning the smoothing loss Lsmo, we implement Gaussian Similarity-weighted Truncated Mean Squared Error (GS-TMSE), which penalizes all frames in a video clip for the purpose of smoothing the transition of action probabilities between frames while preventing them from interfering with the frames where actions de facto transition. Its concrete form is as follows: LGS−TMSE = 1 SC X s,c exp \u0010 −∥xs −xs−1∥2 2σ2 \u0011 δ2 s,c (7) δs,c = min{| log ps,c −log ps−1,c|, τ} (8) where xs is the similarity index of the frame s, σ denotes the variance and is simply set to 1, and the threshold τ is set to 4. The advantageous imple- mentation benefits from the property of GS-TMSE. For brevity, the Gaussian kernel based on the similarity of frames (frame-wise features in our exper- iments), the function punishes contiguous but discriminative frames with merely a small weight. We average the losses of G stages (in our framework G = 4) as the overall action segmentation loss. 3.4.3. Boundary regression loss We employ a weighted logistic regression loss function to endow our model with boundary-aware capacity, which is defined as: Lbr = 1 SG"
+  },
+  {
+    "paper_id": "2308.16552v1",
+    "title": "Prompt-enhanced Hierarchical Transformer Elevating Cardiopulmonary Resuscitation Instruction via Temporal Action Segmentation",
+    "page_num": 13,
+    "chunk_id": "2308.16552v1_page13_chunk2",
+    "text": "merely a small weight. We average the losses of G stages (in our framework G = 4) as the overall action segmentation loss. 3.4.3. Boundary regression loss We employ a weighted logistic regression loss function to endow our model with boundary-aware capacity, which is defined as: Lbr = 1 SG X g S X s=1 \u0000wpys · log ps + (1 −ys) · log(1 −ps) \u0001 (9) where ys and ps represent the ground-truth action boundary labels and predicted action boundary possibilities for the frame s, respectively. Since the number of action boundary frames is much smaller than that of other frames, the factor wp is kindly devised to samples with weight positive. To further clarify wp, it comes from the reciprocal ratio of positive data points over the entire training data. 4. Dataset We primarily compare the performance of various models on three chal- lenging public datasets that are widely recognized in the TAS task concen- trating on catering behaviors, whereby the optimal architecture will be estab- lished especially for CPR action segmentation. We argue for the reasonabil- ity of selecting these three datasets on account of analogous representation 13"
+  },
+  {
+    "paper_id": "2308.16552v1",
+    "title": "Prompt-enhanced Hierarchical Transformer Elevating Cardiopulmonary Resuscitation Instruction via Temporal Action Segmentation",
+    "page_num": 13,
+    "chunk_id": "2308.16552v1_page13_chunk3",
+    "text": "widely recognized in the TAS task concen- trating on catering behaviors, whereby the optimal architecture will be estab- lished especially for CPR action segmentation. We argue for the reasonabil- ity of selecting these three datasets on account of analogous representation 13"
+  },
+  {
+    "paper_id": "2308.16552v1",
+    "title": "Prompt-enhanced Hierarchical Transformer Elevating Cardiopulmonary Resuscitation Instruction via Temporal Action Segmentation",
+    "page_num": 14,
+    "chunk_id": "2308.16552v1_page14_chunk1",
+    "text": "Table 1: Summary of datasets for model development and application Dataset videos classes duration fps instances view 50Salads 50 17 6.4 30 20 top Breakfast 1,712 48 ≈1 15 6 third person GTEA 28 11 ≈1 15 20 egocentric CPR 99 15 2 15 17 third person patterns compared to the CPR actions, wherein the behaviors are globally invariant and locally distinct. More importantly, we introduce the prepro- cesses of the custom CPR dataset and explain its implication. The essential takeaway information for these four datasets is summarized in Table 1. 4.1. Preliminary Public Datasets 50Salads dataset [53] is beneficial for research in action recognition, ac- tivity detection, process tracking, etc., which collects 50 videos from 25 par- ticipants preparing two different kinds of mixed salads, and contains more than 4 hours of video data. Each video lasts 6.4 minutes long on average and consists of about 20 action instances. All videos are recorded from a top-down view, including 17 action category annotations. Breakfast dataset [54] is related to the preparation of daily breakfast. It comprises 18 different kitchen scenes with diverse backgrounds conducive to monitoring and analyzing daily human activities. The dataset contains 1,712 videos with 48 action annotations"
+  },
+  {
+    "paper_id": "2308.16552v1",
+    "title": "Prompt-enhanced Hierarchical Transformer Elevating Cardiopulmonary Resuscitation Instruction via Temporal Action Segmentation",
+    "page_num": 14,
+    "chunk_id": "2308.16552v1_page14_chunk2",
+    "text": "All videos are recorded from a top-down view, including 17 action category annotations. Breakfast dataset [54] is related to the preparation of daily breakfast. It comprises 18 different kitchen scenes with diverse backgrounds conducive to monitoring and analyzing daily human activities. The dataset contains 1,712 videos with 48 action annotations recorded from a third-person view of 52 participants, wherein each video represents an average of 6 action instances. GTEA dataset [55] contains 28 egocentric videos with 11 action categories involving daily kitchen activities performed by 4 participants. On average, each video has 20 action instances and is about a half-minute long. 4.2. Custom CPR Dataset We collect the CPR dataset with ethical approval and notification of sub- jects with the assistance of MIRAGESTARS Inc., which involves 99 videos of participants performing the whole process of cardiopulmonary resuscitation in a standard green screen laboratory environment. This work is conducted in adherence to the tenets of the Declaration of Helsinki, and ethics approval is obtained by the Ethics Committee of the Shenzhen International Graduate School of Tsinghua University Submission F111/2022. 14"
+  },
+  {
+    "paper_id": "2308.16552v1",
+    "title": "Prompt-enhanced Hierarchical Transformer Elevating Cardiopulmonary Resuscitation Instruction via Temporal Action Segmentation",
+    "page_num": 14,
+    "chunk_id": "2308.16552v1_page14_chunk3",
+    "text": "to the tenets of the Declaration of Helsinki, and ethics approval is obtained by the Ethics Committee of the Shenzhen International Graduate School of Tsinghua University Submission F111/2022. 14"
+  },
+  {
+    "paper_id": "2308.16552v1",
+    "title": "Prompt-enhanced Hierarchical Transformer Elevating Cardiopulmonary Resuscitation Instruction via Temporal Action Segmentation",
+    "page_num": 15,
+    "chunk_id": "2308.16552v1_page15_chunk1",
+    "text": "Each video has about two minutes duration on average, containing ex- actly 15 action categories shown in Fig. 2 with their representative frames and the corresponding semantic information. The raw videos shot are identi- cally transformed utilizing the stream processing tool called FFmpeg. More concretely, the frame rate and resolution of videos are decreased from 25 fps, 2k to 15 fps, 720p respectively, on account of alleviating the calculating bur- den of proposed models, while ensuring the accessibility of the pipeline and the efficiency of the architecture to the maximum extent. It is worth noting that the simplifications above significantly reduce the video size from 320 MB – 1.1 GB to 1.9 MB – 5.3 MB, followed by wiping out the audio channel. These transformations sufficiently consider that CPR action segmentation generally depends on integral gestures rather than pixel-wise identification, whereby hardly any practical loss will be generated. After that, these videos are labeled at a frame-level by related trainers. The crafted CPR dataset possesses diverse challenges, including but not limited to the transience of partial actions, resemblance among actions, and out-of-place actions. The motivation of this dataset is prone to assist CPR instruction by auto- matically identifying potential omission,"
+  },
+  {
+    "paper_id": "2308.16552v1",
+    "title": "Prompt-enhanced Hierarchical Transformer Elevating Cardiopulmonary Resuscitation Instruction via Temporal Action Segmentation",
+    "page_num": 15,
+    "chunk_id": "2308.16552v1_page15_chunk2",
+    "text": "these videos are labeled at a frame-level by related trainers. The crafted CPR dataset possesses diverse challenges, including but not limited to the transience of partial actions, resemblance among actions, and out-of-place actions. The motivation of this dataset is prone to assist CPR instruction by auto- matically identifying potential omission, repetition, or out-of-order situations at a second-wise level, even if taking frame-wise misregistration into consider- ation. Furthermore, we adopt to implement four-fold nested cross validation to minimize latent optimistically biased evaluation, thus fairly revealing the performance of the presented model. 5. Experiments and Results 5.1. Evaluation Metrics 5.1.1. Frame-wise accuracy (Acc.) Frame-wise accuracy is commonly used as an evaluation metric for action segmentation [53, 54, 56], whereas it is easily affected by long-duration actions and not sensitive to over-segmentation issues. 5.1.2. Segmental edit score (Edit) Segmental edit score [58] is used to assess the model performance in pre- dicting the ordering of action segmentation without being affected by minor temporal shifts. Once proposed, the segmental edit score has been widely used in many temporal action segmentation tasks [19, 24, 25, 36, 56] since it combines the assessment of accuracy and efficiency into a single metric. 15"
+  },
+  {
+    "paper_id": "2308.16552v1",
+    "title": "Prompt-enhanced Hierarchical Transformer Elevating Cardiopulmonary Resuscitation Instruction via Temporal Action Segmentation",
+    "page_num": 15,
+    "chunk_id": "2308.16552v1_page15_chunk3",
+    "text": "ordering of action segmentation without being affected by minor temporal shifts. Once proposed, the segmental edit score has been widely used in many temporal action segmentation tasks [19, 24, 25, 36, 56] since it combines the assessment of accuracy and efficiency into a single metric. 15"
+  },
+  {
+    "paper_id": "2308.16552v1",
+    "title": "Prompt-enhanced Hierarchical Transformer Elevating Cardiopulmonary Resuscitation Instruction via Temporal Action Segmentation",
+    "page_num": 16,
+    "chunk_id": "2308.16552v1_page16_chunk1",
+    "text": "Table 2: Action segmentation performance of various state-of-the-art (SOTA) models on GTEA, 50Salads datasets and Breakfast Dataset GTEA 50Salads Breakfast Model F1@{10,25,50} Edit Acc. F1@{10,25,50} Edit Acc. F1@{10,25,50} Edit Acc. MS-TCN [20] 85.8 83.4 69.8 79.0 76.3 76.3 74.0 64.5 67.9 80.7 52.6 48.1 37.9 61.7 66.3 DTGRM [24] 87.8 86.6 72.9 83.0 77.6 79.1 75.9 66.1 72.0 80.0 68.7 61.9 46.6 68.9 68.3 BCN [19] 88.5 87.1 77.3 84.4 79.8 82.3 81.3 74.0 74.3 84.4 68.7 65.5 55.0 66.2 70.4 MS-TCN++ [57] 88.8 85.7 76.0 83.5 80.1 80.7 78.5 70.1 74.3 83.7 64.1 58.6 45.9 65.6 67.6 ASRF [49] 89.4 87.8 79.8 83.7 77.3 84.9 83.5 77.3 79.3 84.5 74.3 68.9 56.1 72.4 67.6 SSTDA [36] 90.0 89.1 78.0 86.2 79.8 83.0 81.5 73.8 75.8 83.2 75.0 69.1 55.2 73.7 70.2 ASFormer [46] 90.1 88.8 79.2 84.6 79.7 85.1 83.4 76.0 79.6 85.6 76.0 70.6 57.4 75.0 73.5 Br-Prompt [52]+ASFormer 94.1 92.0 83.0 91.6 81.2 89.2 87.8 81.3 83.8 88.1 N/A N/A N/A N/A N/A There is considerable uncertainty about when one action will cease and an- other will begin. Typically, in practical applications such as surgical workflow assessment, the accurate temporal continuity of surgical operations tends to be"
+  },
+  {
+    "paper_id": "2308.16552v1",
+    "title": "Prompt-enhanced Hierarchical Transformer Elevating Cardiopulmonary Resuscitation Instruction via Temporal Action Segmentation",
+    "page_num": 16,
+    "chunk_id": "2308.16552v1_page16_chunk2",
+    "text": "[52]+ASFormer 94.1 92.0 83.0 91.6 81.2 89.2 87.8 81.3 83.8 88.1 N/A N/A N/A N/A N/A There is considerable uncertainty about when one action will cease and an- other will begin. Typically, in practical applications such as surgical workflow assessment, the accurate temporal continuity of surgical operations tends to be more crucial than precise temporal segmentation, as the same goes for CPR instruction. 5.1.3. Segmental F1 score with overlapping threshold k (F1@k) Segmental overlap F1 score [34] has three distinctive characteristics: 1) penalizes over-segmentation errors; 2) ignores minor temporal shifts between the predictions and ground truth; 3) is determined by the total number of actions but does not depend on the duration of each action instance. By comparing the Intersection over Union (IoU) score of the predictions and ground truth, if the threshold τ = k 100 is exceeded, it is determined as true positive, otherwise as true negative, where k = 10, 25, 50 are adopted in temporal action segmentation tasks. The precision and recall are defined as precision = true positives true positives+false positives, recall = true positives true positives+false negatives, respectively. Then F1@k value can be computed from F1 = 2× precision∗recall precision+recall. 5.2. Module Selection for"
+  },
+  {
+    "paper_id": "2308.16552v1",
+    "title": "Prompt-enhanced Hierarchical Transformer Elevating Cardiopulmonary Resuscitation Instruction via Temporal Action Segmentation",
+    "page_num": 16,
+    "chunk_id": "2308.16552v1_page16_chunk3",
+    "text": "k = 10, 25, 50 are adopted in temporal action segmentation tasks. The precision and recall are defined as precision = true positives true positives+false positives, recall = true positives true positives+false negatives, respectively. Then F1@k value can be computed from F1 = 2× precision∗recall precision+recall. 5.2. Module Selection for Action Segmentation It is non-trivial to select an appropriate and distinctive backbone to ap- proach our goal of CPR action segmentation. Table 2 reveals the best tempo- ral action segmentation models on GTEA, 50Salads, and Breakfast datasets. Comparing the performance on public datasets is intuitively convincing, for which we gaze at the optimal one, ASFormer [46]. Particularly, we overlook Br-Prompt [52] in this subsection, which plays a role in feature representa- tion, which enhances the action segmentation models rather than serves as one of them. Considering the property of the collected CPR dataset, we lay more em- phasis on the analysis capacity to confront more enormous and complex 16"
+  },
+  {
+    "paper_id": "2308.16552v1",
+    "title": "Prompt-enhanced Hierarchical Transformer Elevating Cardiopulmonary Resuscitation Instruction via Temporal Action Segmentation",
+    "page_num": 16,
+    "chunk_id": "2308.16552v1_page16_chunk4",
+    "text": "analysis capacity to confront more enormous and complex 16"
+  },
+  {
+    "paper_id": "2308.16552v1",
+    "title": "Prompt-enhanced Hierarchical Transformer Elevating Cardiopulmonary Resuscitation Instruction via Temporal Action Segmentation",
+    "page_num": 17,
+    "chunk_id": "2308.16552v1_page17_chunk1",
+    "text": "data. Concretely, on the GTEA and 50Salads datasets with slightly smaller video volumes, we find ASFormer exhibits inference accuracies comparable to ASRF [49] and SSTDA [36]. While carried out on the Breakfast dataset with a multitude of videos, the model explicitly yields state-of-the-art per- formance. Through observing the performance on three public datasets, AS- Former illustrates the application of Transformer in the TAS task, affirming the non-negligible capacity of temporal representation and persistent sen- sitivity of long-term relationships. Due to the convenient scalability and robustness of ASFormer, we adopt this model as a vanilla backbone for CPR action segmentation. Table 3: Action segmentation performance with features following various window config- urations on the CPR dataset (#split 1) CPR F1@{10,25,50} Edit Acc. Baseline 95.8 93.6 89.8 94.2 89.5 ds=[2, 4] & ol=[2, 2] 95.3 94.8 91.5 93.3 92.0 ds=[2, 4, 8] & ol=[4, 2, 1] 96.5 95.5 92.0 94.8 91.0 ds=[4, 8, 12] & ol=[2, 1, 1] 96.0 95.7 92.7 95.0 91.8 5.3. Sampling Strategy Selection for Feature Extraction In the process of extracting video frame-wise features, we adopt a spe- cific sampling strategy dependent on pertinent experiments to generate video clips of a fixed length, which serve as the input"
+  },
+  {
+    "paper_id": "2308.16552v1",
+    "title": "Prompt-enhanced Hierarchical Transformer Elevating Cardiopulmonary Resuscitation Instruction via Temporal Action Segmentation",
+    "page_num": 17,
+    "chunk_id": "2308.16552v1_page17_chunk2",
+    "text": "8, 12] & ol=[2, 1, 1] 96.0 95.7 92.7 95.0 91.8 5.3. Sampling Strategy Selection for Feature Extraction In the process of extracting video frame-wise features, we adopt a spe- cific sampling strategy dependent on pertinent experiments to generate video clips of a fixed length, which serve as the input of the video features extrac- tor. In general, each video clip adopts a 16-frame window. We are mainly concerned with the downsampling rate (ds) of frames in each window, and the overlapping rate (ol) between two windows. It should be emphasized that both the downsampling rate and the overlapping rate are heuristically selected according to the characteristics of the dataset. Concretely, longer windows lead to sparse information about each action, while shorter ones are even unable to contain more than two actions. We empirically take both long and short windows into consideration, which produce excellent feature extraction performance by involving multi-scale information. Diverse window configurations are displayed in Table 3, which indicate the non-trivial importance of the downsampling rate and the overlapping rate. The collective results are retained on the custom CPR dataset (split #1) under the support of the ASE module as the action segmentation backbone. 17"
+  },
+  {
+    "paper_id": "2308.16552v1",
+    "title": "Prompt-enhanced Hierarchical Transformer Elevating Cardiopulmonary Resuscitation Instruction via Temporal Action Segmentation",
+    "page_num": 17,
+    "chunk_id": "2308.16552v1_page17_chunk3",
+    "text": "multi-scale information. Diverse window configurations are displayed in Table 3, which indicate the non-trivial importance of the downsampling rate and the overlapping rate. The collective results are retained on the custom CPR dataset (split #1) under the support of the ASE module as the action segmentation backbone. 17"
+  },
+  {
+    "paper_id": "2308.16552v1",
+    "title": "Prompt-enhanced Hierarchical Transformer Elevating Cardiopulmonary Resuscitation Instruction via Temporal Action Segmentation",
+    "page_num": 18,
+    "chunk_id": "2308.16552v1_page18_chunk1",
+    "text": "Multiple downsampling rates and overlapping rates are adopted simultane- ously as mentioned above. In addition, training efficiency is an essential fac- tor to be carefully considered. Complicated windows conduce to substantial training time, while simple ones may fail to grab discriminative information. In the light of this, we conduct three groups of window arrangements to seek out the optimal one. Here we adopt the preceding Transformer-based method [46] as the vanilla baseline. Table 4: Model performance and module ablation of PhiTrans on the CPR dataset Model with Variants Components F1@{10,25,50} Edit Acc. ASE VFE PRC PhiTrans (Ours) ✓ ✓ ✓ 95.8 95.3 91.7 94.6 91.1 w/o ASE × ✓ ✓ 94.3 93.0 88.5 92.9 88.6 w/o VFE ✓ × ✓ 94.1 91.7 87.1 91.8 87.6 w/o PRC ✓ ✓ × 95.3 94.5 91.5 93.6 91.1 w/o VFE, w/o PRC ✓ × × 95.3 94.2 89.5 93.4 89.7 When the downsampling rates are 2, 4, and correspondingly the over- lapping rates are 2, 2, redundant local features are captured. Each window contains only few actions, where a good deal of frames belong to the same ac- tion, resulting in poor effects. Similarly, employing 2, 4, and 8 downsampling rates and 4,"
+  },
+  {
+    "paper_id": "2308.16552v1",
+    "title": "Prompt-enhanced Hierarchical Transformer Elevating Cardiopulmonary Resuscitation Instruction via Temporal Action Segmentation",
+    "page_num": 18,
+    "chunk_id": "2308.16552v1_page18_chunk2",
+    "text": "rates are 2, 4, and correspondingly the over- lapping rates are 2, 2, redundant local features are captured. Each window contains only few actions, where a good deal of frames belong to the same ac- tion, resulting in poor effects. Similarly, employing 2, 4, and 8 downsampling rates and 4, 2, and 1 overlapping rates though reaches a high F1@50 as 96.5, its overlapping rate of 4 misleads the module extensively reusing the same information, decreasing the abundance of video features. We finally adopt downsampling rates as 4, 8, and 12 corresponding to the overlapping rates of 2, 1, and 1, which balance the expressions derived from various receptive fields with rational training efficiency. 5.4. Model Performance and Ablation Study of PhiTrans In this subsection, we first present the favorable performance of PhiTrans both on the custom and public datasets. Then module ablations are demon- strated both quantitatively and qualitatively. Finally, we verify the effect of every loss component implemented in the proposed model. 5.4.1. Model Performance of PhiTrans Our model accomplishes the objective to serve as a productive toolbox assisting CPR instruction with action segmentation, with the intact model performance manifested in Fig. 3 and Table 4. On the"
+  },
+  {
+    "paper_id": "2308.16552v1",
+    "title": "Prompt-enhanced Hierarchical Transformer Elevating Cardiopulmonary Resuscitation Instruction via Temporal Action Segmentation",
+    "page_num": 18,
+    "chunk_id": "2308.16552v1_page18_chunk3",
+    "text": "Finally, we verify the effect of every loss component implemented in the proposed model. 5.4.1. Model Performance of PhiTrans Our model accomplishes the objective to serve as a productive toolbox assisting CPR instruction with action segmentation, with the intact model performance manifested in Fig. 3 and Table 4. On the whole, our model is 18"
+  },
+  {
+    "paper_id": "2308.16552v1",
+    "title": "Prompt-enhanced Hierarchical Transformer Elevating Cardiopulmonary Resuscitation Instruction via Temporal Action Segmentation",
+    "page_num": 19,
+    "chunk_id": "2308.16552v1_page19_chunk1",
+    "text": "adequate to approach the challenge of assisting CPR instruction, performing well on all metrics surpassing 91.0%. The comprehensive performance reveals the effectiveness and robustness of PhiTrans. More importantly, PhiTrans reaches 94.6% on Edit, a metric which reflects the model ordinal predicting performance wiping out fine-drawn temporal shifts. That means our model is prone to understand the chronological relationship of CPR actions that prac- tically necessitates. In addition, 95.8%, 95.3%, and 91.7% on F1@{10,25,50} indicate that PhiTrans successfully penalizes over-segmentation errors high- lighted in the TAS task. Though not designed to pursue a state-of-the-art performance on the public dataset, PhiTrans somewhat outperforms cutting- edge models, revealed in Table 5. It gains +0.8% improvement on F1@50, with other metrics comparable to previous state-of-the-art, which further manifests the effectiveness of PhiTrans on the general TAS task. Moreover, it is possible to explain the segmentation errors that the model induces through empirical observation and analysis. Fig. 4 visualizes the con- fusion matrix of the CPR dataset, which witnesses dominant segmentation performance on the majority of CPR actions by PhiTrans. Although our model exhibits hesitation in distinguishing actions ranging from 6 (declaring someone is sick) to 10 (requesting professional assistance), it is rational since these"
+  },
+  {
+    "paper_id": "2308.16552v1",
+    "title": "Prompt-enhanced Hierarchical Transformer Elevating Cardiopulmonary Resuscitation Instruction via Temporal Action Segmentation",
+    "page_num": 19,
+    "chunk_id": "2308.16552v1_page19_chunk2",
+    "text": "analysis. Fig. 4 visualizes the con- fusion matrix of the CPR dataset, which witnesses dominant segmentation performance on the majority of CPR actions by PhiTrans. Although our model exhibits hesitation in distinguishing actions ranging from 6 (declaring someone is sick) to 10 (requesting professional assistance), it is rational since these actions primarily differ in terms of vocal expression by the subjects, which is not incorporated into our modality for accommodating complex real-world scenarios. 5.4.2. Module Ablation of PhiTrans Table 4 quantitatively reveals the effect of each module on holistic model performance. We detach each part independently to observe any drop. We experiment w/o ASE by replacing the ASE module with the approved back- bone [20], w/o VFE by adopting ResNet152 backbone-based frame-wise fea- tures as input, and w/o PRC by merely applying loss functions proposed in previous methods [46]. The results show that lacking any module will lead to an apparent performance drop on all metrics, manifesting the es- sentiality of each module. Worst of all, the loss of the VFE module (w/o VFE) causes the model performance to reach a trough, leading to a disas- trous result of the total -9.9% on F1 and -2.8%, -3.5% on Edit and"
+  },
+  {
+    "paper_id": "2308.16552v1",
+    "title": "Prompt-enhanced Hierarchical Transformer Elevating Cardiopulmonary Resuscitation Instruction via Temporal Action Segmentation",
+    "page_num": 19,
+    "chunk_id": "2308.16552v1_page19_chunk3",
+    "text": "apparent performance drop on all metrics, manifesting the es- sentiality of each module. Worst of all, the loss of the VFE module (w/o VFE) causes the model performance to reach a trough, leading to a disas- trous result of the total -9.9% on F1 and -2.8%, -3.5% on Edit and Acc., respectively. Interestingly, the further removal of the PRC module on this basis (namely, w/o VFE, w/o PRC) instead presents a relative increase on all metrics. This situation can be explained by the fact that the PRC module tends to suppress over-segmentation issues excessively when the feature ex- 19"
+  },
+  {
+    "paper_id": "2308.16552v1",
+    "title": "Prompt-enhanced Hierarchical Transformer Elevating Cardiopulmonary Resuscitation Instruction via Temporal Action Segmentation",
+    "page_num": 20,
+    "chunk_id": "2308.16552v1_page20_chunk1",
+    "text": "pression is insufficient. These results prove the indispensability of the VFE module for its splendid feature representation. Similarly, whichever module misses accounts for the loss of corresponding capacity. Besides, to intuitively present effects of these modules, Fig. 3 visualizes the qualitative representation on the custom CPR dataset. Under the rein- forcement of each module, PhiTrans could not only perceive the presence of delicate actions but alleviate over-segmentation issues to a great extent, as displayed in the blue dashed line. Three hands-on modules proportionally bring promising performance for the challenge of assisting CPR instruction. Table 5: Model performance of PhiTrans on the 50Salads dataset 50Salads F1@{10,25,50} Edit Acc. Cutting-edge [52] 89.2 87.8 81.3 83.8 88.1 PhiTrans (ours) 89.3 87.8 82.1 83.4 88.1 Table 6: Loss ablation of PhiTrans on the CPR dataset (#split 1) VFE Loss components F1@{10,25,50} Edit Acc. Lsem 94.1 91.6 88.1 92.7 88.7 Lsem + Linteg 95.1 93.9 90.1 92.8 90.0 Lsem + Linteg + Lstat 96.2 95.5 91.4 95.5 90.5 PRC Loss components F1@{10,25,50} Edit Acc. Las 93.7 92.4 88.3 91.0 89.4 Las + Lbr 96.2 95.5 91.4 95.5 90.5 5.4.3. Loss Ablation of PhiTrans Table 6 presents two types of loss components that arise in the"
+  },
+  {
+    "paper_id": "2308.16552v1",
+    "title": "Prompt-enhanced Hierarchical Transformer Elevating Cardiopulmonary Resuscitation Instruction via Temporal Action Segmentation",
+    "page_num": 20,
+    "chunk_id": "2308.16552v1_page20_chunk2",
+    "text": "90.1 92.8 90.0 Lsem + Linteg + Lstat 96.2 95.5 91.4 95.5 90.5 PRC Loss components F1@{10,25,50} Edit Acc. Las 93.7 92.4 88.3 91.0 89.4 Las + Lbr 96.2 95.5 91.4 95.5 90.5 5.4.3. Loss Ablation of PhiTrans Table 6 presents two types of loss components that arise in the pro- posed model, one for extracting frame-wise features and the other for re- fining segmentation. Specifically, all three VFE loss components contribute to capturing representative features. The semantic loss Lsem supervises dis- tinctive features related to various CPR actions, laying the foundation for feature extraction. As the integrated Linteg and statistical loss Lstat are suc- cessively added, the model achieves respective improvement, indicating the indispensability of all losses. Additionally, it can be witnessed that both loss components utilized in the PRC module advocate the model performance by action segmentation control and boundary regression refinement. Notably, 20"
+  },
+  {
+    "paper_id": "2308.16552v1",
+    "title": "Prompt-enhanced Hierarchical Transformer Elevating Cardiopulmonary Resuscitation Instruction via Temporal Action Segmentation",
+    "page_num": 21,
+    "chunk_id": "2308.16552v1_page21_chunk1",
+    "text": "the boundary regression loss Lbr brings +3.0% on every F1 and Edit), ex- actly showing its effectiveness to alleviate over-segmentation issues. Overall, these loss ablations certify the necessity and trait of losses implemented in our model. 6. Conclusion and Discussion In this study, we originally deliberate a rewarding pipeline that assists the enhancement of CPR instruction via action segmentation through novel deep learning architectures. Specifically, we collect a custom CPR dataset involv- ing videos of the whole process of cardiopulmonary resuscitation assessment along with corresponding frame-level semantic annotation. Accordingly, we devise a Prompt-enhanced hierarchical Transformer, called PhiTrans, espe- cially for CPR action segmentation. PhiTrans consists of three integral mod- ules: Video Features Extractor, Action Segmentation Executor, and Predic- tion Refinement Calibrator. Such an architecture adequately considers the characteristics of CPR actions, facilitating the capacity to capture transient CPR actions while maintaining impressive performance. Extensive ablation experiments present that PhiTrans inspires improvement compared to half- baked models on the CPR dataset. In conclusion, it is non-trivial that PhiTrans is committed to CPR ac- tion segmentation, which is conducive to freeing experts of detecting and rectifying potential ordinal or oblivious mistakes made by subjects, thereby manifesting a compelling pipeline on elevating CPR"
+  },
+  {
+    "paper_id": "2308.16552v1",
+    "title": "Prompt-enhanced Hierarchical Transformer Elevating Cardiopulmonary Resuscitation Instruction via Temporal Action Segmentation",
+    "page_num": 21,
+    "chunk_id": "2308.16552v1_page21_chunk2",
+    "text": "improvement compared to half- baked models on the CPR dataset. In conclusion, it is non-trivial that PhiTrans is committed to CPR ac- tion segmentation, which is conducive to freeing experts of detecting and rectifying potential ordinal or oblivious mistakes made by subjects, thereby manifesting a compelling pipeline on elevating CPR instruction with action segmentation. The results of this research may serve as the cornerstone and offer a route towards developing a prospective orientation that would leverage fine-grained criteria like CPR action assessment. 7. Acknowledgements This work was supported in part by the National Natural Science Foun- dation of China 31970752; Science, Technology, Innovation Commission of Shenzhen Municipality JCYJ20190809180003689, JSGG20200225150707332, JCYJ20220530143014032, KCXFZ20211020163813019, ZDSYS20200820165400003, WDZC20200820173710001, WDZC20200821150704001, JSGG20191129110812708. 21"
+  },
+  {
+    "paper_id": "2308.16552v1",
+    "title": "Prompt-enhanced Hierarchical Transformer Elevating Cardiopulmonary Resuscitation Instruction via Temporal Action Segmentation",
+    "page_num": 22,
+    "chunk_id": "2308.16552v1_page22_chunk1",
+    "text": "References [1] S. C. Brooks, G. R. Clegg, J. Bray, C. D. Deakin, G. D. Perkins, M. Ringh, C. M. Smith, M. S. Link, R. M. Merchant, J. Pezo-Morales, et al., Optimizing outcomes after out-of-hospital cardiac arrest with in- novative approaches to public-access defibrillation: A scientific state- ment from the international liaison committee on resuscitation, Circu- lation 145 (13) (2022) e776–e801. [2] C. Sandroni, T. Cronberg, M. Sekhon, Brain injury after cardiac ar- rest: pathophysiology, treatment, and prognosis, Intensive care medicine (2021) 1–22. [3] A. H. Association, et al., Standards for cardiopulmonary resuscitation (cpr) and emergency cardiac care (ecc), Jama 227 (1974) 837–860. [4] T. Lancet, Out-of-hospital cardiac arrest: a unique medical emergency, The Lancet 391 (2018). [5] I. Hasselqvist-Ax, G. Riva, J. Herlitz, M. Rosenqvist, J. Hollenberg, P. Nordberg, M. Ringh, M. Jonsson, C. Axelsson, J. Lindqvist, et al., Early cardiopulmonary resuscitation in out-of-hospital cardiac arrest, New England Journal of Medicine 372 (24) (2015) 2307–2315. [6] L. Wik, P. A. Steen, N. G. Bircher, Quality of bystander cardiopul- monary resuscitation influences outcome after prehospital cardiac arrest, Resuscitation 28 (3) (1994) 195–203. [7] E. J. Gallagher, G. Lombardi, P. Gennis, Effectiveness of bystander car- diopulmonary resuscitation and survival following out-of-hospital"
+  },
+  {
+    "paper_id": "2308.16552v1",
+    "title": "Prompt-enhanced Hierarchical Transformer Elevating Cardiopulmonary Resuscitation Instruction via Temporal Action Segmentation",
+    "page_num": 22,
+    "chunk_id": "2308.16552v1_page22_chunk2",
+    "text": "of Medicine 372 (24) (2015) 2307–2315. [6] L. Wik, P. A. Steen, N. G. Bircher, Quality of bystander cardiopul- monary resuscitation influences outcome after prehospital cardiac arrest, Resuscitation 28 (3) (1994) 195–203. [7] E. J. Gallagher, G. Lombardi, P. Gennis, Effectiveness of bystander car- diopulmonary resuscitation and survival following out-of-hospital car- diac arrest, Jama 274 (24) (1995) 1922–1925. [8] S. Pivaˇc, P. Gradiˇsek, B. Skela-Saviˇc, The impact of cardiopulmonary resuscitation (cpr) training on schoolchildren and their cpr knowledge, attitudes toward cpr, and willingness to help others and to perform cpr: mixed methods research design, BMC Public Health 20 (2020) 1–11. [9] M. Y. Khanji, C. A. A. Chahal, F. Ricci, M. W. Akhter, R. S. Patel, Cardiopulmonary resuscitation training to improve out-of-hospital car- diac arrest survival: addressing potential health inequalities, European Journal of Preventive Cardiology 29 (17) (2022) 2275–2277. 22"
+  },
+  {
+    "paper_id": "2308.16552v1",
+    "title": "Prompt-enhanced Hierarchical Transformer Elevating Cardiopulmonary Resuscitation Instruction via Temporal Action Segmentation",
+    "page_num": 23,
+    "chunk_id": "2308.16552v1_page23_chunk1",
+    "text": "[10] K. Bielski, B. W. B¨ottiger, M. Pruc, A. Gasecka, M. Sieminski, M. J. Ja- guszewski, J. Smereka, N. Gilis-Malinowska, F. W. Peacock, L. Szarpak, Outcomes of audio-instructed and video-instructed dispatcher-assisted cardiopulmonary resuscitation: a systematic review and meta-analysis, Annals of Medicine 54 (1) (2022) 464–471. [11] J.-B. Alayrac, P. Bojanowski, N. Agrawal, J. Sivic, I. Laptev, S. Lacoste- Julien, Unsupervised learning from narrated instruction videos, in: Pro- ceedings of the IEEE Conference on Computer Vision and Pattern Recognition, 2016, pp. 4575–4583. [12] A. Piergiovanni, A. Angelova, M. S. Ryoo, I. Essa, Unsupervised discov- ery of actions in instructional videos, arXiv preprint arXiv:2106.14733 (2021). [13] G. Ding, A. Yao, Temporal action segmentation with high-level complex activity labels, IEEE Transactions on Multimedia (2022). [14] E. Apostolidis, E. Adamantidou, A. I. Metsai, V. Mezaris, I. Patras, Video summarization using deep neural networks: A survey, Proceedings of the IEEE 109 (11) (2021) 1838–1863. [15] S. Vishwakarma, A. Agrawal, A survey on activity recognition and be- havior understanding in video surveillance, The Visual Computer 29 (2013) 983–1009. [16] H. Jhuang, J. Gall, S. Zuffi, C. Schmid, M. J. Black, Towards under- standing action recognition, in: Proceedings of the IEEE international conference on computer vision, 2013,"
+  },
+  {
+    "paper_id": "2308.16552v1",
+    "title": "Prompt-enhanced Hierarchical Transformer Elevating Cardiopulmonary Resuscitation Instruction via Temporal Action Segmentation",
+    "page_num": 23,
+    "chunk_id": "2308.16552v1_page23_chunk2",
+    "text": "S. Vishwakarma, A. Agrawal, A survey on activity recognition and be- havior understanding in video surveillance, The Visual Computer 29 (2013) 983–1009. [16] H. Jhuang, J. Gall, S. Zuffi, C. Schmid, M. J. Black, Towards under- standing action recognition, in: Proceedings of the IEEE international conference on computer vision, 2013, pp. 3192–3199. [17] Y. Kong, Y. Fu, Human action recognition and prediction: A survey, International Journal of Computer Vision 130 (5) (2022) 1366–1401. [18] D. Liu, Q. Li, T. Jiang, Y. Wang, R. Miao, F. Shan, Z. Li, Towards uni- fied surgical skill assessment, in: Proceedings of the IEEE/CVF Confer- ence on Computer Vision and Pattern Recognition, 2021, pp. 9522–9531. [19] Z. Wang, Z. Gao, L. Wang, Z. Li, G. Wu, Boundary-aware cascade networks for temporal action segmentation, in: Computer Vision–ECCV 2020: 16th European Conference, Glasgow, UK, August 23–28, 2020, Proceedings, Part XXV 16, Springer, 2020, pp. 34–51. 23"
+  },
+  {
+    "paper_id": "2308.16552v1",
+    "title": "Prompt-enhanced Hierarchical Transformer Elevating Cardiopulmonary Resuscitation Instruction via Temporal Action Segmentation",
+    "page_num": 24,
+    "chunk_id": "2308.16552v1_page24_chunk1",
+    "text": "[20] Y. A. Farha, J. Gall, Ms-tcn: Multi-stage temporal convolutional net- work for action segmentation, in: Proceedings of the IEEE/CVF confer- ence on computer vision and pattern recognition, 2019, pp. 3575–3584. [21] Y. Cheng, Q. Fan, S. Pankanti, A. Choudhary, Temporal sequence mod- eling for video event detection, in: Proceedings of the IEEE conference on computer vision and pattern recognition, 2014, pp. 2227–2234. [22] D.-A. Huang, L. Fei-Fei, J. C. Niebles, Connectionist temporal modeling for weakly supervised action labeling, in: Computer Vision–ECCV 2016: 14th European Conference, Amsterdam, The Netherlands, October 11– 14, 2016, Proceedings, Part IV 14, Springer, 2016, pp. 137–153. [23] B. Singh, T. K. Marks, M. Jones, O. Tuzel, M. Shao, A multi-stream bi-directional recurrent neural network for fine-grained action detection, in: Proceedings of the IEEE conference on computer vision and pattern recognition, 2016, pp. 1961–1970. [24] D. Wang, D. Hu, X. Li, D. Dou, Temporal relational modeling with self-supervision for action segmentation, in: Proceedings of the AAAI Conference on Artificial Intelligence, Vol. 35, 2021, pp. 2729–2737. [25] Y. Huang, Y. Sugano, Y. Sato, Improving action segmentation via graph-based temporal reasoning, in: Proceedings of the IEEE/CVF con- ference on computer vision and pattern recognition, 2020, pp. 14024– 14034."
+  },
+  {
+    "paper_id": "2308.16552v1",
+    "title": "Prompt-enhanced Hierarchical Transformer Elevating Cardiopulmonary Resuscitation Instruction via Temporal Action Segmentation",
+    "page_num": 24,
+    "chunk_id": "2308.16552v1_page24_chunk2",
+    "text": "with self-supervision for action segmentation, in: Proceedings of the AAAI Conference on Artificial Intelligence, Vol. 35, 2021, pp. 2729–2737. [25] Y. Huang, Y. Sugano, Y. Sato, Improving action segmentation via graph-based temporal reasoning, in: Proceedings of the IEEE/CVF con- ference on computer vision and pattern recognition, 2020, pp. 14024– 14034. [26] J. Carreira, A. Zisserman, Quo vadis, action recognition? a new model and the kinetics dataset, in: proceedings of the IEEE Conference on Computer Vision and Pattern Recognition, 2017, pp. 6299–6308. [27] A. Vaswani, N. Shazeer, N. Parmar, J. Uszkoreit, L. Jones, A. N. Gomez, L. Kaiser, I. Polosukhin, Attention is all you need, Advances in neural information processing systems 30 (2017). [28] A. Dosovitskiy, L. Beyer, A. Kolesnikov, D. Weissenborn, X. Zhai, T. Unterthiner, M. Dehghani, M. Minderer, G. Heigold, S. Gelly, et al., An image is worth 16x16 words: Transformers for image recognition at scale, arXiv preprint arXiv:2010.11929 (2020). 24"
+  },
+  {
+    "paper_id": "2308.16552v1",
+    "title": "Prompt-enhanced Hierarchical Transformer Elevating Cardiopulmonary Resuscitation Instruction via Temporal Action Segmentation",
+    "page_num": 24,
+    "chunk_id": "2308.16552v1_page24_chunk3",
+    "text": "(2020). 24"
+  },
+  {
+    "paper_id": "2308.16552v1",
+    "title": "Prompt-enhanced Hierarchical Transformer Elevating Cardiopulmonary Resuscitation Instruction via Temporal Action Segmentation",
+    "page_num": 25,
+    "chunk_id": "2308.16552v1_page25_chunk1",
+    "text": "[29] T. Brown, B. Mann, N. Ryder, M. Subbiah, J. D. Kaplan, P. Dhariwal, A. Neelakantan, P. Shyam, G. Sastry, A. Askell, et al., Language models are few-shot learners, Advances in neural information processing systems 33 (2020) 1877–1901. [30] A. Radford, J. W. Kim, C. Hallacy, A. Ramesh, G. Goh, S. Agarwal, G. Sastry, A. Askell, P. Mishkin, J. Clark, et al., Learning transfer- able visual models from natural language supervision, in: International conference on machine learning, PMLR, 2021, pp. 8748–8763. [31] S. Karaman, L. Seidenari, A. Del Bimbo, Fast saliency based pooling of fisher encoded dense trajectories, in: ECCV THUMOS Workshop, Vol. 1, 2014, p. 5. [32] H. Kuehne, J. Gall, T. Serre, An end-to-end generative framework for video segmentation and recognition, in: 2016 IEEE Winter Conference on Applications of Computer Vision (WACV), IEEE, 2016, pp. 1–8. [33] S. Bhattacharya, M. M. Kalayeh, R. Sukthankar, M. Shah, Recognition of complex events: Exploiting temporal dynamics between underlying concepts, in: Proceedings of the IEEE conference on computer vision and pattern recognition, 2014, pp. 2235–2242. [34] C. Lea, M. D. Flynn, R. Vidal, A. Reiter, G. D. Hager, Temporal convo- lutional networks for action segmentation and detection, in: proceedings of the IEEE"
+  },
+  {
+    "paper_id": "2308.16552v1",
+    "title": "Prompt-enhanced Hierarchical Transformer Elevating Cardiopulmonary Resuscitation Instruction via Temporal Action Segmentation",
+    "page_num": 25,
+    "chunk_id": "2308.16552v1_page25_chunk2",
+    "text": "complex events: Exploiting temporal dynamics between underlying concepts, in: Proceedings of the IEEE conference on computer vision and pattern recognition, 2014, pp. 2235–2242. [34] C. Lea, M. D. Flynn, R. Vidal, A. Reiter, G. D. Hager, Temporal convo- lutional networks for action segmentation and detection, in: proceedings of the IEEE Conference on Computer Vision and Pattern Recognition, 2017, pp. 156–165. [35] Y. Zhang, L. Chen, C. Yan, P. Qin, X. Ji, Q. Dai, Weighted convolu- tional motion-compensated frame rate up-conversion using deep residual network, IEEE Transactions on Circuits and Systems for Video Tech- nology 30 (1) (2018) 11–22. [36] M.-H. Chen, B. Li, Y. Bao, G. AlRegib, Z. Kira, Action segmentation with joint self-supervised temporal domain adaptation, in: Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recog- nition, 2020, pp. 9454–9463. [37] R. Zhang, X. Han, Z. Lei, C. Jiang, I. Gul, Q. Hu, S. Zhai, H. Liu, L. Lian, Y. Liu, et al., Rcmnet: A deep learning model assists car-t 25"
+  },
+  {
+    "paper_id": "2308.16552v1",
+    "title": "Prompt-enhanced Hierarchical Transformer Elevating Cardiopulmonary Resuscitation Instruction via Temporal Action Segmentation",
+    "page_num": 25,
+    "chunk_id": "2308.16552v1_page25_chunk3",
+    "text": "L. Lian, Y. Liu, et al., Rcmnet: A deep learning model assists car-t 25"
+  },
+  {
+    "paper_id": "2308.16552v1",
+    "title": "Prompt-enhanced Hierarchical Transformer Elevating Cardiopulmonary Resuscitation Instruction via Temporal Action Segmentation",
+    "page_num": 26,
+    "chunk_id": "2308.16552v1_page26_chunk1",
+    "text": "therapy for leukemia, Computers in Biology and Medicine 150 (2022) 106084. [38] M. Hassan, H. Guan, A. Melliou, Y. Wang, Q. Sun, S. Zeng, W. Liang, Y. Zhang, Z. Zhang, Q. Hu, et al., Neuro-symbolic learning: Princi- ples and applications in ophthalmology, arXiv preprint arXiv:2208.00374 (2022). [39] M. Hassan, H. Zhang, A. A. Fateh, S. Ma, W. Liang, D. Shang, J. Deng, Z. Zhang, T. K. Lam, M. Xu, et al., Retinal disease projection condi- tioning by biological traits, Complex & Intelligent Systems (2023) 1–15. [40] V. Bhardwaj, A. Sharma, S. V. Parambath, I. Gul, X. Zhang, P. E. Lobie, P. Qin, V. Pandey, Machine learning for endometrial cancer pre- diction and prognostication, Frontiers in Oncology 12 (2022) 852746. [41] J. Guan, Y. Zhu, Q. Hu, S. Ma, J. Mu, Z. Li, D. Fang, X. Zhuo, H. Guan, Q. Sun, et al., Prevalence patterns and onset prediction of high myopia for children and adolescents in southern china via real-world screening data: Retrospective school-based study, Journal of Medical Internet Re- search 25 (2023) e39507. [42] L. Zhang, Z. Lei, C. Xiao, Z. Du, C. Jiang, X. Yuan, Q. Hu, S. Zhai, L. Xu, C. Liu, et al., Ai-boosted crispr-cas13a and total"
+  },
+  {
+    "paper_id": "2308.16552v1",
+    "title": "Prompt-enhanced Hierarchical Transformer Elevating Cardiopulmonary Resuscitation Instruction via Temporal Action Segmentation",
+    "page_num": 26,
+    "chunk_id": "2308.16552v1_page26_chunk2",
+    "text": "for children and adolescents in southern china via real-world screening data: Retrospective school-based study, Journal of Medical Internet Re- search 25 (2023) e39507. [42] L. Zhang, Z. Lei, C. Xiao, Z. Du, C. Jiang, X. Yuan, Q. Hu, S. Zhai, L. Xu, C. Liu, et al., Ai-boosted crispr-cas13a and total internal reflec- tion fluorescence microscopy system for sars-cov-2 detection, Frontiers in Sensors 3 (2022) 1015223. [43] Y. Liu, L. Lian, E. Zhang, L. Xu, C. Xiao, X. Zhong, F. Li, B. Jiang, Y. Dong, L. Ma, et al., Mixed-unet: Refined class activation mapping for weakly-supervised semantic segmentation with multi-scale inference, Frontiers in Computer Science 4 (2022) 1036934. [44] X. Chen, B. Li, S. Jiang, T. Zhang, X. Zhang, P. Qin, X. Yuan, Y. Zhang, G. Zheng, X. Ji, Accelerated phase shifting for structured illumination microscopy based on deep learning, IEEE Transactions on Computa- tional Imaging 7 (2021) 700–712. [45] Q. Chen, I. Gul, C. Liu, Z. Lei, X. Li, M. A. Raheem, Q. He, Z. Haihui, E. Leeansyah, C. Y. Zhang, et al., Crispr–cas12-based field-deployable system for rapid detection of synthetic dna sequence of the monkeypox virus genome, Journal of Medical Virology 95 (1) (2023) e28385. 26"
+  },
+  {
+    "paper_id": "2308.16552v1",
+    "title": "Prompt-enhanced Hierarchical Transformer Elevating Cardiopulmonary Resuscitation Instruction via Temporal Action Segmentation",
+    "page_num": 26,
+    "chunk_id": "2308.16552v1_page26_chunk3",
+    "text": "Chen, I. Gul, C. Liu, Z. Lei, X. Li, M. A. Raheem, Q. He, Z. Haihui, E. Leeansyah, C. Y. Zhang, et al., Crispr–cas12-based field-deployable system for rapid detection of synthetic dna sequence of the monkeypox virus genome, Journal of Medical Virology 95 (1) (2023) e28385. 26"
+  },
+  {
+    "paper_id": "2308.16552v1",
+    "title": "Prompt-enhanced Hierarchical Transformer Elevating Cardiopulmonary Resuscitation Instruction via Temporal Action Segmentation",
+    "page_num": 27,
+    "chunk_id": "2308.16552v1_page27_chunk1",
+    "text": "[46] F. Yi, H. Wen, T. Jiang, Asformer: Transformer for action segmentation, arXiv preprint arXiv:2110.08568 (2021). [47] D. Du, B. Su, Y. Li, Z. Qi, L. Si, Y. Shan, Do we really need temporal convolutions in action segmentation, arXiv preprint arXiv:2205.13425 2 (2022) 13. [48] J. Wang, Z. Wang, S. Zhuang, H. Wang, Cross-enhancement transformer for action segmentation, arXiv preprint arXiv:2205.09445 (2022). [49] Y. Ishikawa, S. Kasai, Y. Aoki, H. Kataoka, Alleviating over- segmentation errors by detecting action boundaries, in: Proceedings of the IEEE/CVF winter conference on applications of computer vision, 2021, pp. 2322–2331. [50] C. Jia, Y. Yang, Y. Xia, Y.-T. Chen, Z. Parekh, H. Pham, Q. Le, Y.-H. Sung, Z. Li, T. Duerig, Scaling up visual and vision-language represen- tation learning with noisy text supervision, in: International Conference on Machine Learning, PMLR, 2021, pp. 4904–4916. [51] M. Wang, J. Xing, Y. Liu, Actionclip: A new paradigm for video action recognition, arXiv preprint arXiv:2109.08472 (2021). [52] M. Li, L. Chen, Y. Duan, Z. Hu, J. Feng, J. Zhou, J. Lu, Bridge- prompt: Towards ordinal action understanding in instructional videos, in: Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition, 2022, pp. 19880–19889. [53] S. Stein, S. J."
+  },
+  {
+    "paper_id": "2308.16552v1",
+    "title": "Prompt-enhanced Hierarchical Transformer Elevating Cardiopulmonary Resuscitation Instruction via Temporal Action Segmentation",
+    "page_num": 27,
+    "chunk_id": "2308.16552v1_page27_chunk2",
+    "text": "action recognition, arXiv preprint arXiv:2109.08472 (2021). [52] M. Li, L. Chen, Y. Duan, Z. Hu, J. Feng, J. Zhou, J. Lu, Bridge- prompt: Towards ordinal action understanding in instructional videos, in: Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition, 2022, pp. 19880–19889. [53] S. Stein, S. J. McKenna, Combining embedded accelerometers with com- puter vision for recognizing food preparation activities, in: Proceedings of the 2013 ACM international joint conference on Pervasive and ubiq- uitous computing, 2013, pp. 729–738. [54] H. Kuehne, A. Arslan, T. Serre, The language of actions: Recovering the syntax and semantics of goal-directed human activities, in: Proceedings of the IEEE conference on computer vision and pattern recognition, 2014, pp. 780–787. [55] A. Fathi, X. Ren, J. M. Rehg, Learning to recognize objects in egocentric activities, in: CVPR 2011, IEEE, 2011, pp. 3281–3288. 27"
+  },
+  {
+    "paper_id": "2308.16552v1",
+    "title": "Prompt-enhanced Hierarchical Transformer Elevating Cardiopulmonary Resuscitation Instruction via Temporal Action Segmentation",
+    "page_num": 28,
+    "chunk_id": "2308.16552v1_page28_chunk1",
+    "text": "[56] C. Lea, A. Reiter, R. Vidal, G. D. Hager, Segmental spatiotemporal cnns for fine-grained action segmentation, in: Computer Vision–ECCV 2016: 14th European Conference, Amsterdam, The Netherlands, October 11- 14, 2016, Proceedings, Part III 14, Springer, 2016, pp. 36–52. [57] S.-J. Li, Y. AbuFarha, Y. Liu, M.-M. Cheng, J. Gall, Ms-tcn++: Multi- stage temporal convolutional network for action segmentation, IEEE Transactions on Pattern Analysis and Machine Intelligence (2020). [58] C. Lea, R. Vidal, G. D. Hager, Learning convolutional action primitives for fine-grained action recognition, in: 2016 IEEE international confer- ence on robotics and automation (ICRA), IEEE, 2016, pp. 1642–1649. 28"
+  },
+  {
+    "paper_id": "2308.16552v1",
+    "title": "Prompt-enhanced Hierarchical Transformer Elevating Cardiopulmonary Resuscitation Instruction via Temporal Action Segmentation",
+    "page_num": 29,
+    "chunk_id": "2308.16552v1_page29_chunk1",
+    "text": "Prediction Refinement Calibrator Action Segmentation Executor Video Features Extractor Dilated Conv ReLU Instance Norm Self-Attention 1×1 Conv Dilated Conv ReLU Concat Instance Norm Cross-Attention 1×1 Conv ×9 ×9 ×9 ×9 Frame-wise Features Initial Prediction Final Prediction Sampling Strategy Prompt Engineering Statistical Prompt Clip-wise Features Mean Semantic Prompts Vision Trans. Encoder Vision Features Fusion Trans. Encoder Statistical Features Text Trans. Encoder Integrated Prompt Ordinal Prompts ··· ··· Contrastive Learning Synchronous Training Figure 1: Overview of PhiTrans pipeline for cardiopulmonary resuscitation action segmen- tation. The VFE module at the bottom plays a role in generating frame-wise features, which will serve as the input to the top left ASE module to achieve the initial predictions. The PRC module in the top right further implements calibration to yield the eventual predictions. Lstat, Li sem, and Linteg in the VFE module are three elaborate contrastive learning losses. Vision Trans. Encoder, Text Trans. Encoder, and Fusion Trans. Module are synchronously trained. Diverse colors in the PRC module represent action categories, and their length indicates the duration of the corresponding action. Best viewed in color. 29"
+  },
+  {
+    "paper_id": "2308.16552v1",
+    "title": "Prompt-enhanced Hierarchical Transformer Elevating Cardiopulmonary Resuscitation Instruction via Temporal Action Segmentation",
+    "page_num": 29,
+    "chunk_id": "2308.16552v1_page29_chunk2",
+    "text": "Trans. Module are synchronously trained. Diverse colors in the PRC module represent action categories, and their length indicates the duration of the corresponding action. Best viewed in color. 29"
+  },
+  {
+    "paper_id": "2308.16552v1",
+    "title": "Prompt-enhanced Hierarchical Transformer Elevating Cardiopulmonary Resuscitation Instruction via Temporal Action Segmentation",
+    "page_num": 30,
+    "chunk_id": "2308.16552v1_page30_chunk1",
+    "text": "CPR Action Categories Semantic Information 1. Preparing to start 2. Confirming environment 3. Ensuring safety 4. Leaning down and patting 5. Judging patient breath 6. Declaring someone is sick 7. Indicating she/he has studied aid 8. Asking someone to help 9. Requesting someone to fetch AED 10. Requesting professional assistance 11. Pressing patient chest 12. Checking patient mouth 13. Performing artificial respiration 14. Assessing patient status 15. Ending rescue operation 1 6 11 2 7 12 3 8 13 4 9 14 5 10 15 Figure 2: Visualization of 15 action categories recorded in the CPR dataset and their corresponding semantic information. Best viewed in color. GroundTruth w/o VFE, w/o PRC w/o ASE PhiTrans (Ours) w/o VFE w/o PRC ··· ··· Figure 3: Visualization of PhiTrans and related variants for temporal action segmentation on the CPR dataset. Diverse colors represent action categories, and their length indicates the duration of the corresponding action. Best viewed in color. 30"
+  },
+  {
+    "paper_id": "2308.16552v1",
+    "title": "Prompt-enhanced Hierarchical Transformer Elevating Cardiopulmonary Resuscitation Instruction via Temporal Action Segmentation",
+    "page_num": 30,
+    "chunk_id": "2308.16552v1_page30_chunk2",
+    "text": "corresponding action. Best viewed in color. 30"
+  },
+  {
+    "paper_id": "2308.16552v1",
+    "title": "Prompt-enhanced Hierarchical Transformer Elevating Cardiopulmonary Resuscitation Instruction via Temporal Action Segmentation",
+    "page_num": 31,
+    "chunk_id": "2308.16552v1_page31_chunk1",
+    "text": "1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 Prediction 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 GroundTruth 0 20 40 60 80 100 Figure 4: Confusion matrix for the custom CPR dataset. The numbers on the horizontal and vertical axes represent the ordinal CPR actions. The numerical unit in the confusion matrix is expressed in percentages. Best viewed in color. 31"
+  }
+]

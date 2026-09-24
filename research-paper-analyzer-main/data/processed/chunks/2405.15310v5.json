@@ -1,0 +1,877 @@
+[
+  {
+    "paper_id": "2405.15310v5",
+    "title": "Spectraformer: A Unified Random Feature Framework for Transformer",
+    "page_num": 1,
+    "chunk_id": "2405.15310v5_page1_chunk1",
+    "text": "Spectraformer: A Unified Random Feature Framework for Transformer DUKE NGUYEN, DU YIN, ADITYA JOSHI, and FLORA SALIM, University of New South Wales, Australia Linearization of attention using various kernel approximation and kernel learning techniques has shown promise. Past methods used a subset of combinations of component functions and weight matrices within the random feature paradigm. We identify the need for a systematic comparison of different combinations of weight matrices and component functions for attention learning in Transformer. Hence, we introduce Spectraformer, a unified framework for approximating and learning the kernel function in the attention mechanism of the Transformer. Our empirical results demonstrate, for the first time, that a random feature- based approach can achieve performance comparable to top-performing sparse and low-rank methods on the challenging Long Range Arena benchmark. Thus, we establish a new state-of-the-art for random feature-based efficient Transformers. The framework also produces many variants that offer different advantages in accuracy, training time, and memory consumption. Our code is available at: https://github.com/cruiseresearchgroup/ spectraformer. CCS Concepts: • Computing methodologies →Kernel methods; Neural networks; Natural language processing. Additional Key Words and Phrases: transformers, kernel, linearized attention, kernelized attention ACM Reference Format: Duke Nguyen, Du Yin, Aditya Joshi, and Flora Salim. 2025."
+  },
+  {
+    "paper_id": "2405.15310v5",
+    "title": "Spectraformer: A Unified Random Feature Framework for Transformer",
+    "page_num": 1,
+    "chunk_id": "2405.15310v5_page1_chunk2",
+    "text": "in accuracy, training time, and memory consumption. Our code is available at: https://github.com/cruiseresearchgroup/ spectraformer. CCS Concepts: • Computing methodologies →Kernel methods; Neural networks; Natural language processing. Additional Key Words and Phrases: transformers, kernel, linearized attention, kernelized attention ACM Reference Format: Duke Nguyen, Du Yin, Aditya Joshi, and Flora Salim. 2025. Spectraformer: A Unified Random Feature Frame- work for Transformer. J. ACM 1, 1 (September 2025), 28 pages. https://doi.org/XXXXXXX.XXXXXXX 1 Introduction Transformer [59] has revolutionized the landscape of natural language processing (NLP) and forms the basis of almost all state-of-the-art language models. Its influence has reached beyond NLP into computer vision [18, 19, 72, 73], speech processing [33], and other fields. Compared to its precursors like the LSTMs, Transformer leverages parallelism since it is fully based on the attention mechanism. Therefore, the performance of Transformer is tied to the effective use of attention. Attention in the Original Transformer (referred to as ‘OT’ hereafter) uses the softmax function which is quadratic in time complexity. To mitigate the quadratic complexity of the standard attention mechanism, a diverse range of efficient Transformer architectures have been developed [54]. These include memory/ downsam- pling methods (Big Bird [74], Nystromformer [67], and Skyformer [6]), learnable pattern methods"
+  },
+  {
+    "paper_id": "2405.15310v5",
+    "title": "Spectraformer: A Unified Random Feature Framework for Transformer",
+    "page_num": 1,
+    "chunk_id": "2405.15310v5_page1_chunk3",
+    "text": "‘OT’ hereafter) uses the softmax function which is quadratic in time complexity. To mitigate the quadratic complexity of the standard attention mechanism, a diverse range of efficient Transformer architectures have been developed [54]. These include memory/ downsam- pling methods (Big Bird [74], Nystromformer [67], and Skyformer [6]), learnable pattern methods (Reformer [28]), Informer [76], Linformer [60]. Our work, Spectraformer, focuses on another signifi- cant category: the linearization of attention through a unified framework of random features. We Authors’ Contact Information: Duke Nguyen, research@itsduke.me; Du Yin, du.yin@unsw.edu.au; Aditya Joshi, aditya. joshi@unsw.edu.au; Flora Salim, flora.salim@unsw.edu.au, University of New South Wales, Sydney, New South Wales, Australia. Permission to make digital or hard copies of all or part of this work for personal or classroom use is granted without fee provided that copies are not made or distributed for profit or commercial advantage and that copies bear this notice and the full citation on the first page. Copyrights for components of this work owned by others than the author(s) must be honored. Abstracting with credit is permitted. To copy otherwise, or republish, to post on servers or to redistribute to lists, requires prior specific permission and/or a fee. Request permissions from permissions@acm.org. © 2025"
+  },
+  {
+    "paper_id": "2405.15310v5",
+    "title": "Spectraformer: A Unified Random Feature Framework for Transformer",
+    "page_num": 1,
+    "chunk_id": "2405.15310v5_page1_chunk4",
+    "text": "the first page. Copyrights for components of this work owned by others than the author(s) must be honored. Abstracting with credit is permitted. To copy otherwise, or republish, to post on servers or to redistribute to lists, requires prior specific permission and/or a fee. Request permissions from permissions@acm.org. © 2025 Copyright held by the owner/author(s). Publication rights licensed to ACM. ACM 1557-735X/2025/9-ART https://doi.org/XXXXXXX.XXXXXXX J. ACM, Vol. 1, No. 1, Article . Publication date: September 2025. arXiv:2405.15310v5 [cs.LG] 23 Sep 2025"
+  },
+  {
+    "paper_id": "2405.15310v5",
+    "title": "Spectraformer: A Unified Random Feature Framework for Transformer",
+    "page_num": 2,
+    "chunk_id": "2405.15310v5_page2_chunk1",
+    "text": "2 Duke Nguyen, Du Yin, Aditya Joshi, and Flora Salim approach this linearization by rethinking the role of the softmax. The softmax acts as a compatibil- ity function, capturing the similarity between pairs of tokens (see Equations 1 and 2). Extensive experiments with other compatibility functions show that the softmax is not the only possibility, and that the ‘best’ compatibility function depends on the task [58]. Replacing the softmax formulation with alternatives may allow us to reduce the time complexity of attention computation. In this paper, we focus on the subset of alternatives that employs kernel functions. Kernel functions have been historically used in machine learning algorithms to simplify the estimation of parameters [21]. Tsai et al. [58] show that attention can be formulated using kernels and then linearized [25], given the feature map of the respective attention kernel. Random feature-based algorithms [36] are a family of algorithms, inspired by spectral analysis, which provides the feature map associated with a kernel. A random feature consists of three components: component function, weight matrix, and component weight (see Section 3). Due to their robustness and flexibility, random features give rise to ‘random feature Transformers’, the family of Transformers with linearized attention via"
+  },
+  {
+    "paper_id": "2405.15310v5",
+    "title": "Spectraformer: A Unified Random Feature Framework for Transformer",
+    "page_num": 2,
+    "chunk_id": "2405.15310v5_page2_chunk2",
+    "text": "spectral analysis, which provides the feature map associated with a kernel. A random feature consists of three components: component function, weight matrix, and component weight (see Section 3). Due to their robustness and flexibility, random features give rise to ‘random feature Transformers’, the family of Transformers with linearized attention via random features (hereby abbreviated as RF), first with the work by Choromanski et al. [8]. This is seen to lead to three strands of research: (A) Optimization of weight matrices either (i) by making the matrices have lower time or space complexity, or (ii) by incorporating beneficial properties like orthogonality to reduce variance [8, 9, 46, 71]; (B) Enhancement of component functions by either: (i) finding a function with a tighter variance or approximation bound, or (ii) engineering in order to output with numerical stability and be bounded [8, 31, 32]; (C) Parameterization of weight matrices to perform kernel learning instead of kernel approximation [11]. (A) and (B) seek to improve approximation quality via approximation error and variance reduction. (C) dispenses with the approximation of the attention kernel (typically the softmax), and makes the kernel itself learnable, to attain a better performance. However, the three have been explored separately, creating"
+  },
+  {
+    "paper_id": "2405.15310v5",
+    "title": "Spectraformer: A Unified Random Feature Framework for Transformer",
+    "page_num": 2,
+    "chunk_id": "2405.15310v5_page2_chunk3",
+    "text": "instead of kernel approximation [11]. (A) and (B) seek to improve approximation quality via approximation error and variance reduction. (C) dispenses with the approximation of the attention kernel (typically the softmax), and makes the kernel itself learnable, to attain a better performance. However, the three have been explored separately, creating a situation where there are different ways to construct the random features. Additionally, past works only explore certain combinations of component functions and weight matrices, creating disjoint overlaps and gaps in the literature. Finally, the weight matrices are often those explicitly designed in the context of kernelized attention in the Transformer [8, 9, 46, 71], ignoring those which are popular in the kernel method literature (e.g., Liu et al. [36]). These limitations highlight the need for a unified framework to systematically compare combinations and identify optimal configurations. We introduce Spectraformer, a unified framework for approximating and learning the kernel function in the attention mechanism of the Transformer through the lens of random features. While other methods (e.g., Nystromformer [67], BigBird [74]) have explored alternative approaches to improving efficiency, Spectraformer provides a systematic way to explore the vast design space of random feature-based attention. It utilizes spectral analysis-inspired random features to"
+  },
+  {
+    "paper_id": "2405.15310v5",
+    "title": "Spectraformer: A Unified Random Feature Framework for Transformer",
+    "page_num": 2,
+    "chunk_id": "2405.15310v5_page2_chunk4",
+    "text": "in the attention mechanism of the Transformer through the lens of random features. While other methods (e.g., Nystromformer [67], BigBird [74]) have explored alternative approaches to improving efficiency, Spectraformer provides a systematic way to explore the vast design space of random feature-based attention. It utilizes spectral analysis-inspired random features to construct linearized attention in Transformers. Spectraformer allows for the experimentation of various combinations of weight matrices and component functions. Through our benchmarking experiments on the Long Range Arena (LRA) [53] and 18 combinations of weight matrices and component functions, Spectraformer produces novel combinations of component functions and weight matrices that perform competitively against previous efficient Transformers with different computational advantages. In addition, our work demonstrates that a well-configured kernelized attention model can perform on the same level as other classes of efficient Transformers, with our best Spectraformer variant proving highly competitive with leading methods like Nystromformer [67] and BigBird [74]. In doing so, it establishes a new state-of-the-art for random feature-based methods with a mean accuracy improvement of 0.35% over the Original Transformer (OT). Many Spectraformer variants also outperform existing efficient Transformers with random feature attention such as SADERF- ORF (a.k.a., FAVOR# [32]), OPRF-ORF (a.k.a., FAVOR++ [31]), PosRF-ORF (a.k.a., FAVOR+"
+  },
+  {
+    "paper_id": "2405.15310v5",
+    "title": "Spectraformer: A Unified Random Feature Framework for Transformer",
+    "page_num": 2,
+    "chunk_id": "2405.15310v5_page2_chunk5",
+    "text": "In doing so, it establishes a new state-of-the-art for random feature-based methods with a mean accuracy improvement of 0.35% over the Original Transformer (OT). Many Spectraformer variants also outperform existing efficient Transformers with random feature attention such as SADERF- ORF (a.k.a., FAVOR# [32]), OPRF-ORF (a.k.a., FAVOR++ [31]), PosRF-ORF (a.k.a., FAVOR+ [8]). Our contributions are: J. ACM, Vol. 1, No. 1, Article . Publication date: September 2025."
+  },
+  {
+    "paper_id": "2405.15310v5",
+    "title": "Spectraformer: A Unified Random Feature Framework for Transformer",
+    "page_num": 3,
+    "chunk_id": "2405.15310v5_page3_chunk1",
+    "text": "Spectraformer: A Unified Random Feature Framework for Transformer 3 Table 1. Experimental results of Spectraformer variants against previous SOTA efficient Transformers on the LRA benchmark. All models were run for five seeds using 128 random features. We report mean accuracy (on the test set), mean time (training time (hour)), and mean memory (peak memory consumption (GB)). 𝐿: ListOps, 𝑇: Text, 𝑅: Retrieval, 𝐼: Image, 𝑃: Pathfinder, and 𝜇for the average across tasks. Entries are sorted in descending order by 𝜇. Best models per category are boldened. Accuracy (%) ↑ Time (hour) ↓ Memory (GB) ↓ L T R I P 𝜇 L T R I P 𝜇 L T R I P 𝜇 Nystromformer 38.69 (0.59) 61.57 (0.38) 80.57 (0.30) 39.49 (0.89) 69.96 (1.27) 58.06 0.56 0.90 1.00 2.19 1.19 1.17 1.10 1.87 1.84 5.55 2.79 2.63 Big Bird 38.82 (0.52) 61.04 (0.15) 80.53 (0.32) 37.59 (1.04) 68.28 (6.74) 57.25 1.60 3.17 3.24 5.72 2.89 3.32 2.24 4.57 3.80 8.42 4.22 4.65 OPRF-FastFoodL 37.73 (0.28) 64.32 (0.61) 78.65 (1.94) 38.41 (0.66) 66.76 (0.39) 57.17 1.07 2.07 2.11 4.02 2.05 2.26 0.84 1.68 1.64 3.26 1.68 1.82 Reformer 35.50 (4.09) 61.28 (0.45) 78.31 (0.29) 43.62 (0.81) 66.28 (2.35) 57.00 0.65 1.29"
+  },
+  {
+    "paper_id": "2405.15310v5",
+    "title": "Spectraformer: A Unified Random Feature Framework for Transformer",
+    "page_num": 3,
+    "chunk_id": "2405.15310v5_page3_chunk2",
+    "text": "1.60 3.17 3.24 5.72 2.89 3.32 2.24 4.57 3.80 8.42 4.22 4.65 OPRF-FastFoodL 37.73 (0.28) 64.32 (0.61) 78.65 (1.94) 38.41 (0.66) 66.76 (0.39) 57.17 1.07 2.07 2.11 4.02 2.05 2.26 0.84 1.68 1.64 3.26 1.68 1.82 Reformer 35.50 (4.09) 61.28 (0.45) 78.31 (0.29) 43.62 (0.81) 66.28 (2.35) 57.00 0.65 1.29 1.29 2.51 1.26 1.40 1.61 3.20 2.95 6.38 3.20 3.47 Skyformer 38.96 (0.63) 60.67 (0.45) 81.90 (0.37) 32.93 (0.39) 69.81 (1.38) 56.85 0.78 1.35 1.49 3.09 1.63 1.67 1.67 3.01 2.92 7.90 3.96 3.89 OT 38.49 (0.80) 59.72 (1.07) 80.86 (0.20) 37.48 (0.83) 67.56 (6.12) 56.82 1.96 7.27 7.07 4.30 2.20 4.56 4.37 16.72 8.74 9.42 4.72 8.79 OPRF-SGQ 37.08 (0.56) 61.09 (0.77) 79.39 (0.94) 36.68 (0.28) 67.53 (2.79) 56.35 0.68 1.27 1.25 2.46 1.29 1.39 1.33 2.64 2.50 5.25 2.64 2.87 PosRF-MM 37.13 (0.27) 62.88 (1.17) 80.58 (0.44) 33.82 (0.51) 67.11 (0.45) 56.30 0.56 1.05 1.06 2.02 1.05 1.15 1.14 2.26 2.05 4.49 2.26 2.44 OPRF-OR 38.05 (0.78) 60.18 (0.49) 81.19 (0.23) 33.70 (0.57) 67.24 (0.88) 56.07 0.68 1.26 1.24 2.47 1.29 1.39 1.33 2.64 2.50 5.25 2.64 2.87 SADERF-QMC 37.18 (0.47) 60.61 (2.06) 80.67 (0.44) 34.55 (0.63) 67.32 (0.40) 56.07 0.68 1.24 1.28 2.47 1.26 1.39 1.40 2.79"
+  },
+  {
+    "paper_id": "2405.15310v5",
+    "title": "Spectraformer: A Unified Random Feature Framework for Transformer",
+    "page_num": 3,
+    "chunk_id": "2405.15310v5_page3_chunk3",
+    "text": "1.14 2.26 2.05 4.49 2.26 2.44 OPRF-OR 38.05 (0.78) 60.18 (0.49) 81.19 (0.23) 33.70 (0.57) 67.24 (0.88) 56.07 0.68 1.26 1.24 2.47 1.29 1.39 1.33 2.64 2.50 5.25 2.64 2.87 SADERF-QMC 37.18 (0.47) 60.61 (2.06) 80.67 (0.44) 34.55 (0.63) 67.32 (0.40) 56.07 0.68 1.24 1.28 2.47 1.26 1.39 1.40 2.79 2.63 5.56 2.79 3.04 PosRF-QMC 37.05 (0.16) 60.93 (0.59) 80.67 (0.29) 34.03 (0.94) 67.25 (0.44) 55.99 0.55 1.05 1.05 1.99 1.05 1.14 1.14 2.26 2.05 4.49 2.26 2.44 OPRF-QMC 37.86 (0.40) 60.87 (1.85) 80.44 (0.20) 33.87 (0.69) 66.81 (0.68) 55.97 0.68 1.26 1.24 2.43 1.28 1.38 1.33 2.64 2.50 5.25 2.64 2.87 SADERF-ORF 37.41 (0.45) 59.92 (0.90) 81.05 (0.18) 33.06 (1.02) 67.11 (0.56) 55.71 0.69 1.25 1.28 2.50 1.28 1.40 1.40 2.79 2.63 5.56 2.79 3.04 OPRF-MM 38.31 (0.38) 60.01 (1.01) 81.03 (0.31) 33.93 (0.85) 65.17 (5.17) 55.69 0.68 1.26 1.29 2.47 1.28 1.40 1.33 2.64 2.50 5.25 2.64 2.87 SADERF-MM 37.17 (0.27) 60.81 (1.82) 81.05 (0.20) 34.03 (1.04) 65.31 (4.85) 55.67 0.69 1.25 1.28 2.49 1.28 1.40 1.40 2.79 2.63 5.56 2.79 3.04 SADERF-SGQ 37.22 (0.28) 62.86 (0.96) 78.51 (0.68) 37.82 (0.59) 61.27 (5.38) 55.54 0.68 1.25 1.28 2.50 1.27 1.39 1.40 2.79 2.63 5.56 2.79 3.04 SADERF-FastFoodL 29.72"
+  },
+  {
+    "paper_id": "2405.15310v5",
+    "title": "Spectraformer: A Unified Random Feature Framework for Transformer",
+    "page_num": 3,
+    "chunk_id": "2405.15310v5_page3_chunk4",
+    "text": "SADERF-MM 37.17 (0.27) 60.81 (1.82) 81.05 (0.20) 34.03 (1.04) 65.31 (4.85) 55.67 0.69 1.25 1.28 2.49 1.28 1.40 1.40 2.79 2.63 5.56 2.79 3.04 SADERF-SGQ 37.22 (0.28) 62.86 (0.96) 78.51 (0.68) 37.82 (0.59) 61.27 (5.38) 55.54 0.68 1.25 1.28 2.50 1.27 1.39 1.40 2.79 2.63 5.56 2.79 3.04 SADERF-FastFoodL 29.72 (7.27) 64.71 (0.45) 77.50 (0.96) 38.38 (0.82) 66.47 (1.47) 55.35 1.09 2.09 2.18 4.05 2.06 2.29 0.90 1.80 1.76 3.52 1.80 1.96 PosRF-FastFoodL 29.54 (5.46) 64.61 (0.29) 77.10 (1.02) 38.28 (0.43) 66.38 (0.71) 55.18 1.02 2.00 2.01 3.88 1.98 2.18 0.77 1.54 1.50 3.01 1.54 1.67 PosRF-ORF 34.50 (6.49) 61.10 (1.76) 80.53 (0.33) 33.72 (1.03) 65.52 (4.89) 55.07 0.56 1.05 1.06 2.02 1.06 1.15 1.14 2.26 2.05 4.49 2.26 2.44 OPRF-SORF 29.59 (3.77) 64.81 (0.22) 77.12 (0.78) 37.42 (0.47) 63.98 (5.38) 54.58 0.68 1.26 1.24 2.42 1.28 1.38 1.33 2.64 2.50 5.25 2.64 2.87 SADERF-SORF 34.31 (2.50) 64.82 (0.26) 75.24 (1.12) 36.76 (1.22) 60.98 (4.90) 54.42 0.68 1.25 1.28 2.47 1.26 1.39 1.40 2.79 2.63 5.56 2.79 3.04 Linformer 36.94 (0.60) 56.99 (1.23) 77.86 (0.35) 39.09 (0.78) 59.24 (5.84) 54.02 0.41 0.74 0.77 1.28 0.71 0.78 0.86 1.70 1.61 3.39 1.71 1.85 PosRF-SGQ 28.81 (7.77) 62.30 (0.47) 78.31 (0.39) 37.96"
+  },
+  {
+    "paper_id": "2405.15310v5",
+    "title": "Spectraformer: A Unified Random Feature Framework for Transformer",
+    "page_num": 3,
+    "chunk_id": "2405.15310v5_page3_chunk5",
+    "text": "(1.12) 36.76 (1.22) 60.98 (4.90) 54.42 0.68 1.25 1.28 2.47 1.26 1.39 1.40 2.79 2.63 5.56 2.79 3.04 Linformer 36.94 (0.60) 56.99 (1.23) 77.86 (0.35) 39.09 (0.78) 59.24 (5.84) 54.02 0.41 0.74 0.77 1.28 0.71 0.78 0.86 1.70 1.61 3.39 1.71 1.85 PosRF-SGQ 28.81 (7.77) 62.30 (0.47) 78.31 (0.39) 37.96 (0.76) 59.71 (7.87) 53.42 0.56 1.06 1.05 2.01 1.06 1.15 1.14 2.26 2.05 4.49 2.26 2.44 Informer 31.45 (7.20) 62.06 (1.20) 76.92 (0.14) 37.90 (0.30) 57.07 (6.57) 53.08 0.88 1.92 2.23 3.21 1.78 2.01 2.66 5.57 3.27 5.20 2.61 3.86 PosRF-SORF 21.91 (5.98) 62.06 (1.36) 66.33 (0.41) 28.70 (3.87) 52.37 (5.24) 46.27 0.55 1.06 1.06 2.00 1.05 1.14 1.14 2.26 2.05 4.49 2.26 2.44 (1) A novel framework, Spectraformer, that unifies and generalizes past work on linearized attention using both kernel approximation and kernel learning. (2) Establishment of a new state-of-the-art for random feature-based efficient Transformers, demonstrating that this model class can be highly competitive with leading sparse and low-rank methods on the Long Range Arena benchmark. (3) A comprehensive empirical analysis of 18 combinations of component functions and weight matrices, offering practical guidance on selecting configurations based on trade-offs between accuracy, memory, and training time. (4) A public and"
+  },
+  {
+    "paper_id": "2405.15310v5",
+    "title": "Spectraformer: A Unified Random Feature Framework for Transformer",
+    "page_num": 3,
+    "chunk_id": "2405.15310v5_page3_chunk6",
+    "text": "class can be highly competitive with leading sparse and low-rank methods on the Long Range Arena benchmark. (3) A comprehensive empirical analysis of 18 combinations of component functions and weight matrices, offering practical guidance on selecting configurations based on trade-offs between accuracy, memory, and training time. (4) A public and extensible implementation designed to facilitate future research by allowing for the easy integration of new kernel-based techniques into Transformers. 2 Preliminaries We first cover the theoretical foundations of this work. 2.1 Kernelized Attention OT attention [59] can be defined using the unified attention model [15] as follows. Given a collection of inputs and a learning objective, attention mechanism learns the attention matrix A which captures the associative information between pairs of tokens in a sequence of length 𝑁, with each row A𝑖being the representation of a token 𝑖with every other token 𝑗∈[1, 𝑁]. This is done by creating three learnable representations of each token 𝑖called query (𝒒𝑖), key (𝒌𝑖), and value (𝒗𝑖). The attention representation A𝑖is calculated as a weighted sum of value 𝒗𝑗given attention weights 𝑎𝑗. The general equation for A𝑖is given as: 𝑨𝑖= Í𝑁 𝑗=1 𝑓(𝒒𝑖,𝒌𝑗) Í 𝑙𝑓(𝒒𝑖,𝒌𝑙) 𝒗𝑗= Í𝑁 𝑗=1 𝑎𝑗𝒗𝑗; 𝑎= 𝑔(𝑒); 𝑒= 𝑓(𝒒𝑖, 𝒌𝑗) (1)"
+  },
+  {
+    "paper_id": "2405.15310v5",
+    "title": "Spectraformer: A Unified Random Feature Framework for Transformer",
+    "page_num": 3,
+    "chunk_id": "2405.15310v5_page3_chunk7",
+    "text": "representations of each token 𝑖called query (𝒒𝑖), key (𝒌𝑖), and value (𝒗𝑖). The attention representation A𝑖is calculated as a weighted sum of value 𝒗𝑗given attention weights 𝑎𝑗. The general equation for A𝑖is given as: 𝑨𝑖= Í𝑁 𝑗=1 𝑓(𝒒𝑖,𝒌𝑗) Í 𝑙𝑓(𝒒𝑖,𝒌𝑙) 𝒗𝑗= Í𝑁 𝑗=1 𝑎𝑗𝒗𝑗; 𝑎= 𝑔(𝑒); 𝑒= 𝑓(𝒒𝑖, 𝒌𝑗) (1) Attention weights are generated using a distribution function 𝑔applied on an energy score 𝑒. The energy score is captured by applying a compatibility function on a query 𝒒𝑖and a set J. ACM, Vol. 1, No. 1, Article . Publication date: September 2025."
+  },
+  {
+    "paper_id": "2405.15310v5",
+    "title": "Spectraformer: A Unified Random Feature Framework for Transformer",
+    "page_num": 4,
+    "chunk_id": "2405.15310v5_page4_chunk1",
+    "text": "4 Duke Nguyen, Du Yin, Aditya Joshi, and Flora Salim of keys K, in order to compute a score of a specific relationship between the pairs. The attention in the OT is called the ‘scaled dot-product’ which defines the compatibility function 𝑓and the distribution function 𝑔as follows: 𝑓(𝒒𝑖, K) = 𝒒𝑇 𝑖K √𝑑𝑘 𝑔(𝒙𝑗) = exp(𝒙𝑗) Í 𝑙exp(𝒙𝑙) (2) We can then have the attention matrix (with exp(.) being applied element-wise) as: 𝑨𝑖= Í𝑁 𝑗=1 exp(𝒒𝑖𝒌𝑇 𝑗/√𝑑𝑘) Í 𝑙exp(𝒒𝑖𝒌𝑇 𝑙/√𝑑𝑘) 𝒗𝑗 𝐴= 𝑠𝑜𝑓𝑡𝑚𝑎𝑥( 𝑸𝑲𝑇 √𝑑𝑘)𝑽 (3) with 𝑸, 𝑲, 𝑽being the matrix of queries, keys, and values respectively with each row being 𝒒𝑖, 𝒌𝑖, 𝒗𝑖. We now discuss the intrinsic connection between kernel and attention. With the compatibility function 𝑓as a kernel 𝑓(𝒒𝑖, 𝒌𝑗) = K(𝒒𝑖, 𝒌𝑗), Equation 1 can be rewritten as: 𝑨𝑖= 𝑁 ∑︁ 𝑗=1 K(𝒒𝑖, 𝒌𝑗) Í 𝑙K(𝒒𝑖, 𝒌𝑙)𝒗𝑗 (4) As shown by Tsai et al. [58], this is indeed the Nadaraya-Watson Kernel Estimator, with E𝑝(𝒌𝑗|𝒒𝑖) [𝒗𝑗|𝑋= 𝒌𝑗] = 𝑨𝑖, 𝑙𝑖 \u0000𝒌𝑗) = 𝑝(𝒌𝑗|𝒒𝑖 \u0001, 𝑌𝑖= 𝒗𝑗: E𝑙𝑖[𝑌𝑖|𝑋= 𝒖] = Í𝑁 𝑖=1 𝑙𝑖(𝒖)𝑌𝑖; 𝑙𝑖(𝒖) = K ( 𝒖−𝒙𝑖 ℎ ) Í𝑛 𝑗=1 K ( 𝒖−𝒙𝑗 ℎ ) (5) Specifically, the scaled dot-product attention in the OT in"
+  },
+  {
+    "paper_id": "2405.15310v5",
+    "title": "Spectraformer: A Unified Random Feature Framework for Transformer",
+    "page_num": 4,
+    "chunk_id": "2405.15310v5_page4_chunk2",
+    "text": "this is indeed the Nadaraya-Watson Kernel Estimator, with E𝑝(𝒌𝑗|𝒒𝑖) [𝒗𝑗|𝑋= 𝒌𝑗] = 𝑨𝑖, 𝑙𝑖 \u0000𝒌𝑗) = 𝑝(𝒌𝑗|𝒒𝑖 \u0001, 𝑌𝑖= 𝒗𝑗: E𝑙𝑖[𝑌𝑖|𝑋= 𝒖] = Í𝑁 𝑖=1 𝑙𝑖(𝒖)𝑌𝑖; 𝑙𝑖(𝒖) = K ( 𝒖−𝒙𝑖 ℎ ) Í𝑛 𝑗=1 K ( 𝒖−𝒙𝑗 ℎ ) (5) Specifically, the scaled dot-product attention in the OT in Equation 3 corresponds to the softmax kernel (see Equation 6). K𝑠𝑜𝑓𝑡𝑚𝑎𝑥(𝒒𝑖, 𝒌𝑗) = exp(𝒒𝑇 𝑖𝒌𝑗/ √︁ 𝑑𝑘) (6) 2.2 Linearizing Kernelized Attention via Random Features Since a kernel is the inner product of two vectors in some space with respect to some feature map 𝜙, i.e., K(𝒙,𝒚) = 𝜙(𝒙)𝜙(𝒚)𝑇, then we can rewrite Equation 4 as: 𝑨𝑖= Í 𝑗𝜙(𝒒𝑖)𝜙(𝒌𝑗)𝑇𝒗𝑗 Í 𝑙𝜙(𝒒𝑖)𝜙(𝒌𝑙)𝑇 = 𝜙(𝒒𝑖) Í 𝑗𝜙(𝒌𝑗)⊗𝒗𝑗 𝜙(𝒒𝑖) Í 𝑙𝜙(𝒌𝑙)𝑇 (7) If we pre-compute Í 𝑗𝜙(𝒌𝑗) ⊗𝒗𝑗and Í 𝑙𝜙(𝒌𝑙)𝑇, the entire term becomes 𝑂(1) and we only need to compute Equation 7 𝑁times for each 𝑖, resulting in an attention matrix calculated in linear time 𝑂(𝑁). We now refer to Equation 7 as linearized attention [25]. All that is left is to retrieve the feature map 𝜙, the process of which is called kernel approxima- tion (see Section 2.3), which corresponds to the kernels we specify. There are many popular kernels from"
+  },
+  {
+    "paper_id": "2405.15310v5",
+    "title": "Spectraformer: A Unified Random Feature Framework for Transformer",
+    "page_num": 4,
+    "chunk_id": "2405.15310v5_page4_chunk3",
+    "text": "in linear time 𝑂(𝑁). We now refer to Equation 7 as linearized attention [25]. All that is left is to retrieve the feature map 𝜙, the process of which is called kernel approxima- tion (see Section 2.3), which corresponds to the kernels we specify. There are many popular kernels from which we can choose, but typically, we want to approximate the softmax kernel in Equation 6. However, since the softmax relates to the K𝑅𝐵𝐹(𝒙,𝒚) = exp(−||𝒙−𝒚||2 2 ) via the following equation: K𝑠𝑜𝑓𝑡𝑚𝑎𝑥(𝒙,𝒚) = exp( ||𝒙||2 2 )K𝑅𝐵𝐹(𝒙,𝒚) exp( ||𝒚||2 2 ) (8) Approximating the RBF is easier than the softmax directly in the method we introduce in Section 2.3, hence we approximate the softmax indirectly via the RBF in Equation 8. Oftentimes, however, we might not want to specify a kernel, since kernel choice is indeed a hyperparameter and the softmax is by no means essential or necessary as shown by Tsai et al. [58]. Then kernel learning would be a more suitable option, the detail of which is discussed in Section 2.4. Notwithstanding, we first introduce the main kernel approximation technique: random features. J. ACM, Vol. 1, No. 1, Article . Publication date: September 2025."
+  },
+  {
+    "paper_id": "2405.15310v5",
+    "title": "Spectraformer: A Unified Random Feature Framework for Transformer",
+    "page_num": 4,
+    "chunk_id": "2405.15310v5_page4_chunk4",
+    "text": "shown by Tsai et al. [58]. Then kernel learning would be a more suitable option, the detail of which is discussed in Section 2.4. Notwithstanding, we first introduce the main kernel approximation technique: random features. J. ACM, Vol. 1, No. 1, Article . Publication date: September 2025."
+  },
+  {
+    "paper_id": "2405.15310v5",
+    "title": "Spectraformer: A Unified Random Feature Framework for Transformer",
+    "page_num": 5,
+    "chunk_id": "2405.15310v5_page5_chunk1",
+    "text": "Spectraformer: A Unified Random Feature Framework for Transformer 5 2.3 Random Features for Kernel Approximation Of the kernel approximation family of methods, the most successful and appropriate for linearized attention in Transformer has been the random features approach [45]. Estimating kernels using random features relies on a fundamental insight from harmonic analysis called Bochner’s theorem [48] stated as follows: A continuous shift-invariant kernel K(𝒙,𝒚) = K(𝒙−𝒚) on R𝑑is positive definite if and only if K(𝜹) is the Fourier transform of a non-negative measure 𝑝(𝝎). If K(𝜹) is properly scaled, that is K(0) = 1 then the measure 𝑝(𝝎) is a proper probability distribution. K(𝜹) = ∫ 𝑝(𝝎) exp(𝑖𝝎𝜹)d𝝎 (9) When approximating the integration in this equation via Monte Carlo sampling with 𝑠samples, 𝝎∼𝑝(𝝎), we can obtain the feature map: K(𝜹) = E[𝜙𝝎(𝒙)𝑇𝜙𝝎(𝒚)] ≈< 𝜙𝝎(𝒙),𝜙𝝎(𝒚) > 𝜙𝝎(𝒙) = 1 √𝑠 \u0002 exp(−i𝝎𝑇 1 𝒙), . . . , exp(−i𝝎𝑇 𝑠𝒙)]𝑇 (10) 2.4 Random Features for Kernel Learning Previous random feature techniques are robust in approximating kernels for specific learning problems. However, kernels may be chosen using heuristics and by convention from a popular subset. The kernel is very much a hyperparameter. This could pose a problem since there is no free"
+  },
+  {
+    "paper_id": "2405.15310v5",
+    "title": "Spectraformer: A Unified Random Feature Framework for Transformer",
+    "page_num": 5,
+    "chunk_id": "2405.15310v5_page5_chunk2",
+    "text": "2.4 Random Features for Kernel Learning Previous random feature techniques are robust in approximating kernels for specific learning problems. However, kernels may be chosen using heuristics and by convention from a popular subset. The kernel is very much a hyperparameter. This could pose a problem since there is no free lunch in learning as much as in kernel choice [49]. Tsai et al. [58] have shown experimental results that this is also true in the context of attention in Transformer. Hence, instead of picking a kernel for the attention, we could learn the kernel via kernel learning an established kernel methods technique. Kernel learning has shown to be effective in general [42, 56, 65] and in the case of attention via Gaussian Mixture Model (GMM), learnable weight matrices (FastFood), deep generative model (DGM) [11]. Kernel learning is achieved by making the weight matrix 𝑾learnable where 𝝎𝑖is the output of a function parameterizing 𝑝(𝝎). The kernelized attention via random features discussed here is a popular approach, however it is by no means the only one. A more detailed discussion is offered in related work in Section 5. Specifically, Section 5.1 provides alternative kernelized attention formulations and Section 5.2 provides alternative kernel"
+  },
+  {
+    "paper_id": "2405.15310v5",
+    "title": "Spectraformer: A Unified Random Feature Framework for Transformer",
+    "page_num": 5,
+    "chunk_id": "2405.15310v5_page5_chunk3",
+    "text": "function parameterizing 𝑝(𝝎). The kernelized attention via random features discussed here is a popular approach, however it is by no means the only one. A more detailed discussion is offered in related work in Section 5. Specifically, Section 5.1 provides alternative kernelized attention formulations and Section 5.2 provides alternative kernel approximations to random features. Fig. 1. Spectraformer framework based on Equation 11 3 Spectraformer Spectraformer is a unified random feature framework that allows for the combination of any weight matrix with any component function to be used as kernelized attention in Transformer. The general equation for random feature is shown in Equation 11, generalized from Equation 10, based on Choromanski et al. [8], Liu et al. [36]. J. ACM, Vol. 1, No. 1, Article . Publication date: September 2025."
+  },
+  {
+    "paper_id": "2405.15310v5",
+    "title": "Spectraformer: A Unified Random Feature Framework for Transformer",
+    "page_num": 6,
+    "chunk_id": "2405.15310v5_page6_chunk1",
+    "text": "6 Duke Nguyen, Du Yin, Aditya Joshi, and Flora Salim 𝜙𝝎(𝒙) = 1 √𝑠 \u0002 𝑎1𝑓1(𝝎1, 𝒙), ...,𝑎𝑠𝑓1(𝝎𝑠, 𝒙), ..., 𝑎1𝑓𝑙(𝝎1, 𝒙), ...,𝑎𝑠𝑓𝑙(𝝎𝑠, 𝒙)]⊤ 𝑾= [𝝎1, ..., 𝝎𝑠]𝑇∈R𝑠∗𝑑 (11) Spectraformer is shown in Figure 1. The attention of the OT (on the left-hand side) is replaced by the attention of the Spectraformer which pre-computes the Hadamard (element-wise) product of values 𝒗and transformed keys 𝜙(𝒌) scaled by 𝜙(𝒌), the product of which is multiplied with the transformed queries 𝜙(𝒒). The linear map 𝜙is composed from weight matrices and component functions. The linear map has 𝑠components with 𝑎being the component weight (see Equation 11). The component weight 𝑎can either be fixed (typically at 𝑎= 1) or learnable as proposed by various kernel works [36]. We set the component weight a=1 to ensure a consistent and fair comparison with prior random feature Transformers (e.g., [31]). The figure and the equation together highlight the three strands of research as mentioned previously in Section 1: (A) Weight matrix approximator: constructing 𝑾more effectively; (B) Weight matrix learner: parameterizing𝑾instead of sampling; (C) Component function: constructing 𝑓𝑗more effectively. 3.1 Weight Matrices In Spectraformer, the weight matrix 𝑾is either an approximator (from the families of Monte Carlo sampling (e.g.,"
+  },
+  {
+    "paper_id": "2405.15310v5",
+    "title": "Spectraformer: A Unified Random Feature Framework for Transformer",
+    "page_num": 6,
+    "chunk_id": "2405.15310v5_page6_chunk2",
+    "text": "three strands of research as mentioned previously in Section 1: (A) Weight matrix approximator: constructing 𝑾more effectively; (B) Weight matrix learner: parameterizing𝑾instead of sampling; (C) Component function: constructing 𝑓𝑗more effectively. 3.1 Weight Matrices In Spectraformer, the weight matrix 𝑾is either an approximator (from the families of Monte Carlo sampling (e.g., ORF and SORF [71]), Unit-cube sampling (e.g., QMC [2], MM [50]), Quadrature (e.g., SGQ [12]). or a learner (e.g., FastFoodL [11]). We term the matrix 𝑾as weight matrix instead of random matrix since although 𝑾acts like a random matrix (𝝎𝑖∼𝑝(.), see Equation 10), it is not guaranteed to be one. In the case of weight matrix approximator, they approximate a random matrix and in the case of weight matrix learner, they parameterize a weight matrix, thereby implicitly learning a distribution 𝑝(.) associated with such 𝑾. The weight matrix is given in Definition 3.1. Definition 3.1. Provided that a matrix can substitute for a random matrix in Equation 11, and the solution for this equation given such matrix and 𝑓as TrigRF being the solution for Equation 9, i.e., as an unbiased estimator of K, and TrigRF being 𝑓1 = 𝑓𝑙= exp(−𝑖𝝎𝑇𝒙) (see Equation 10) then such a matrix is a weight"
+  },
+  {
+    "paper_id": "2405.15310v5",
+    "title": "Spectraformer: A Unified Random Feature Framework for Transformer",
+    "page_num": 6,
+    "chunk_id": "2405.15310v5_page6_chunk3",
+    "text": "substitute for a random matrix in Equation 11, and the solution for this equation given such matrix and 𝑓as TrigRF being the solution for Equation 9, i.e., as an unbiased estimator of K, and TrigRF being 𝑓1 = 𝑓𝑙= exp(−𝑖𝝎𝑇𝒙) (see Equation 10) then such a matrix is a weight matrix. It follows from Definition 3.1 that for any weight matrix 𝑾, 𝑓= 𝑇𝑟𝑖𝑔𝑅𝐹is a valid component function. Spectraformer enables weight matrix approximation in terms of three families based on how they solve the intractable integral in Equation 9: • Monte Carlo sampling-based weight matrix involves approximating the integral of Equa- tion 9 using Monte Carlo sampling with the solution given by Equation 10 [45] with 𝑾 being the ‘Base’ random matrix of 𝑝(.), 𝝎𝑖∼𝑝(.). There are additional methods which improve over Base: structural and geometric methods. Structural methods decompose the Base random matrices 𝑃into smaller matrices which reduce time and/ or space complexity. Structural matrices includes FastFoodF [11], SCRF [14] and P-Model [7]. Geometric methods enforce certain geometrical couplings along some dimensions in the construction of random matrices to reduce the approximation error. Geometric methods include: ROM [10] (ORF [71], SORF [71]) and SimRF [46]. In addition to these"
+  },
+  {
+    "paper_id": "2405.15310v5",
+    "title": "Spectraformer: A Unified Random Feature Framework for Transformer",
+    "page_num": 6,
+    "chunk_id": "2405.15310v5_page6_chunk4",
+    "text": "and/ or space complexity. Structural matrices includes FastFoodF [11], SCRF [14] and P-Model [7]. Geometric methods enforce certain geometrical couplings along some dimensions in the construction of random matrices to reduce the approximation error. Geometric methods include: ROM [10] (ORF [71], SORF [71]) and SimRF [46]. In addition to these methods, Monte Carlo has also been adapted as Random Fourier Signature Features (RFSF) [57] for unbiased estimation of the signature kernel, designed for sequential data. RFSF also has more scalable variants, such as RFSF- DP (Diagonally Projected) and RFSF-TRP (Tensor Random Projection), that use additional dimensionality reduction. J. ACM, Vol. 1, No. 1, Article . Publication date: September 2025."
+  },
+  {
+    "paper_id": "2405.15310v5",
+    "title": "Spectraformer: A Unified Random Feature Framework for Transformer",
+    "page_num": 7,
+    "chunk_id": "2405.15310v5_page7_chunk1",
+    "text": "Spectraformer: A Unified Random Feature Framework for Transformer 7 • Unit-cube sampling-based weight matrix transforms Equation 9 to an integral on the unit cube [0, 1]𝑑, then performs the approximation with uniform and independent points, thus reducing variance. The first approach is QMC [2], where 𝑾: 𝝎𝑖= Φ−1(𝒕𝑖), Φ being the cumulative distribution function (CDF) associated with 𝑝(.) and 𝒕𝑖being a low discrepancy sequence. Φ−1(𝒕𝑖) ∼𝑝(.) whilst having a lower variance than direct sampling from 𝑝(.). MM [36, 50] improves over QMC by replacing Φ−1 with a moment matching scheme eΦ−1 on Φ−1. • Quadrature-based weight matrix uses quadrature rules with non-uniform deterministic weights. The main approach explored is SGQ [12] which uses one-dimensional Gaussian quadrature rule by assuming K factorizes with respect to the dimensions. Smolyak rule is further implemented to alleviate the curse of dimensionality. Spectraformer also allows to learn weight matrices by learning 𝑝(.) via parameterizing 𝑾. Yang et al. [68] introduce several of these parametrization schemes, which are then adapted into the attention setting by Chowdhury et al. [11]. This comes from a long line of work in kernel learning. The approach to the dual objectives separates the kernel learning methods into two- stage and one-stage"
+  },
+  {
+    "paper_id": "2405.15310v5",
+    "title": "Spectraformer: A Unified Random Feature Framework for Transformer",
+    "page_num": 7,
+    "chunk_id": "2405.15310v5_page7_chunk2",
+    "text": "Yang et al. [68] introduce several of these parametrization schemes, which are then adapted into the attention setting by Chowdhury et al. [11]. This comes from a long line of work in kernel learning. The approach to the dual objectives separates the kernel learning methods into two- stage and one-stage methods [36]. Two-stage methods (e.g., [5, 65, 70]) solves the dual objective separately: 𝑾is typically first learned via a kernel alignment scheme [61], then we solve for 𝒗. One-stage methods (e.g., [11, 56]), on the other hand, solves the dual objective in parallel: 𝑝(.) corresponding to 𝑾is parameterized then 𝒗is solved typically. It is not plausible to apply kernel alignment [61] on Transformer architectures. Therefore, only one-stage methods can be considered in the context of weight matrix learner. Two kernel learning methods, GMM and FastFoodL, have been experimented in the non-Transformer setting [68], then adapted into the Transformer setting [11]. DGM (Deep Generative Model) has also been effective in modeling distributions [27]. It too has been adapted by Chowdhury et al. [11] for the Transformer setting. Chowdhury et al. [11] show the superior performance of FastFoodL over other kernel learning-based techniques, hence we have only experimented with FastFoodL among kernel"
+  },
+  {
+    "paper_id": "2405.15310v5",
+    "title": "Spectraformer: A Unified Random Feature Framework for Transformer",
+    "page_num": 7,
+    "chunk_id": "2405.15310v5_page7_chunk3",
+    "text": "DGM (Deep Generative Model) has also been effective in modeling distributions [27]. It too has been adapted by Chowdhury et al. [11] for the Transformer setting. Chowdhury et al. [11] show the superior performance of FastFoodL over other kernel learning-based techniques, hence we have only experimented with FastFoodL among kernel learning techniques. Liu et al. [36] show that in various kernel benchmark datasets (among combination with TrigRF), QMC and ORF have consistently high performance. Due to the significant number of weight matrices in random features literature and page limit, we decide to cover only the most prominent ones. Methods which we will not cover in detail includes: SCRF [14], P-Model [7], ROM [10], SimRF [10], SSF [37], SSR [39], GMM [42, 65], DGM [27]. We still mention them and include them in the figures where appropriate to motivate future work. Figure 2 shows all weight matrices that are implemented and discussed. We now explore these weight matrices in the order specified above. Fig. 2. Spectraformer weight matrices. Dark blue boxes are technique groupings. Arrow denotes which technique belongs to which grouping. Red boxes are techniques which have been explored in the literature but not in this work. Green boxes are"
+  },
+  {
+    "paper_id": "2405.15310v5",
+    "title": "Spectraformer: A Unified Random Feature Framework for Transformer",
+    "page_num": 7,
+    "chunk_id": "2405.15310v5_page7_chunk4",
+    "text": "discussed. We now explore these weight matrices in the order specified above. Fig. 2. Spectraformer weight matrices. Dark blue boxes are technique groupings. Arrow denotes which technique belongs to which grouping. Red boxes are techniques which have been explored in the literature but not in this work. Green boxes are techniques which have been explored in the literature and this work. Light blue boxes are techniques not studied empirically previously. J. ACM, Vol. 1, No. 1, Article . Publication date: September 2025."
+  },
+  {
+    "paper_id": "2405.15310v5",
+    "title": "Spectraformer: A Unified Random Feature Framework for Transformer",
+    "page_num": 8,
+    "chunk_id": "2405.15310v5_page8_chunk1",
+    "text": "8 Duke Nguyen, Du Yin, Aditya Joshi, and Flora Salim 3.1.1 Base. [45] This is the direct sampling from a distribution 𝑷𝑖𝑗∼𝑝, corresponding to the kernel K without any additional adjustment, and in approximating the RBF, 𝑃= 𝐺where 𝐺is the normal distribution. 𝑊𝐵𝑎𝑠𝑒= 1 𝜎𝑷 (12) 3.1.2 FastFoodF. FastFoodF [30] makes use of Hadamard and diagonal matrices to speed up Gauss- ian matrices 𝐺constructions for RFF in 𝑂(𝑛log𝑑) (100 times faster) with 𝑂(𝑛) space (1000 times less space) given 𝑛≥𝑑against Base. However, FastFoodF increases variance and approximation error and decreases the concentration bound. 𝑊𝐹𝑎𝑠𝑡𝐹𝑜𝑜𝑑𝐿= 1 𝜎𝑺𝑯𝑮𝚷𝑯𝑩 (13) where 𝑯is the Walsh-Hadamard matrix, 𝚷∈{0, 1}𝑑∗𝑑is a permutation matrix, and 𝑺, 𝑮, 𝑩are diagonal random matrices, with the diagonal entries being {+ −1} entries on 𝑩, random Gaussian entries on 𝑮, and a random scaling matrix on 𝑺, 𝑺𝑖𝑖= 𝑠𝑖||𝑮||−1/2 𝐹𝑟𝑜𝑏, 𝑠𝑖∼(2𝜋) −𝑑 2 𝑨−1 𝑑−1𝑟𝑑−1𝑒−𝑟2 2 . 3.1.3 ORF. Orthogonal RF [71] decreases the approximation error significantly compared to Base. This is done via replacing 𝐺with a properly scaled random orthogonal matrix. However, generating orthogonal matrices become costly quickly as the number of dimensions increases. 𝑾𝑂𝑅𝐹= 1 𝜎𝑺𝑸 (14) where 𝑸is a uniformly distributed random orthogonal matrix (on the Stiefel manifold)"
+  },
+  {
+    "paper_id": "2405.15310v5",
+    "title": "Spectraformer: A Unified Random Feature Framework for Transformer",
+    "page_num": 8,
+    "chunk_id": "2405.15310v5_page8_chunk2",
+    "text": "[71] decreases the approximation error significantly compared to Base. This is done via replacing 𝐺with a properly scaled random orthogonal matrix. However, generating orthogonal matrices become costly quickly as the number of dimensions increases. 𝑾𝑂𝑅𝐹= 1 𝜎𝑺𝑸 (14) where 𝑸is a uniformly distributed random orthogonal matrix (on the Stiefel manifold) obtained from the QR decomposition of 𝑮, the set of rows of 𝑸forming a basis in R𝑑, and 𝑺is a diagonal matrix with entries sampled i.i.d from the 𝜒-distribution with 𝑑degrees of freedom, thus making the rows of 𝑺𝑸and 𝑮identically distributed. 3.1.4 SORF. Structured ORF [71] decreases time and space complexity of ORF (from 𝑂(𝑑2) to 𝑂(𝑑log𝑑) with almost no extra memory cost) by imposing structure on the orthogonal matrices, inspired by structural methods. SORF is unbiased with large 𝑑. We replace 𝑺with √ 𝑑and 𝑸with structured matrix 𝑯𝑫1𝑯𝑫2𝑯𝑫3 𝑾𝑆𝑂𝑅𝐹= √ 𝑑 𝜎𝑯𝑫1𝑯𝑫2𝑯𝑫3 (15) where 𝑫𝑖∈R𝑑∗𝑑,𝑖= 1, 2, 3 is diagonal ’sign-flipping‘ matrices with diagonal entries sampled from the Rademacher distribution, 𝑯is the normalized Walsh-Hadamard matrix. 3.1.5 QMC. Quasi-Monte Carlo [2] evaluates on a low discrepancy sequence (e.g., Halton, Sobol’ Faure, and Niederreiter) of points instead of random points in Monte Carlo. Although the approxi- mation error is only reduced"
+  },
+  {
+    "paper_id": "2405.15310v5",
+    "title": "Spectraformer: A Unified Random Feature Framework for Transformer",
+    "page_num": 8,
+    "chunk_id": "2405.15310v5_page8_chunk3",
+    "text": "diagonal ’sign-flipping‘ matrices with diagonal entries sampled from the Rademacher distribution, 𝑯is the normalized Walsh-Hadamard matrix. 3.1.5 QMC. Quasi-Monte Carlo [2] evaluates on a low discrepancy sequence (e.g., Halton, Sobol’ Faure, and Niederreiter) of points instead of random points in Monte Carlo. Although the approxi- mation error is only reduced minimally, QMC has been shown to perform better than MC in high dimensions and does not have undesirable clustering effect. To calculate QMC, we first assume that 𝑝(𝒙) = Î𝑑 𝑗=1 𝑝𝑗(𝒙𝑗) factorizes with respect to the dimensions with 𝑝𝑗(.) being a univariate density function. Then we define: Φ−1(𝒕) = \u0000Φ−1 1 (𝒕1) , . . . , Φ−1 𝑑(𝒕𝑑)\u0001 ∈R𝑑 (16) where Φ𝑗being the cumulative distribution function of 𝑝𝑗, 𝒕1, 𝒕2, ..., 𝒕𝑠∈[0, 1]𝑑being a low discrep- ancy sequence, and 𝝎𝑖= Φ−1(𝒕𝑖). We can thus transform the integral on R𝑑in Equation 9 to an integral on the unit cube [0, 1]𝑑as K(𝒙−𝒙′) = ∫ [0,1]𝑑exp \u0000i(𝒙−𝒙′)⊤Φ−1(𝒕)\u0001d𝒕 J. ACM, Vol. 1, No. 1, Article . Publication date: September 2025."
+  },
+  {
+    "paper_id": "2405.15310v5",
+    "title": "Spectraformer: A Unified Random Feature Framework for Transformer",
+    "page_num": 8,
+    "chunk_id": "2405.15310v5_page8_chunk4",
+    "text": "[0, 1]𝑑as K(𝒙−𝒙′) = ∫ [0,1]𝑑exp \u0000i(𝒙−𝒙′)⊤Φ−1(𝒕)\u0001d𝒕 J. ACM, Vol. 1, No. 1, Article . Publication date: September 2025."
+  },
+  {
+    "paper_id": "2405.15310v5",
+    "title": "Spectraformer: A Unified Random Feature Framework for Transformer",
+    "page_num": 9,
+    "chunk_id": "2405.15310v5_page9_chunk1",
+    "text": "Spectraformer: A Unified Random Feature Framework for Transformer 9 The weight matrix then can be defined as: 𝑾QMC = [Φ−1(𝒕1), Φ−1(𝒕2), . . . , Φ−1(𝒕𝑠)]⊤∈R𝑠×𝑑. QMC can be further improved by a sub-grouped based rank-one lattice construction which improved complexity [38]. 3.1.6 MM. Moment Matching [36, 50] improves over QMC by removing the undesirable clustering effect and having the same approximation error with less features. This is done by replacing Φ−1 with a moment matching scheme eΦ−1: 𝑾MM = [eΦ−1(𝒕1), eΦ−1(𝒕2), . . . , eΦ−1(𝒕𝑠)]⊤∈R𝑠×𝑑 where eΦ−1(𝒕𝑖) = ˜𝑨−1(Φ−1(𝒕𝑖) −˜𝝁) can be constructed using moment matching with sample mean ˜𝝁= 1 𝑠 Í𝑠 𝑖=1 Φ−1(𝒕𝑖) and the square root of the sample covariance matrix ˜𝑨satisfying ˜𝑨˜𝑨⊤= Cov(Φ−1(𝒕𝑖) −˜𝝁). 3.1.7 SGQ. Sparse Grid Quadrature [12] evolves from GQ. GQ (Gaussian Quadrature) [12] assumes that the kernel 𝑘factorizes with respect to the dimensions and thus can be approximated by a one- dimensional Gaussian quadrature rule. However the total number of points 𝑠scale exponentially with the dimensions. However GQ suffers form the curse of dimensionality. This is alleviated using Smolyak rule resulting in SGQ. Assuming the third-degree SGQ using symmetric univariate quadrature points {−ˆ𝑝1, 0, ˆ𝑝1} with weights ( ˆ𝑎1, ˆ𝑎0,"
+  },
+  {
+    "paper_id": "2405.15310v5",
+    "title": "Spectraformer: A Unified Random Feature Framework for Transformer",
+    "page_num": 9,
+    "chunk_id": "2405.15310v5_page9_chunk2",
+    "text": "one- dimensional Gaussian quadrature rule. However the total number of points 𝑠scale exponentially with the dimensions. However GQ suffers form the curse of dimensionality. This is alleviated using Smolyak rule resulting in SGQ. Assuming the third-degree SGQ using symmetric univariate quadrature points {−ˆ𝑝1, 0, ˆ𝑝1} with weights ( ˆ𝑎1, ˆ𝑎0, ˆ𝑎1), then we have: 𝑾SGQ =[0𝑑, ˆ𝑝1𝒆1, . . . , ˆ𝑝1𝒆𝑑, −ˆ𝑝1𝒆1, . . . , −ˆ𝑝1𝒆𝑑]⊤∈R(2𝑑+1)×𝑑 given that 𝑖is the d-dimensional standard basis vector with the ith element being 1. 3.1.8 FastFoodL. This (see Equation 13) is proposed to be learnable by Yang et al. [68] with two variations: FSARD (scaling matrix 𝑺previously sampled from chi-squared is made learnable) and FSGBARD (optimizes the marginal likelihood with respect to the diagonal matrices 𝑮and 𝑩). It is further adapted by Chowdhury et al. [11] to make 𝑺or 𝑺, 𝑮, 𝑩learnable parameters. In our experiments, we maintain this set up. Fig. 3. Spectraformer component functions. Dark blue boxes are technique groupings. Arrow denotes which technique belongs to which grouping. Red boxes are techniques which have been explored in the literature but not in this work. Green boxes are techniques which have been explored in the literature and this work. Light blue"
+  },
+  {
+    "paper_id": "2405.15310v5",
+    "title": "Spectraformer: A Unified Random Feature Framework for Transformer",
+    "page_num": 9,
+    "chunk_id": "2405.15310v5_page9_chunk3",
+    "text": "3. Spectraformer component functions. Dark blue boxes are technique groupings. Arrow denotes which technique belongs to which grouping. Red boxes are techniques which have been explored in the literature but not in this work. Green boxes are techniques which have been explored in the literature and this work. Light blue boxes are techniques not studied empirically previously. 3.2 Component functions Spectraformer incorporates component functions 𝑓such as PosRF, OPRF, SADERF. Component functions in Spectraformer combine each weight matrix row 𝝎𝑖with the input 𝒙. The base case of the component function is TrigRF. Component function is given in Definition 3.2 Definition 3.2. A function of 𝒙with respect to 𝝎is a valid component function if and only if K ≈𝜙𝝎(𝒙)𝑇𝜙𝝎(𝒚) given that 𝝎𝑖∼𝑝(.) in Equation 10. J. ACM, Vol. 1, No. 1, Article . Publication date: September 2025."
+  },
+  {
+    "paper_id": "2405.15310v5",
+    "title": "Spectraformer: A Unified Random Feature Framework for Transformer",
+    "page_num": 10,
+    "chunk_id": "2405.15310v5_page10_chunk1",
+    "text": "10 Duke Nguyen, Du Yin, Aditya Joshi, and Flora Salim It follows that all component functions have provided theoretical guarantees given that 𝑾is a random matrix. In addition, PosRF, OPRF, and SADERF have also been proven theoretically to approximate K𝑅𝐵𝐹given 𝑾being the ORF. The alternatives for component functions allow Spectraformer to approximate the RBF with 𝑝(.) corresponding to the Gaussian. Likhosherstov et al. [31, 32] show that SADERF-ORF is the SOTA combination followed by OPRF-ORF and PosRF-ORF. Due to page limits, we will not discuss component functions which are not included in our empirical experiments. These techniques are still included in figures and mentioned where necessary to motivate future work in the area. These include DIRF [31] techniques (PoisRF, GeomRF) and HRF [9]. 3.2.1 CDERF. Complex dense exponential random feature is given in Equation 17, where 𝝎, 𝒙∈R𝑑, 𝑝= N (0, 1)𝑑, 𝑘∈{1, 2} and S𝑑𝑐being a set of 𝑑∗𝑑complex symmetric matrices. This is the general formula for most of the component functions we are interested in. The parameters and constraints of different CDERF functions are specified in Table 2: 𝑓(𝑘) 𝐷𝐸(𝝎, 𝒙) = 𝑅𝑒𝑎𝑙(𝐷exp(𝝎𝑇𝑨𝝎+ 𝝎𝑇𝑩(𝑘)𝒙+ 𝒙𝑇𝑪(𝑘)𝒙)) (17) Table 2. An overview of the parameters and constraints for different functions"
+  },
+  {
+    "paper_id": "2405.15310v5",
+    "title": "Spectraformer: A Unified Random Feature Framework for Transformer",
+    "page_num": 10,
+    "chunk_id": "2405.15310v5_page10_chunk2",
+    "text": "symmetric matrices. This is the general formula for most of the component functions we are interested in. The parameters and constraints of different CDERF functions are specified in Table 2: 𝑓(𝑘) 𝐷𝐸(𝝎, 𝒙) = 𝑅𝑒𝑎𝑙(𝐷exp(𝝎𝑇𝑨𝝎+ 𝝎𝑇𝑩(𝑘)𝒙+ 𝒙𝑇𝑪(𝑘)𝒙)) (17) Table 2. An overview of the parameters and constraints for different functions within the Complex Dense Exponential Random Feature (CDERF) family. 𝑨 𝑩(1) 𝑩(2) 𝑪(1) 𝑪(2) 𝐷 𝒙 𝒚 CDERF S𝑑𝐶 C𝑑∗𝑑 C𝑑∗𝑑 R 𝒙 𝒚 DERF [32] S𝑑 R𝑑∗𝑑 R𝑑∗𝑑 R 𝒙 𝒚 SADERF [32] 𝐴𝐺𝐸𝑰𝑑 𝐵𝐺𝐸𝑰𝑑 𝐶𝐺𝐸𝑰𝑑 𝐷𝐺𝐸 Ψ𝒙 Ψ−1𝒚 GERF [31] 𝐴𝐺𝐸𝑰𝑑 𝐵(1) 𝐺𝐸𝑰𝑑 𝐵(2) 𝐺𝐸𝑰𝑑 𝐶𝐺𝐸𝑰𝑑 𝐷𝐺𝐸 𝒙 𝒚 TrigRF [45] 0𝑰𝑑 𝑖𝑰𝑑 −𝑖𝑰𝑑 0𝑰𝑑 1 𝒙 𝒚 PosRF [8] 0𝑰𝑑 1𝑰𝑑 −1𝑰𝑑 1 𝒙 𝒚 OPRF [31] 0𝑰𝑑 1𝑰𝑑 −1𝑰𝑑 1 𝒙 𝒚 3.2.2 TrigRF. Trigonometric RF [45] is the base RFF implementation. 𝑓(1) 𝑇𝑟𝑖𝑔𝑅𝐹(𝝎, 𝒙) = √ 2 cos(𝝎𝑇𝒙+ 𝒃) 𝑓(2) 𝑇𝑟𝑖𝑔𝑅𝐹(𝝎,𝒚) = √ 2 sin(𝝎𝑇𝒚+ 𝒃) 𝒃∼𝑈𝑛𝑖𝑓𝑜𝑟𝑚(0, 2𝜋) (18) The use of the trigonometric sine and cosine functions leads to unstable behavior when the inputs have negative dimension-values. This can be further exacerbated when the values TrigRF try to approximate are close to 0 (since most values are of low significance). This causes the variance"
+  },
+  {
+    "paper_id": "2405.15310v5",
+    "title": "Spectraformer: A Unified Random Feature Framework for Transformer",
+    "page_num": 10,
+    "chunk_id": "2405.15310v5_page10_chunk3",
+    "text": "𝒃) 𝒃∼𝑈𝑛𝑖𝑓𝑜𝑟𝑚(0, 2𝜋) (18) The use of the trigonometric sine and cosine functions leads to unstable behavior when the inputs have negative dimension-values. This can be further exacerbated when the values TrigRF try to approximate are close to 0 (since most values are of low significance). This causes the variance to approach infinity [8, 31]. Therefore, we do not want to use TrigRF to perform kernel approximation in attention. 3.2.3 PosRF. Positive RF [8] fixes the problem of TrigRF by enforcing positive component function output in the softmax. The variance of PosRF (in contrast to the variance of TrigRF approaching infinity) approaches 0 as the approximated value of the Softmax kernel approaches 0. PosRF has two forms: Positive RF Base (PosRF-B) (see Equation 19) and Positive RF Hyperbolic (PosRF-Hyp), which is multi-component, i.e., Equation 11: 𝑙= 2, (see Equation 20). 𝑓𝑃𝑜𝑠𝑅𝐹𝐵(𝝎, 𝒙) = exp(𝝎𝑇𝒙−||𝒙||2 2 ) (19) J. ACM, Vol. 1, No. 1, Article . Publication date: September 2025."
+  },
+  {
+    "paper_id": "2405.15310v5",
+    "title": "Spectraformer: A Unified Random Feature Framework for Transformer",
+    "page_num": 10,
+    "chunk_id": "2405.15310v5_page10_chunk4",
+    "text": "1, No. 1, Article . Publication date: September 2025."
+  },
+  {
+    "paper_id": "2405.15310v5",
+    "title": "Spectraformer: A Unified Random Feature Framework for Transformer",
+    "page_num": 11,
+    "chunk_id": "2405.15310v5_page11_chunk1",
+    "text": "Spectraformer: A Unified Random Feature Framework for Transformer 11 𝑓1,𝑃𝑜𝑠𝑅𝐹𝐻𝑦𝑝(𝝎, 𝒙) = exp(𝝎𝑇𝒙−||𝒙||2) 𝑓2,𝑃𝑜𝑠𝑅𝐹𝐻𝑦𝑝(𝝎, 𝒙) = exp(−𝝎𝑇𝒙−||𝒙||2) (20) We only use PosRF-B in our experiments. 3.2.4 GERF. Generalized exponential RF [31] generalizes both TrigRF and PosRF with Equation 21. 𝑓(1) 𝐺𝐸𝑅𝐹(𝝎, 𝒙) = 𝐷exp(𝐴||𝝎||2 + 𝐵𝝎𝑇𝒙+ 𝑪||𝒙||2) 𝑓(2) 𝐺𝐸𝑅𝐹(𝝎,𝒚) = 𝐷exp(𝑨||𝝎||2 + 𝑠𝐵𝝎𝑇𝒚+ 𝑪||𝒚||2) 𝑅𝑒(1 −4𝐴) > 0, 𝑩= √︁ 𝑠(1 −4𝑨) 𝑪= −(𝑠+ 1)/2, 𝐷= ( 4√ 1 −4𝑨)𝑑 𝑨∈C,𝑠∈{−1, +1} (21) where √. and 𝑛√. denoting a principal root with a complex argument 3.2.5 OPRF. Optimized positive RF [31] is the solution to the minimization of the variance of GERF. Specifically it is defined as Equation 21 with 𝑠= +1, ||𝒙+ 𝒚||2 > 0, and 𝑨∈R defined in terms of 𝑝∗as: 𝑨= (1 −1/𝑝∗)/8 𝑝∗= ( √︁ (2||𝒙+ 𝒚||2 + 𝑑)2 + 8𝑑||𝒙+ 𝒚||2 −2||𝒙+ 𝒚||2 −𝑑) /(4||𝒙+ 𝒚||2) (22) Whilst PosRF is not bounded, OPRF is. OPRF can provide 𝑒60 × variance reduction in estimating the Softmax compared to TrigRF. 3.2.6 DERF. Dense-exponential random features [32] extends GERF and replace 𝑨, 𝑩, 𝑪with dense matrices. DERF is CDERF when 𝑩,𝐶are in the real instead of the complex plane. Minimizing the variance of DERF leads to two approaches:"
+  },
+  {
+    "paper_id": "2405.15310v5",
+    "title": "Spectraformer: A Unified Random Feature Framework for Transformer",
+    "page_num": 11,
+    "chunk_id": "2405.15310v5_page11_chunk2",
+    "text": "can provide 𝑒60 × variance reduction in estimating the Softmax compared to TrigRF. 3.2.6 DERF. Dense-exponential random features [32] extends GERF and replace 𝑨, 𝑩, 𝑪with dense matrices. DERF is CDERF when 𝑩,𝐶are in the real instead of the complex plane. Minimizing the variance of DERF leads to two approaches: ADERF and SDERF. However both these approaches rely on SVD and eigen decompositions which are not extensively supported on GPU and deep learning libraries. Therefore SADERF is proposed. 3.2.7 SADERF. Simplified ADERF [32] is a special case of ADERF and extends GERF, requiring only basic unary operations in addition. 𝑓(1) 𝑆𝐴𝐷𝐸(𝝎, 𝒙) = 𝑓(1) 𝐺𝐸(𝝎, Ψ𝒙), 𝑓(2) 𝑆𝐴𝐷𝐸(𝝎,𝒚) = 𝑓(2) 𝐺𝐸(𝝎, Ψ−1𝒚) Ψ∗ 𝑙,𝑙= (Í 𝑗(𝒚(𝑖) 𝑙 )2/Í 𝑖(𝒙(𝑖) 𝑙 )2)1/4 (23) 3.3 Utility There has been an unsystematic attempt at combining component functions and weight matrices. On one hand, most component functions have had theoretical and experimental results in combining with Base and ORF. On the other hand, most weight matrices have had results in combining with TrigRF or PosRF. This means that a lot of potential combinations have not been studied previously. Table 3 shows the wide research gap across 14 combinations which have never been studied in"
+  },
+  {
+    "paper_id": "2405.15310v5",
+    "title": "Spectraformer: A Unified Random Feature Framework for Transformer",
+    "page_num": 11,
+    "chunk_id": "2405.15310v5_page11_chunk3",
+    "text": "combining with Base and ORF. On the other hand, most weight matrices have had results in combining with TrigRF or PosRF. This means that a lot of potential combinations have not been studied previously. Table 3 shows the wide research gap across 14 combinations which have never been studied in either the kernel or Transformer setting. Spectraformer highlights this research gap. Excluding TrigRF due to its instability and Base due to its under-performance, we conduct experiments on 18 combinations. Spectraformer is a generic random feature framework that allows for the combination of any weight matrix with any component function provided that the weight matrix satisfies Definition 3.1 and the component function satisfies Definition 3.2. Instructions on adding new component functions or weight matrices to Spectraformer are detailed step by step in the repository linked in J. ACM, Vol. 1, No. 1, Article . Publication date: September 2025."
+  },
+  {
+    "paper_id": "2405.15310v5",
+    "title": "Spectraformer: A Unified Random Feature Framework for Transformer",
+    "page_num": 12,
+    "chunk_id": "2405.15310v5_page12_chunk1",
+    "text": "12 Duke Nguyen, Du Yin, Aditya Joshi, and Flora Salim Table 3. A summary of research gap in the literature on kernelized attention. The table shows combinations of weight matrices (columns) and component functions (rows). For each cell, the top item is the cited work for this combination for typical kernel tasks, while the bottom item is the cited work for Transformer-based tasks. × indicates that a combination has not been previously studied in either general kernel tasks or specifically for Transformers. Spectraformer explores all listed combinations (excluding ‘Base’ due to exhasutive pre-existing work) 𝑓 Base ORF SORF QMC MM SGQ FastFoodL TrigRF [45] [8] [71] [8] [71] × [2] × [50] × [12] × [68] [11] PosRF [8] [8] [8] [8] × × × × × [11] OPRF [31] [31] [31] [31] × × × × × SADERF [32] [32] [32] [32] × × × × × the abstract. We note that Spectraformer is an experimental rather than a theoretical framework. Aside from the challenge of generalizing the large number of weight matrices and component functions, estimating the “actual error of the approximation, or how this error will propagate into downstream learning tasks” is not possible [69]. This is"
+  },
+  {
+    "paper_id": "2405.15310v5",
+    "title": "Spectraformer: A Unified Random Feature Framework for Transformer",
+    "page_num": 12,
+    "chunk_id": "2405.15310v5_page12_chunk2",
+    "text": "We note that Spectraformer is an experimental rather than a theoretical framework. Aside from the challenge of generalizing the large number of weight matrices and component functions, estimating the “actual error of the approximation, or how this error will propagate into downstream learning tasks” is not possible [69]. This is because, as Yao et al. [69] pointed out: the RFF literature has largely use theoretical bounds which are largely impractical due to being either highly conservative or making use of “unknown qualities” as evident in Section 3. Thus, we seek to validate its feasibility and show its ability to discover novel and performant combination via empirical results and statistical analyses. 4 Results 4.1 Experimental Details The LRA covers tasks of different sequence lengths, difficulty, and objective, and is designed to evaluate efficient Transformers. The LRA is preferred over other benchmarks such as GLUE [35] since efficient Transformers are designed to address tasks with long input length which reduces Transformer’s training and inference speed to the default attention’s quadratic time complexity. The LRA consists of ListOps [40] (testing the parsing ability of models), Text (Byte-Level Text Classification, using the IMDb review dataset) [22], Retrieval (Byte-Level Document Retrieval, using the ACL Anthology"
+  },
+  {
+    "paper_id": "2405.15310v5",
+    "title": "Spectraformer: A Unified Random Feature Framework for Transformer",
+    "page_num": 12,
+    "chunk_id": "2405.15310v5_page12_chunk3",
+    "text": "address tasks with long input length which reduces Transformer’s training and inference speed to the default attention’s quadratic time complexity. The LRA consists of ListOps [40] (testing the parsing ability of models), Text (Byte-Level Text Classification, using the IMDb review dataset) [22], Retrieval (Byte-Level Document Retrieval, using the ACL Anthology Network dataset) [44], Image (Image Classification on Sequence of Pixels in 1D projected from the 2D of images in the CIFAR-10 dataset [29]), and Pathfinder (Long-Range Spatial Dependency) [26, 34]. We discuss the task characteristics in greater details in Section 4.3. All our models are experimented on NVIDIA V100 and 12 CPU with 20GB of memory. Our codebase is based on and includes the adapted or original implementation from [6, 8, 11, 31, 32, 36, 60, 67], [28, 55, 76] (Apache License, Version 2.0). The parameters are identical to [6] and chosen to limit the parameter count to account for the marked training time of multiple models. All the parameters for Spectraformer variants are kept identical for fair comparison, with the only difference being the number of random feature. We vary the number of random feature between 64, 128, 256, and 512 for comprehensive analysis. Dimension as 128 was used"
+  },
+  {
+    "paper_id": "2405.15310v5",
+    "title": "Spectraformer: A Unified Random Feature Framework for Transformer",
+    "page_num": 12,
+    "chunk_id": "2405.15310v5_page12_chunk4",
+    "text": "the marked training time of multiple models. All the parameters for Spectraformer variants are kept identical for fair comparison, with the only difference being the number of random feature. We vary the number of random feature between 64, 128, 256, and 512 for comprehensive analysis. Dimension as 128 was used in [6] and 256 was used in [8, 31, 32]. Our hyperparameters are available in Table 6. Our code is implemented in Python 3.12 and Pytorch, we use the Transformer base from [6]. The model name convention is [component function]-[weight matrix] (e.g., OPRF-FastFoodL). J. ACM, Vol. 1, No. 1, Article . Publication date: September 2025."
+  },
+  {
+    "paper_id": "2405.15310v5",
+    "title": "Spectraformer: A Unified Random Feature Framework for Transformer",
+    "page_num": 13,
+    "chunk_id": "2405.15310v5_page13_chunk1",
+    "text": "Spectraformer: A Unified Random Feature Framework for Transformer 13 4.2 Overall Results Our comprehensive experiments on the Long Range Arena (LRA) benchmark reveal that the Spec- traformer framework not only produces highly competitive models but also establishes a new state-of-the-art for random feature-based efficient Transformers. Before diving into a detailed breakdown, we first present a high-level comparison of our top-performing variants against a wide range of established efficient Transformers in Table 1. This includes methods based on downsam- pling (Nystromformer [67], Skyformer [6], BigBird [74]), learnable patterns (Reformer [28]), and other linearization approaches (Linformer [60]). As shown in Table 1, our best model, OPRF-FastFoodL, achieves a mean accuracy of 57.17%, which is highly competitive with leading methods like Nystromformer [67] (58.06%) and BigBird [74] (57.25%). This is a significant finding, as it demonstrates for the first time that a well-configured kernelized attention model can perform at the same level as other classes of efficient Transformers on this challenging benchmark. Notably, OPRF-FastFoodL is on par with BigBird [74] on mean accuracy while offering a substantial reduction in peak memory consumption (4.65 to 1.82 GB) and training time (3.32 hours to 2.26 hours) To provide full transparency and detail on how our"
+  },
+  {
+    "paper_id": "2405.15310v5",
+    "title": "Spectraformer: A Unified Random Feature Framework for Transformer",
+    "page_num": 13,
+    "chunk_id": "2405.15310v5_page13_chunk2",
+    "text": "other classes of efficient Transformers on this challenging benchmark. Notably, OPRF-FastFoodL is on par with BigBird [74] on mean accuracy while offering a substantial reduction in peak memory consumption (4.65 to 1.82 GB) and training time (3.32 hours to 2.26 hours) To provide full transparency and detail on how our top variants were identified, Table 7 presents the complete results for all 18 combinations of component functions and weight matrices explored within Spectraformer, tested with random feature dimensions of 64, 128, 256, and 512. The previous state-of-the-art random feature models, OPRF-ORF and SADERF-ORF, are highlighted in bold for direct comparison. The results in Table 8 confirm that several novel combinations discovered through our framework, such as OPRF-FastFoodL and PosRF-MM, consistently outperform the previous random feature SOTAs. To help navigate these extensive results, Table 4 summarises the best-performing model for each task according to accuracy, training time, and memory usage. This highlights the framework’s ability to generate variants that offer different trade-offs, catering to specific computational or performance requirements. We now proceed to a deeper analysis of these results. Table 4. A summary of the best-performing Spectraformer models, with tasks as columns and optimization categories as rows. Results are shown for"
+  },
+  {
+    "paper_id": "2405.15310v5",
+    "title": "Spectraformer: A Unified Random Feature Framework for Transformer",
+    "page_num": 13,
+    "chunk_id": "2405.15310v5_page13_chunk3",
+    "text": "highlights the framework’s ability to generate variants that offer different trade-offs, catering to specific computational or performance requirements. We now proceed to a deeper analysis of these results. Table 4. A summary of the best-performing Spectraformer models, with tasks as columns and optimization categories as rows. Results are shown for 64, 128, 256, and 512 feature settings. Metric Feat Task L T R I P 𝜇 Accuracy 64 OPRF-QMC OPRF-SORF OPRF-MM SADERF-FastFoodL PosRF-QMC OPRF-FastFoodL 128 OPRF-MM SADERF-SORF OPRF-ORF OPRF-FastFoodL OPRF-SGQ OPRF-FastFoodL 256 OPRF-FastFoodL SADERF-SORF SADERF-ORF OPRF-FastFoodL OPRF-FastFoodL OPRF-FastFoodL 512 OPRF-FastFoodL SADERF-SORF OPRF-MM OPRF-FastFoodL PosRF-ORF OPRF-FastFoodL Time 64 PosRF-MM PosRF-QMC PosRF-SGQ PosRF-MM PosRF-MM PosRF-MM 128 PosRF-SORF PosRF-QMC PosRF-QMC PosRF-QMC PosRF-SORF PosRF-QMC 256 PosRF-MM PosRF-SORF PosRF-MM PosRF-SGQ PosRF-QMC PosRF-MM 512 PosRF-FastFoodL Memory 64 PosRF-MM 128 PosRF-FastFoodL 256 PosRF-FastFoodL 512 PosRF-FastFoodL 4.3 Task Characteristics The tasks in the LRA include: ListOps [40], Text (Byte-Level Text Classification, using the IMDb review dataset) [22], Retrieval (Byte-Level Document Retrieval, using the ACL Anthology Network J. ACM, Vol. 1, No. 1, Article . Publication date: September 2025."
+  },
+  {
+    "paper_id": "2405.15310v5",
+    "title": "Spectraformer: A Unified Random Feature Framework for Transformer",
+    "page_num": 13,
+    "chunk_id": "2405.15310v5_page13_chunk4",
+    "text": "(Byte-Level Document Retrieval, using the ACL Anthology Network J. ACM, Vol. 1, No. 1, Article . Publication date: September 2025."
+  },
+  {
+    "paper_id": "2405.15310v5",
+    "title": "Spectraformer: A Unified Random Feature Framework for Transformer",
+    "page_num": 14,
+    "chunk_id": "2405.15310v5_page14_chunk1",
+    "text": "14 Duke Nguyen, Du Yin, Aditya Joshi, and Flora Salim Table 5. Pearson correlation coefficients between model performance metrics (Mtr.) (Accuracy (Acc), Time (Time), Memory (Mem)) and task characteristics. Task characteristics include the number of classes (Cl.), input sequence length (Len.), and required attention span (Att.). The analysis is presented for component functions (left) and weight matrices (right). 𝑓 𝑊 Mtr. T PosRF OPRF SADERF FastFoodL QMC MM ORF SGQ SORF Acc Cl. -0.908 -0.924 -0.921 -0.950 -0.921 -0.919 -0.921 -0.905 -0.913 Len. 0.706 0.720 0.722 0.664 0.735 0.741 0.728 0.754 0.696 Att. 0.459 0.516 0.494 0.404 0.566 0.562 0.557 0.506 0.356 Time Cl. 0.169 0.191 0.185 0.234 0.176 0.177 0.165 0.177 0.176 Len. -0.169 -0.198 -0.186 -0.215 -0.180 -0.180 -0.175 -0.184 -0.180 Att. -0.271 -0.275 -0.265 -0.364 -0.255 -0.255 -0.252 -0.259 -0.255 Mem Cl. 0.160 0.144 0.143 0.241 0.160 0.160 0.149 0.161 0.160 Len. -0.185 -0.157 -0.159 -0.253 -0.177 -0.177 -0.171 -0.181 -0.177 Att. -0.265 -0.233 -0.238 -0.399 -0.259 -0.259 -0.255 -0.263 -0.259 dataset) [44], Image (Image Classification), and Pathfinder (Long-Range Spatial Dependency) [26, 34]. We take into consideration three main characteristics: • Number of output classes. ListOps is a task which inputs a sequence containing brackets and simple"
+  },
+  {
+    "paper_id": "2405.15310v5",
+    "title": "Spectraformer: A Unified Random Feature Framework for Transformer",
+    "page_num": 14,
+    "chunk_id": "2405.15310v5_page14_chunk2",
+    "text": "-0.177 -0.171 -0.181 -0.177 Att. -0.265 -0.233 -0.238 -0.399 -0.259 -0.259 -0.255 -0.263 -0.259 dataset) [44], Image (Image Classification), and Pathfinder (Long-Range Spatial Dependency) [26, 34]. We take into consideration three main characteristics: • Number of output classes. ListOps is a task which inputs a sequence containing brackets and simple mathematical operators, with the output being a integer between 1 and 10, hence it has 10 classes. Text is a sentiment classification task on an IMDb review dataset with the class being either negative or positive, hence it has 2 classes. Retrieval inputs two sequences and the output is either False (meaning the sequences are not of the same document) or True (meaning the sequences are of the same document). Image is based on the CIFAR-10 [29] and has 10 classes. Pathfinder [26, 34] has 2 classes and requires the model to identify the target contour between one end and the other. • Maximum sequence size. ListOps is 2K; Text is 4K; whilst Retrieval requires the processing of two sequences each of 4K length making the total maximum sequence size being 8K; Image flattens the 2D of CIFAR-10 images of 32-by-32 into a list with the size of 1024; Similary,"
+  },
+  {
+    "paper_id": "2405.15310v5",
+    "title": "Spectraformer: A Unified Random Feature Framework for Transformer",
+    "page_num": 14,
+    "chunk_id": "2405.15310v5_page14_chunk3",
+    "text": "the other. • Maximum sequence size. ListOps is 2K; Text is 4K; whilst Retrieval requires the processing of two sequences each of 4K length making the total maximum sequence size being 8K; Image flattens the 2D of CIFAR-10 images of 32-by-32 into a list with the size of 1024; Similary, Pathfinder also takes in a 1024-dimensional list from 32-by-32 images. • Required attention span. This is the ‘mean distance between the query token and the attended tokens, scaled by attention weights’. The average values for required attention span calculated by [53] is: ListOps being 0.7589, Text being 0.3194, Retrieval being 1.329, Image being 0.359 Pathfinder being 0.5371. 4.4 Analysis of Methods We now explore the suitability of weight matrices and component functions depending on task characteristics. Table 8 shows the mean statistics across component functions and weight matrices for each task as well as average performance across tasks. To ensure the performance of methods consistently across different feature settings, we also refer to Figure 4. First, we will analyze the component functions and weight matrices in terms of accuracy. For component functions, we can see that OPRF and SADERF outperform PosRF for all tasks except Text. For weight matrices, we"
+  },
+  {
+    "paper_id": "2405.15310v5",
+    "title": "Spectraformer: A Unified Random Feature Framework for Transformer",
+    "page_num": 14,
+    "chunk_id": "2405.15310v5_page14_chunk4",
+    "text": "the performance of methods consistently across different feature settings, we also refer to Figure 4. First, we will analyze the component functions and weight matrices in terms of accuracy. For component functions, we can see that OPRF and SADERF outperform PosRF for all tasks except Text. For weight matrices, we observe the following: • 𝑇: FastFoodL and SORF performs well in 𝑇but other models also perform equally well in task 𝑇. This task is not too hard. • 𝑅: ORF, QMC, and MM perform the best. FastFoodL and SGQ perform well moderately, and SORF performs the worst. J. ACM, Vol. 1, No. 1, Article . Publication date: September 2025."
+  },
+  {
+    "paper_id": "2405.15310v5",
+    "title": "Spectraformer: A Unified Random Feature Framework for Transformer",
+    "page_num": 15,
+    "chunk_id": "2405.15310v5_page15_chunk1",
+    "text": "Spectraformer: A Unified Random Feature Framework for Transformer 15 Fig. 4. Heatmaps of Spectraformer combinations for the 64, 128, 256, 512 features. 𝐿and 𝐼have 10 classes, opposed to 𝑇, 𝑅, 𝑃having 2 classes. Hence we adjust the vmin-vmax for the first group as 20-40 with the second group as 50-85. • 𝑃: Most models perform well (ORF, FastFoodL, QMC, MM). SGQ slightly less well than this group. SORF performs quite poorly. • 𝐿: QMC and MM perform the best. ORF performs moderately well. SORF performs the worst. Meanwhile, SGQ’s performance varies with respect to the number of random features. J. ACM, Vol. 1, No. 1, Article . Publication date: September 2025."
+  },
+  {
+    "paper_id": "2405.15310v5",
+    "title": "Spectraformer: A Unified Random Feature Framework for Transformer",
+    "page_num": 16,
+    "chunk_id": "2405.15310v5_page16_chunk1",
+    "text": "16 Duke Nguyen, Du Yin, Aditya Joshi, and Flora Salim • 𝐼: FastFoodL performs the best, followed by SGQ. ORF, QMC and MM perform moderately. With SORF performing the worst. Based on the above observations, we note that ORF, QMC, and MM tend to have the same trend. These weight matrices along FastFoodL (albeit having a different trend) have high mean performance (see Table 8) and high performance per task. This is followed by SGQ. SORF has the worst performance. QMC and MM having the same trend is expected since MM is an improvement on QMC using the same base formula and assumption. Empirically, QMC also outperforms ORF marginally as expected, based on existing work (see [36], Table 9 (Appendix) w.r.t. Gaussian training error). QMC and MM are based on Equation 3.1.5 which is a reformulation of Equation 9 whilst reducing variance. Thus, theoretically QMC and MM should behave similarly yet better than MC-based methods like ORF. SORF is the faster version of ORF [71], and empirically it becomes nearly unbiased with the number of features above 32, essentially collapsing to the bias of ORF. Yet in practice, Liu et al. [36] show that SORF does not perform as well"
+  },
+  {
+    "paper_id": "2405.15310v5",
+    "title": "Spectraformer: A Unified Random Feature Framework for Transformer",
+    "page_num": 16,
+    "chunk_id": "2405.15310v5_page16_chunk2",
+    "text": "yet better than MC-based methods like ORF. SORF is the faster version of ORF [71], and empirically it becomes nearly unbiased with the number of features above 32, essentially collapsing to the bias of ORF. Yet in practice, Liu et al. [36] show that SORF does not perform as well as ORF in classification tasks, and this is reflected in our experiments. In addition, Liu et al. [36] also show that FastFoodF (which is the FastFood approximator (FastFood fixed) as opposed to FastFoodL, the FastFood learner) performs as well as QMC. Based on [11] however, it is expected that FastFoodL exceeds this. And being the weight learner class, its behaviors deviate from the general trend of weight matrices. Liu et al. [36] show empirically that GQ performs as well as QMC. However, GQ cannot be used in practice, hence the use of SGQ. It was also not compared empirically in [36]. Given that SGQ approximates a kernel 𝑘that is subgaussian with parameter 𝑏, 𝐴≥24𝑒𝑏2𝑀2, 𝑑being the dimension of the data, 𝑀⊂R𝑑be the diameter between inputs 𝑥and 𝑦, then SGQ’s sampling complexity is bounded by 2𝑑\u0010 12𝑒𝑏2𝑀2 𝐴 \u0011𝐴 . This means that the dimension of the token as well as"
+  },
+  {
+    "paper_id": "2405.15310v5",
+    "title": "Spectraformer: A Unified Random Feature Framework for Transformer",
+    "page_num": 16,
+    "chunk_id": "2405.15310v5_page16_chunk3",
+    "text": "[36]. Given that SGQ approximates a kernel 𝑘that is subgaussian with parameter 𝑏, 𝐴≥24𝑒𝑏2𝑀2, 𝑑being the dimension of the data, 𝑀⊂R𝑑be the diameter between inputs 𝑥and 𝑦, then SGQ’s sampling complexity is bounded by 2𝑑\u0010 12𝑒𝑏2𝑀2 𝐴 \u0011𝐴 . This means that the dimension of the token as well as the distance between two tokens being calculated will increase the complexity. Since our dimension of the token is quite high compared for most kernel tasks (64), and the distance between two tokens is quite high as well due to the tasks being from the LRA, this results in SGQ’s rather average performance. The relationship between the distance of the tokens and the approximation quality of SGQ is apparent in the moderate Pearson correlation coefficient of 0.506 between SGQ and attention span in Table 5. Unfortunately, we have less than an obvious idea for the relationship between the other weight matrices and token characteristics like SGQ since most of their sampling complexity is only dependent on the number of features [36]. Table 5 shows that, as expected, the number of classes is the primary determinant of models’ performance. However, the input length also plays a role in determining the outcome of"
+  },
+  {
+    "paper_id": "2405.15310v5",
+    "title": "Spectraformer: A Unified Random Feature Framework for Transformer",
+    "page_num": 16,
+    "chunk_id": "2405.15310v5_page16_chunk4",
+    "text": "and token characteristics like SGQ since most of their sampling complexity is only dependent on the number of features [36]. Table 5 shows that, as expected, the number of classes is the primary determinant of models’ performance. However, the input length also plays a role in determining the outcome of the performance of a weight matrix in a task as well. We observe a similar trend across ORF, QMC, and MM as stated above across correlation coefficients between accuracy w.r.t. number of classes, input length, and attention span. SGQ as suggested above performs similarly for the first two metrics but with a slightly lower attention span coefficient. FastFood has the lowest correlation coefficients for both input length and attention span, suggesting that its learnable weights behave contrary to task characteristics and learning might be attributed to this. Figure 5 shows the accuracy trend for different number of features for each task. We observe that accuracy peaks mostly at 128 and sometimes 256 number of features, thereafter maintaining or decreasingly stably. We also find that there is no relationship between input length and the number of features (also see Figure 6). This suggests that increasing the number of random features past"
+  },
+  {
+    "paper_id": "2405.15310v5",
+    "title": "Spectraformer: A Unified Random Feature Framework for Transformer",
+    "page_num": 16,
+    "chunk_id": "2405.15310v5_page16_chunk5",
+    "text": "task. We observe that accuracy peaks mostly at 128 and sometimes 256 number of features, thereafter maintaining or decreasingly stably. We also find that there is no relationship between input length and the number of features (also see Figure 6). This suggests that increasing the number of random features past 128 induces overfitting and 128 is the ideal number of random features. The best way to confirm whether overfitting is occurring is to look at the gap between the generalization accuracy (the accuracy on the development set) and the training accuracy. We term this accuracy as the generalization gap. We calculate the average J. ACM, Vol. 1, No. 1, Article . Publication date: September 2025."
+  },
+  {
+    "paper_id": "2405.15310v5",
+    "title": "Spectraformer: A Unified Random Feature Framework for Transformer",
+    "page_num": 17,
+    "chunk_id": "2405.15310v5_page17_chunk1",
+    "text": "Spectraformer: A Unified Random Feature Framework for Transformer 17 generalization gap and averaging them for all seeds of the same task and model between 512 - 256, 256 - 128, and 128 - 64 features. The result is respectively 0.143%, 0.041%, -0.404%. This confirms our initial intuition that 64 features are too few (underfitting) but 256 features are too many (overfitting). The accuracy obtained is obtained with early stopping, accuracy obtained without early stopping can induce a much larger generalization gap difference. This confirms that overfitting occurs past 128 features. In addition, during experimentation, we also found that the 512 features is highly unstable due to gradient explosion from large matrix calculation leading to NaN values. This occurred for three seed (twice for PosRF-SGQ and once for SAERF-ORF). SORF in particular performs poorly at 64 number of features with accuracy improving drastically at 128 number of features. This validates previous findings that in transformer applications, 128 features is the optimal option. Fig. 5. Accuracy vs Number of Features Across All Tasks 4.5 Efficiency Analysis Fig. 6. Performance Metrics vs. Number of Features In analyzing efficiency, we follow the definition of efficient Transformers in [54] in terms of memory and computation,"
+  },
+  {
+    "paper_id": "2405.15310v5",
+    "title": "Spectraformer: A Unified Random Feature Framework for Transformer",
+    "page_num": 17,
+    "chunk_id": "2405.15310v5_page17_chunk2",
+    "text": "findings that in transformer applications, 128 features is the optimal option. Fig. 5. Accuracy vs Number of Features Across All Tasks 4.5 Efficiency Analysis Fig. 6. Performance Metrics vs. Number of Features In analyzing efficiency, we follow the definition of efficient Transformers in [54] in terms of memory and computation, the latter interpreted as computational cost. The overall trend of accuracy, time, and memory of component functions is that they increase linearly from PosRF, OPRF, to SADERF. Mean accuracy is respectively 53.71, 55.97 and 55.46. Mean time is respectively 1.32, 1.53 and 1.54. Mean memory is 2.31, 2.70, 2.86. Please refer to Table 8. These figures are for 128 random features but with other number of features, the results follow the same trend. SADERF and OPRF having a higher computational requirement than PosRF is due to them having additional computation of the L2 norm of the weight matrix which PosRF does not calculate. Hence, when limited computational resource is a concern, PosRF is a better option. Figure 6 shows that PosRF’s training tmie and memory consumption grows at a significantly lower rate than other methods. J. ACM, Vol. 1, No. 1, Article . Publication date: September 2025."
+  },
+  {
+    "paper_id": "2405.15310v5",
+    "title": "Spectraformer: A Unified Random Feature Framework for Transformer",
+    "page_num": 17,
+    "chunk_id": "2405.15310v5_page17_chunk3",
+    "text": "does not calculate. Hence, when limited computational resource is a concern, PosRF is a better option. Figure 6 shows that PosRF’s training tmie and memory consumption grows at a significantly lower rate than other methods. J. ACM, Vol. 1, No. 1, Article . Publication date: September 2025."
+  },
+  {
+    "paper_id": "2405.15310v5",
+    "title": "Spectraformer: A Unified Random Feature Framework for Transformer",
+    "page_num": 18,
+    "chunk_id": "2405.15310v5_page18_chunk1",
+    "text": "18 Duke Nguyen, Du Yin, Aditya Joshi, and Flora Salim Otherwise, OPRF provides the best accuracy. We observe the increase in training time and peak memory consumption as expected due to increasing the number of random features sampled for weight matrices (see Figure 6). Training time and peak memory consumption relies more heavily on component functions than weight matrices, with the exception of FastFoodL. FastFoodL takes significantly less memory consumption at the expense of training time. However, whilst most methods increase training time and memory consumption significantly as the number of features increases, FastFoodL remains constant (see Figure 6). In addition, Table 5 shows that, in terms of weight matrices, training time and peak memory consumption is relatively stable and does not vary with respect to number of classes, input length, and the required attention span, with the exception for FastFoodL. This is largely due to FastFoodL modifying the attention matrix instead of approximating it. However, we do notice that there is a higher negative correlation between the required attention span and peak memory consumption. We also analyze efficiency in terms of the number of features. Figure 7 shows that memory usage decrease gradually as the sequence length increases and"
+  },
+  {
+    "paper_id": "2405.15310v5",
+    "title": "Spectraformer: A Unified Random Feature Framework for Transformer",
+    "page_num": 18,
+    "chunk_id": "2405.15310v5_page18_chunk2",
+    "text": "matrix instead of approximating it. However, we do notice that there is a higher negative correlation between the required attention span and peak memory consumption. We also analyze efficiency in terms of the number of features. Figure 7 shows that memory usage decrease gradually as the sequence length increases and the training time remains relatively stable. 4.6 Inductive Bias of Efficient Attention In addition, we also notice that, the top performing models (in Table 1) such as Spectraformer variants, Nystromformer [67], Big Bird [74], Reformer [28], Skyformer [6] are efficient Transformers that outperform the OT. They can be grouped into the following two induction biases: • Low-rank bias (Spectraformer, Nystromformer [67], Skyformer [6]) assumes that the true attention matrix is simple, or low rank, in nature. • Sparsity bias (Big Bird [74], Reformer [28]) assumes that only a small number of attention values in the attention matrix contains meaningful information, ignoring the computation of a significant number of token-to-token attention values, since they only contribute to noise. Efficient transformers do not just reduce the computational cost, but they also introduce strong induction bias about the structure of the attention matrix. Efficient transformers’ approximation of the OT’s true attention matrix should"
+  },
+  {
+    "paper_id": "2405.15310v5",
+    "title": "Spectraformer: A Unified Random Feature Framework for Transformer",
+    "page_num": 18,
+    "chunk_id": "2405.15310v5_page18_chunk3",
+    "text": "ignoring the computation of a significant number of token-to-token attention values, since they only contribute to noise. Efficient transformers do not just reduce the computational cost, but they also introduce strong induction bias about the structure of the attention matrix. Efficient transformers’ approximation of the OT’s true attention matrix should imply that their performance be upperbounded by the OT’s performance. However, as we have seen in Table 1, they consistently outperform the OT, implying that at least for the characteristics of the LRA, a low-rank bias or a sparsity bias, acting as regularizers on the attention matrix, are helpful induction biases. This aligns with the analysis done in Section 4.4. 128 features will definitely produce a lower rank matrix than 256, 512 features hence models with an even lower-rank bias. This however questions why the OT outperforms 512 and 256-feature models. 128, 256 and 512 feature models have lower rank than the OT and they necessarily produce noise due to the attention approximation process. Having more features likely enlarge the noise in the final approximated attention matrix, making these models fit to spurious noise. Having too few features (64), however, underfits and lead to inexact kernel approximation. 4.7 Method Recommendation"
+  },
+  {
+    "paper_id": "2405.15310v5",
+    "title": "Spectraformer: A Unified Random Feature Framework for Transformer",
+    "page_num": 18,
+    "chunk_id": "2405.15310v5_page18_chunk4",
+    "text": "than the OT and they necessarily produce noise due to the attention approximation process. Having more features likely enlarge the noise in the final approximated attention matrix, making these models fit to spurious noise. Having too few features (64), however, underfits and lead to inexact kernel approximation. 4.7 Method Recommendation Based on the above experiments, our recommendation is to avoid SORF. SORF performs well on the Text task. However, this is not captured by our metrics (number of output classes, maximum input length, and attention span). There are potential task characteristics that we cannot account for with this exception. Overall, we suggest FastFoodL and QMC among the main weight matrix group of QMC, MM and ORF. They both are highly performant. FastFoodL offers the advantage of low memory consumption at the cost of longer training time, and QMC maintains the average training time and memory consumption. Our results establish OPRF-FastFoodL as the new state-of-the-art for random feature-based efficient Transformers. More importantly, our findings demonstrate that this class of models is now J. ACM, Vol. 1, No. 1, Article . Publication date: September 2025."
+  },
+  {
+    "paper_id": "2405.15310v5",
+    "title": "Spectraformer: A Unified Random Feature Framework for Transformer",
+    "page_num": 18,
+    "chunk_id": "2405.15310v5_page18_chunk5",
+    "text": "as the new state-of-the-art for random feature-based efficient Transformers. More importantly, our findings demonstrate that this class of models is now J. ACM, Vol. 1, No. 1, Article . Publication date: September 2025."
+  },
+  {
+    "paper_id": "2405.15310v5",
+    "title": "Spectraformer: A Unified Random Feature Framework for Transformer",
+    "page_num": 19,
+    "chunk_id": "2405.15310v5_page19_chunk1",
+    "text": "Spectraformer: A Unified Random Feature Framework for Transformer 19 highly competitive with top-performing methods from other categories like Nystromformer [67] and BigBird [74]. Specifically, OPRF-FastFoodL achieves accuracy on par with BigBird [74] (57.17% vs. 57.25%) while offering substantial reductions in both peak memory consumption (1.82 GB vs. 4.65 GB) and training time. While Nystromformer attains a higher average accuracy (58.06%), our model provides a valuable alternative with greater memory efficiency (1.82 GB vs. 2.63 GB). These results introduce new, valuable points to the accuracy-memory-time Pareto frontier, offering practitioners compelling options based on their specific performance and resource constraints. In addition to our top-performing model, the Spectraformer framework also produced other novel combinations like OPRF-SGQ and PosRF-MM, which outperform previous RF-based SOTAs (OPRF-ORF and SADERF-ORF) and provide a range of options with different computational profiles. The result mentioned here is available in Table 1. 5 Related Work Spectraformer is based on several theoretical assumptions various mathematical frameworks. This section discusses alternatives to these assumptions. Specifically, Section 5.1 discusses alternative kernelized formulations to Section 2.1; Section 5.2 discusses alternative kernel approximation techniques to random features in Section 5.2. 5.1 Alternative Kernelized Attentions In addition to the kernelized formulation of attention as shown"
+  },
+  {
+    "paper_id": "2405.15310v5",
+    "title": "Spectraformer: A Unified Random Feature Framework for Transformer",
+    "page_num": 19,
+    "chunk_id": "2405.15310v5_page19_chunk2",
+    "text": "several theoretical assumptions various mathematical frameworks. This section discusses alternatives to these assumptions. Specifically, Section 5.1 discusses alternative kernelized formulations to Section 2.1; Section 5.2 discusses alternative kernel approximation techniques to random features in Section 5.2. 5.1 Alternative Kernelized Attentions In addition to the kernelized formulation of attention as shown in Section 2.1, based on our literature survey, we have identified the following three alternative kernel-based formulations of attention. Nadaraya-Watson kernel estimator in integration form [41]: Given the Gaussian kernel, where the probability of a single variable and the joint probability of two variables are estimated using kernel density estimation with the Gaussian kernel, then we have Equation 24, leading to the formulation of FourierFormer. 𝜙(𝜹) = 𝑒𝑥𝑝(−||𝜹||2/2𝜎2) ˆ𝑟𝑛(𝒌) = ∫𝒗𝑝(𝒗,𝒌) 𝑝(𝒌) 𝑑𝑣= Í𝑁 𝑗=1 ˆ𝒗𝑗𝜙(𝒌−𝒌𝑗) Í𝑁 𝑗=1 𝜙(𝒌−𝒌𝑗) ˆ𝑟𝑛(𝒒𝑖) = Í𝑁 𝑗=1 𝑠𝑜𝑓𝑡𝑚𝑎𝑥(𝒒𝑇 𝑖𝒌𝑗/𝜎2) ˆ𝒗𝑗 (24) Gaussian decomposition [52]: the attention mechanism can also be decomposed into the Gaussian kernel directly from Equation 4 without appealing to the use of kernel estimator [52]. Equation 25 leads to Implicit Kernel Attention (IKA). 𝐴𝑖= 𝑁 ∑︁ 𝑗=1 1 𝑍𝑙(𝒒𝑖, 𝑲)𝑒𝑥𝑝( −||𝒒𝑖−𝒌𝑗||2 2 2√𝑑𝑘 )𝑒𝑥𝑝( ||𝒒𝑖||2 𝑝=2 + ||𝒌𝑗||2 𝑝=2 2√𝑑𝑘 )𝒗𝑗 (25) Non-local operation [62] is popular decomposition of attention in"
+  },
+  {
+    "paper_id": "2405.15310v5",
+    "title": "Spectraformer: A Unified Random Feature Framework for Transformer",
+    "page_num": 19,
+    "chunk_id": "2405.15310v5_page19_chunk3",
+    "text": "kernel directly from Equation 4 without appealing to the use of kernel estimator [52]. Equation 25 leads to Implicit Kernel Attention (IKA). 𝐴𝑖= 𝑁 ∑︁ 𝑗=1 1 𝑍𝑙(𝒒𝑖, 𝑲)𝑒𝑥𝑝( −||𝒒𝑖−𝒌𝑗||2 2 2√𝑑𝑘 )𝑒𝑥𝑝( ||𝒒𝑖||2 𝑝=2 + ||𝒌𝑗||2 𝑝=2 2√𝑑𝑘 )𝒗𝑗 (25) Non-local operation [62] is popular decomposition of attention in computer vision. This is the basis for Vision Transformer and related work. Non-local operation itself a generalisation of the non-local means used in image denoising [4]. Non-local operation is essentially an operation that operates on the entire input range, instead of a specific window which is characteristic of convolutional operations (see Equation 26). Indeed, the attention vector output 𝒚can be defined using 𝑓which is the softmax (see Equation 27) in the non-local operation. y𝑖= 1 𝐶(𝒙) ∑︁ ∀𝑗 𝑓(𝒙𝑖, 𝒙𝑗)𝑔(𝒙𝑗) (26) y = 𝑠𝑜𝑓𝑡𝑚𝑎𝑥(𝒙𝑇𝑾𝑇 𝜃𝑾𝜃𝒙)𝑔(𝒙) (27) We will show that the non-local operation in Equation 26 is a generalisation of the Nadaraya- Watson kernel estimator. Specifically, when defining 𝐶(𝒙) = Í 𝑙K(𝒒𝑖, 𝒌𝑙), 𝑓= K(𝒒𝑖, 𝒌𝑙),𝑔= 𝒗𝑗, J. ACM, Vol. 1, No. 1, Article . Publication date: September 2025."
+  },
+  {
+    "paper_id": "2405.15310v5",
+    "title": "Spectraformer: A Unified Random Feature Framework for Transformer",
+    "page_num": 19,
+    "chunk_id": "2405.15310v5_page19_chunk4",
+    "text": "the Nadaraya- Watson kernel estimator. Specifically, when defining 𝐶(𝒙) = Í 𝑙K(𝒒𝑖, 𝒌𝑙), 𝑓= K(𝒒𝑖, 𝒌𝑙),𝑔= 𝒗𝑗, J. ACM, Vol. 1, No. 1, Article . Publication date: September 2025."
+  },
+  {
+    "paper_id": "2405.15310v5",
+    "title": "Spectraformer: A Unified Random Feature Framework for Transformer",
+    "page_num": 20,
+    "chunk_id": "2405.15310v5_page20_chunk1",
+    "text": "20 Duke Nguyen, Du Yin, Aditya Joshi, and Flora Salim then we obtain the original Nadaraya-Watson kernel estimator in Equation 4. The variety of kernel decompositions of attention demonstrate the robustness of the kernel interpretation of attention and hence opening up an alley in attention improvement through the lens of kernel. 5.2 Kernel Approximation Beyond Random Features Kernel approximation is presented in Section 2.3 through the use of random features based on Bochner’s theorem limiting to only symmetric, positive-definite (PD) kernels. While Spectraformer focuses on approximating the symmetric softmax kernel, other research has extended the RFF paradigm to handle other classes of functions. Notably, the AsK-RFFs (Asymmetric Kernel RFFs) [20] method generalizes RFFs to handle asym- metric kernels. The key theoretical innovation is the use of a complex measure expanding on the Bochner theorem, which can be decomposed into four finite positive measures. This allows AsK-RFFs to create two distinct feature mappings that can approximate an asymmetric kernel. A different class of kernel functions are the Generalized Zonal Kernels (GZKs) which are dot-product kernels on the unit sphere, which is different from shift-invariant kernels which are the focal point of this paper. Nevertheless, the Gaussian is a part of this"
+  },
+  {
+    "paper_id": "2405.15310v5",
+    "title": "Spectraformer: A Unified Random Feature Framework for Transformer",
+    "page_num": 20,
+    "chunk_id": "2405.15310v5_page20_chunk2",
+    "text": "feature mappings that can approximate an asymmetric kernel. A different class of kernel functions are the Generalized Zonal Kernels (GZKs) which are dot-product kernels on the unit sphere, which is different from shift-invariant kernels which are the focal point of this paper. Nevertheless, the Gaussian is a part of this class. Random Gegenbauer Features [17] are designed to approximate the GZKs. This is done by performing a low-rank approximation via sampling the GZK’s feature map, defined by an infinite series of Gegenbauer polynomials instead of using the entire feature map. In addition, there has been other kernel approximation techniques outside of random features. These include greedy basis selection [51], divide and conquer [23, 75], nyström methods [64] (which led to the development of Skyformer [6] and Nyströmformer [67]). Nystrom methods are a type of low rank attention of which Low-Rank Transformer [66] is a part of. There is also sparse attention (Big Bird [74] which combines windowed, global and random attention, Reformer [28] which uses locality-sensitive hashing, Longformer [3] which combines band attention and global attention on special tokens like [CLS], ETC (Encoding Long and Structured Inputs) [1], Routing Transformer [47], Star Transformer [16]), time-series inspired methods (Informer [76]), or"
+  },
+  {
+    "paper_id": "2405.15310v5",
+    "title": "Spectraformer: A Unified Random Feature Framework for Transformer",
+    "page_num": 20,
+    "chunk_id": "2405.15310v5_page20_chunk3",
+    "text": "attention (Big Bird [74] which combines windowed, global and random attention, Reformer [28] which uses locality-sensitive hashing, Longformer [3] which combines band attention and global attention on special tokens like [CLS], ETC (Encoding Long and Structured Inputs) [1], Routing Transformer [47], Star Transformer [16]), time-series inspired methods (Informer [76]), or Linformer [60]. The inclusion of many of these models in our LRA benchmark comparison (Table 1) provides a broader comparison for evaluating the performance of Spectraformer against other efficient Transformers beyond random features. For a more comprehensive overview, please see the survey in [13]. An alternative to using random features is directly specifying 𝜙(𝑥) without approximating the softmax via random features. cosFormer [43] specifies 𝜙(𝑥) as LeakyReLU and ReLU. 6 Conclusion We present Spectraformer, an open-source framework for approximating and learning the attention kernel in the Transformer. Our paper generalizes past works, and presents empirical findings on different component function and weight matrix combinations. We experiment with 18 combina- tions, of which 14 are novel. Spectraformer has produced variants that are competitive against a wide range of efficient Transformers, including those based on sparse attention and other approxi- mation methods as shown in our expanded LRA benchmark. We have demonstrated"
+  },
+  {
+    "paper_id": "2405.15310v5",
+    "title": "Spectraformer: A Unified Random Feature Framework for Transformer",
+    "page_num": 20,
+    "chunk_id": "2405.15310v5_page20_chunk4",
+    "text": "and weight matrix combinations. We experiment with 18 combina- tions, of which 14 are novel. Spectraformer has produced variants that are competitive against a wide range of efficient Transformers, including those based on sparse attention and other approxi- mation methods as shown in our expanded LRA benchmark. We have demonstrated that a novel combination discovered through our framework, OPRF-FastFoodL, performs on par with leading models like Nystromformer and BigBird, establishing a new SOTA among random feature-based methods and a strong contender in the overall efficient Transformer landscape. We suggest the use of weight matrices FastFoodL and QMC combined with component functions based on specific computational requirements (PosRF for less and OPRF for more computational requirement). Our work shows the validity of Spectraformer for studying and producing novel variants based on existing and future research in random features and distribution sampling. J. ACM, Vol. 1, No. 1, Article . Publication date: September 2025."
+  },
+  {
+    "paper_id": "2405.15310v5",
+    "title": "Spectraformer: A Unified Random Feature Framework for Transformer",
+    "page_num": 20,
+    "chunk_id": "2405.15310v5_page20_chunk5",
+    "text": "September 2025."
+  },
+  {
+    "paper_id": "2405.15310v5",
+    "title": "Spectraformer: A Unified Random Feature Framework for Transformer",
+    "page_num": 21,
+    "chunk_id": "2405.15310v5_page21_chunk1",
+    "text": "Spectraformer: A Unified Random Feature Framework for Transformer 21 7 Future work, limitations, and broader impact Spectraformer provides an experimental framework for random features in efficient Transformer with kernelized attention. We are aware that many works cited do not provide comparable error approximation bounds. In addition, as [69] point out, most theoretical bounds are either highly conservative or involving unknown qualities, therefore making comparisons impossible. Therefore, we have validated our framework on extensive tasks, and provided comprehensive analyses and intuitive explanation. We welcome future work to generalize and build on Spectraformer. We have experimented with a significant number of combinations but not the exhaustive list in Sections 3.1 and 3.2. Future experiments can work with these additional techniques. In addition, providing a definitive theoretical reason for the success of specific method-task combinations, such as PosRF- QMC on ListOps, remains a significant open question that aligns with broader challenges in the kernel and random features literature. A rigorous theoretical investigation into these interactions is a valuable direction for future work. Transformer-based architecture can also benefit from Spectraformer. Past random feature Trans- former works [31, 32] have experimented with conformer and vision Transformer with ViT. Jeevan and Sethi [24] provide a good"
+  },
+  {
+    "paper_id": "2405.15310v5",
+    "title": "Spectraformer: A Unified Random Feature Framework for Transformer",
+    "page_num": 21,
+    "chunk_id": "2405.15310v5_page21_chunk2",
+    "text": "kernel and random features literature. A rigorous theoretical investigation into these interactions is a valuable direction for future work. Transformer-based architecture can also benefit from Spectraformer. Past random feature Trans- former works [31, 32] have experimented with conformer and vision Transformer with ViT. Jeevan and Sethi [24] provide a good foundation to extend our work. Spectraformer, although currently experimented in the Transformer setting, can also extend to non-parametric kernel classification. It could also benefit from ablation studies like the comparison variance in [11] or in [69]. Given the complex nature of language models in the ethical, energy, and societal domains, our work should be used responsibly [63]. Acknowledgments The production of the code used in this paper was partially reliant on generative AI code assistant. All AI-generation has been validated by the authors. This research was undertaken with the assistance of resources and services from the National Computational Infrastructure (NCI), which is supported by the Australian Government. We would also like to acknowledge the ARC Centre of Excellence for Automated Decision Making and Society (CE200100005). References [1] Joshua Ainslie, Santiago Ontanon, Chris Alberti, Vaclav Cvicek, Zachary Fisher, Philip Pham, Anirudh Ravula, Sumit Sanghai, Qifan Wang, and Li Yang. 2020. ETC:"
+  },
+  {
+    "paper_id": "2405.15310v5",
+    "title": "Spectraformer: A Unified Random Feature Framework for Transformer",
+    "page_num": 21,
+    "chunk_id": "2405.15310v5_page21_chunk3",
+    "text": "which is supported by the Australian Government. We would also like to acknowledge the ARC Centre of Excellence for Automated Decision Making and Society (CE200100005). References [1] Joshua Ainslie, Santiago Ontanon, Chris Alberti, Vaclav Cvicek, Zachary Fisher, Philip Pham, Anirudh Ravula, Sumit Sanghai, Qifan Wang, and Li Yang. 2020. ETC: Encoding Long and Structured Inputs in Transformers. In Proceedings of the 2020 Conference on Empirical Methods in Natural Language Processing (EMNLP), Bonnie Webber, Trevor Cohn, Yulan He, and Yang Liu (Eds.). Association for Computational Linguistics, Online, 268–284. doi:10.18653/v1/2020.emnlp- main.19 [2] Haim Avron, Vikas Sindhwani, Jiyan Yang, and Michael W. Mahoney. 2016. Quasi-Monte Carlo Feature Maps for Shift- Invariant Kernels. Journal of Machine Learning Research 17, 120 (2016), 1–38. http://jmlr.org/papers/v17/14-538.html [3] Iz Beltagy, Matthew E. Peters, and Arman Cohan. 2020. Longformer: The Long-Document Transformer. arXiv:2004.05150 [cs.CL] https://arxiv.org/abs/2004.05150 [4] A. Buades, B. Coll, and J.-M. Morel. 2005. A non-local algorithm for image denoising. In 2005 IEEE Computer Society Conference on Computer Vision and Pattern Recognition (CVPR’05), Vol. 2. 60–65 vol. 2. doi:10.1109/CVPR.2005.38 [5] Brian Bullins, Cyril Zhang, and Yi Zhang. 2018. Not-So-Random Features. In International Conference on Learning Representations. https://openreview.net/forum?id=Hk8XMWgRb [6] Yifan Chen, Qi Zeng, Heng Ji, and Yun Yang. 2021. Skyformer:"
+  },
+  {
+    "paper_id": "2405.15310v5",
+    "title": "Spectraformer: A Unified Random Feature Framework for Transformer",
+    "page_num": 21,
+    "chunk_id": "2405.15310v5_page21_chunk4",
+    "text": "denoising. In 2005 IEEE Computer Society Conference on Computer Vision and Pattern Recognition (CVPR’05), Vol. 2. 60–65 vol. 2. doi:10.1109/CVPR.2005.38 [5] Brian Bullins, Cyril Zhang, and Yi Zhang. 2018. Not-So-Random Features. In International Conference on Learning Representations. https://openreview.net/forum?id=Hk8XMWgRb [6] Yifan Chen, Qi Zeng, Heng Ji, and Yun Yang. 2021. Skyformer: Remodel Self-Attention with Gaussian Kernel and Nystr\\”om Method. In Advances in Neural Information Processing Systems, A. Beygelzimer, Y. Dauphin, P. Liang, and J. Wortman Vaughan (Eds.). https://openreview.net/forum?id=pZCYG7gjkKz [7] Krzysztof Choromanski and Vikas Sindhwani. 2016. Recycling Randomness with Structure for Sublinear time Kernel Expansions. In Proceedings of The 33rd International Conference on Machine Learning (Proceedings of Machine Learning Research, Vol. 48), Maria Florina Balcan and Kilian Q. Weinberger (Eds.). PMLR, New York, New York, USA, 2502–2510. https://proceedings.mlr.press/v48/choromanski16.html [8] Krzysztof Marcin Choromanski, Valerii Likhosherstov, David Dohan, Xingyou Song, Andreea Gane, Tamas Sarlos, Peter Hawkins, Jared Quincy Davis, Afroz Mohiuddin, Lukasz Kaiser, David Benjamin Belanger, Lucy J Colwell, and J. ACM, Vol. 1, No. 1, Article . Publication date: September 2025."
+  },
+  {
+    "paper_id": "2405.15310v5",
+    "title": "Spectraformer: A Unified Random Feature Framework for Transformer",
+    "page_num": 21,
+    "chunk_id": "2405.15310v5_page21_chunk5",
+    "text": "Benjamin Belanger, Lucy J Colwell, and J. ACM, Vol. 1, No. 1, Article . Publication date: September 2025."
+  },
+  {
+    "paper_id": "2405.15310v5",
+    "title": "Spectraformer: A Unified Random Feature Framework for Transformer",
+    "page_num": 22,
+    "chunk_id": "2405.15310v5_page22_chunk1",
+    "text": "22 Duke Nguyen, Du Yin, Aditya Joshi, and Flora Salim Adrian Weller. 2021. Rethinking Attention with Performers. In International Conference on Learning Representations. https://openreview.net/forum?id=Ua6zuk0WRH [9] Krzysztof Marcin Choromanski, Han Lin, Haoxian Chen, Arijit Sehanobish, Yuanzhe Ma, Deepali Jain, Jake Varley, Andy Zeng, Michael S Ryoo, Valerii Likhosherstov, Dmitry Kalashnikov, Vikas Sindhwani, and Adrian Weller. 2022. Hybrid Random Features. In International Conference on Learning Representations. https://openreview.net/forum?id= EMigfE6ZeS [10] Krzysztof M Choromanski, Mark Rowland, and Adrian Weller. 2017. The Unreasonable Effectiveness of Structured Random Orthogonal Embeddings. In Advances in Neural Information Processing Systems, I. Guyon, U. Von Luxburg, S. Bengio, H. Wallach, R. Fergus, S. Vishwanathan, and R. Garnett (Eds.), Vol. 30. Curran Associates, Inc. https: //proceedings.neurips.cc/paper_files/paper/2017/file/bf8229696f7a3bb4700cfddef19fa23f-Paper.pdf [11] Sankalan Pal Chowdhury, Adamos Solomou, Kumar Avinava Dubey, and Mrinmaya Sachan. 2022. Learning the Transformer Kernel. Transactions on Machine Learning Research (2022). https://openreview.net/forum?id=tLIBAEYjcv [12] Tri Dao, Christopher M De Sa, and Christopher Ré. 2017. Gaussian Quadrature for Kernel Features. In Advances in Neural Information Processing Systems, I. Guyon, U. Von Luxburg, S. Bengio, H. Wallach, R. Fergus, S. Vishwanathan, and R. Garnett (Eds.), Vol. 30. Curran Associates, Inc. https://proceedings.neurips.cc/paper_files/paper/2017/file/ 62f91ce9b820a491ee78c108636db089-Paper.pdf [13] Yasser Elouargui, Mahmoud Zyate, Abdellatif Sassioui, Meriyem Chergui, Mohamed El Kamili, and Mohammed"
+  },
+  {
+    "paper_id": "2405.15310v5",
+    "title": "Spectraformer: A Unified Random Feature Framework for Transformer",
+    "page_num": 22,
+    "chunk_id": "2405.15310v5_page22_chunk2",
+    "text": "Gaussian Quadrature for Kernel Features. In Advances in Neural Information Processing Systems, I. Guyon, U. Von Luxburg, S. Bengio, H. Wallach, R. Fergus, S. Vishwanathan, and R. Garnett (Eds.), Vol. 30. Curran Associates, Inc. https://proceedings.neurips.cc/paper_files/paper/2017/file/ 62f91ce9b820a491ee78c108636db089-Paper.pdf [13] Yasser Elouargui, Mahmoud Zyate, Abdellatif Sassioui, Meriyem Chergui, Mohamed El Kamili, and Mohammed Ouzzif. 2023. A Comprehensive Survey On Efficient Transformers. In 2023 10th International Conference on Wireless Networks and Mobile Communications (WINCOM). 1–6. doi:10.1109/WINCOM59760.2023.10322921 [14] Chang Feng, Qinghua Hu, and Shizhong Liao. 2015. Random feature mapping with signed circulant matrix projection. In Proceedings of the 24th International Conference on Artificial Intelligence (Buenos Aires, Argentina) (IJCAI’15). AAAI Press, 3490–3496. [15] Andrea Galassi, Marco Lippi, and Paolo Torroni. 2021. Attention in Natural Language Processing. IEEE Transactions on Neural Networks and Learning Systems 32, 10 (2021), 4291–4308. doi:10.1109/TNNLS.2020.3019893 [16] Qipeng Guo, Xipeng Qiu, Pengfei Liu, Yunfan Shao, Xiangyang Xue, and Zheng Zhang. 2019. Star-Transformer. In Proceedings of the 2019 Conference of the North American Chapter of the Association for Computational Linguistics: Human Language Technologies, Volume 1 (Long and Short Papers), Jill Burstein, Christy Doran, and Thamar Solorio (Eds.). Association for Computational Linguistics, Minneapolis, Minnesota, 1315–1325. doi:10.18653/v1/N19-1133 [17] Insu Han, Amir Zandieh, and Haim Avron. 2022."
+  },
+  {
+    "paper_id": "2405.15310v5",
+    "title": "Spectraformer: A Unified Random Feature Framework for Transformer",
+    "page_num": 22,
+    "chunk_id": "2405.15310v5_page22_chunk3",
+    "text": "Proceedings of the 2019 Conference of the North American Chapter of the Association for Computational Linguistics: Human Language Technologies, Volume 1 (Long and Short Papers), Jill Burstein, Christy Doran, and Thamar Solorio (Eds.). Association for Computational Linguistics, Minneapolis, Minnesota, 1315–1325. doi:10.18653/v1/N19-1133 [17] Insu Han, Amir Zandieh, and Haim Avron. 2022. Random Gegenbauer Features for Scalable Kernel Methods. In Proceedings of the 39th International Conference on Machine Learning (Proceedings of Machine Learning Research, Vol. 162), Kamalika Chaudhuri, Stefanie Jegelka, Le Song, Csaba Szepesvari, Gang Niu, and Sivan Sabato (Eds.). PMLR, 8330–8358. https://proceedings.mlr.press/v162/han22g.html [18] Kai Han, Yunhe Wang, Hanting Chen, Xinghao Chen, Jianyuan Guo, Zhenhua Liu, Yehui Tang, An Xiao, Chunjing Xu, Yixing Xu, Zhaohui Yang, Yiman Zhang, and Dacheng Tao. 2023. A Survey on Vision Transformer. IEEE Transactions on Pattern Analysis and Machine Intelligence 45, 1 (2023), 87–110. doi:10.1109/TPAMI.2022.3152247 [19] Chao Hao, Zitong Yu, Xin Liu, Jun Xu, Huanjing Yue, and Jingyu Yang. 2025. A Simple Yet Effective Network Based on Vision Transformer for Camouflaged Object and Salient Object Detection. IEEE Transactions on Image Processing 34 (2025), 608–622. doi:10.1109/TIP.2025.3528347 [20] Mingzhen He, Fan He, Fanghui Liu, and Xiaolin Huang. 2024. Random fourier features for asymmetric kernels. Mach. Learn. 113, 11 (Sept."
+  },
+  {
+    "paper_id": "2405.15310v5",
+    "title": "Spectraformer: A Unified Random Feature Framework for Transformer",
+    "page_num": 22,
+    "chunk_id": "2405.15310v5_page22_chunk4",
+    "text": "Jingyu Yang. 2025. A Simple Yet Effective Network Based on Vision Transformer for Camouflaged Object and Salient Object Detection. IEEE Transactions on Image Processing 34 (2025), 608–622. doi:10.1109/TIP.2025.3528347 [20] Mingzhen He, Fan He, Fanghui Liu, and Xiaolin Huang. 2024. Random fourier features for asymmetric kernels. Mach. Learn. 113, 11 (Sept. 2024), 8459–8485. doi:10.1007/s10994-024-06626-8 [21] Thomas Hofmann, Bernhard Schölkopf, and Alexander J. Smola. 2008. Kernel methods in machine learning. The Annals of Statistics 36, 3 (2008), 1171 – 1220. doi:10.1214/009053607000000677 [22] Jeremy Howard and Sebastian Ruder. 2018. Universal Language Model Fine-tuning for Text Classification. In Proceedings of the 56th Annual Meeting of the Association for Computational Linguistics (Volume 1: Long Papers), Iryna Gurevych and Yusuke Miyao (Eds.). Association for Computational Linguistics, Melbourne, Australia, 328–339. doi:10.18653/v1/P18- 1031 [23] Cho-Jui Hsieh, Si Si, and Inderjit Dhillon. 2014. A Divide-and-Conquer Solver for Kernel Support Vector Machines. In Proceedings of the 31st International Conference on Machine Learning (Proceedings of Machine Learning Research, Vol. 32), Eric P. Xing and Tony Jebara (Eds.). PMLR, Bejing, China, 566–574. https://proceedings.mlr.press/v32/hsieha14.html [24] Pranav Jeevan and Amit Sethi. 2022. Resource-efficient Hybrid X-formers for Vision. In 2022 IEEE/CVF Winter Conference on Applications of Computer Vision (WACV). 3555–3563. doi:10.1109/WACV51458.2022.00361 [25] Angelos Katharopoulos, Apoorv"
+  },
+  {
+    "paper_id": "2405.15310v5",
+    "title": "Spectraformer: A Unified Random Feature Framework for Transformer",
+    "page_num": 22,
+    "chunk_id": "2405.15310v5_page22_chunk5",
+    "text": "Machine Learning (Proceedings of Machine Learning Research, Vol. 32), Eric P. Xing and Tony Jebara (Eds.). PMLR, Bejing, China, 566–574. https://proceedings.mlr.press/v32/hsieha14.html [24] Pranav Jeevan and Amit Sethi. 2022. Resource-efficient Hybrid X-formers for Vision. In 2022 IEEE/CVF Winter Conference on Applications of Computer Vision (WACV). 3555–3563. doi:10.1109/WACV51458.2022.00361 [25] Angelos Katharopoulos, Apoorv Vyas, Nikolaos Pappas, and François Fleuret. 2020. Transformers are RNNs: Fast Autoregressive Transformers with Linear Attention. In Proceedings of the 37th International Conference on Machine Learning (Proceedings of Machine Learning Research, Vol. 119), Hal Daumé III and Aarti Singh (Eds.). PMLR, 5156–5165. https://proceedings.mlr.press/v119/katharopoulos20a.html [26] Junkyung Kim, Drew Linsley, Kalpit Thakkar, and Thomas Serre. [n. d.]. Disentangling neural mechanisms for perceptual grouping. In International Conference on Learning Representations. J. ACM, Vol. 1, No. 1, Article . Publication date: September 2025."
+  },
+  {
+    "paper_id": "2405.15310v5",
+    "title": "Spectraformer: A Unified Random Feature Framework for Transformer",
+    "page_num": 23,
+    "chunk_id": "2405.15310v5_page23_chunk1",
+    "text": "Spectraformer: A Unified Random Feature Framework for Transformer 23 [27] Diederik P. Kingma and Max Welling. 2013. Auto-Encoding Variational Bayes. CoRR abs/1312.6114 (2013). https: //api.semanticscholar.org/CorpusID:216078090 [28] Nikita Kitaev, Lukasz Kaiser, and Anselm Levskaya. 2020. Reformer: The Efficient Transformer. In International Conference on Learning Representations. https://openreview.net/forum?id=rkgNKkHtvB [29] Alex Krizhevsky et al. 2009. Learning multiple layers of features from tiny images. (2009). [30] Quoc Le, Tamas Sarlos, and Alexander Smola. 2013. Fastfood - Computing Hilbert Space Expansions in loglinear time. In Proceedings of the 30th International Conference on Machine Learning (Proceedings of Machine Learning Research, Vol. 28), Sanjoy Dasgupta and David McAllester (Eds.). PMLR, Atlanta, Georgia, USA, 244–252. https: //proceedings.mlr.press/v28/le13.html [31] Valerii Likhosherstov, Krzysztof M Choromanski, Kumar Avinava Dubey, Frederick Liu, Tamas Sarlos, and Adrian Weller. 2022. Chefs'Random Tables: Non-Trigonometric Random Features. In Advances in Neural Information Processing Systems, S. Koyejo, S. Mohamed, A. Agarwal, D. Belgrave, K. Cho, and A. Oh (Eds.), Vol. 35. Curran Associates, Inc., 34559–34573. https://proceedings.neurips.cc/paper_files/paper/2022/file/df2d62b96a4003203450cf89cd338bb7-Paper- Conference.pdf [32] Valerii Likhosherstov, Krzysztof Marcin Choromanski, Kumar Avinava Dubey, Frederick Liu, Tamas Sarlos, and Adrian Weller. 2023. Dense-Exponential Random Features: Sharp Positive Estimators of the Gaussian Kernel. In Thirty-seventh Conference on Neural Information Processing Systems. https://openreview.net/forum?id=S0xrBMFihS [33] Tianyang Lin, Yuxin Wang,"
+  },
+  {
+    "paper_id": "2405.15310v5",
+    "title": "Spectraformer: A Unified Random Feature Framework for Transformer",
+    "page_num": 23,
+    "chunk_id": "2405.15310v5_page23_chunk2",
+    "text": "(Eds.), Vol. 35. Curran Associates, Inc., 34559–34573. https://proceedings.neurips.cc/paper_files/paper/2022/file/df2d62b96a4003203450cf89cd338bb7-Paper- Conference.pdf [32] Valerii Likhosherstov, Krzysztof Marcin Choromanski, Kumar Avinava Dubey, Frederick Liu, Tamas Sarlos, and Adrian Weller. 2023. Dense-Exponential Random Features: Sharp Positive Estimators of the Gaussian Kernel. In Thirty-seventh Conference on Neural Information Processing Systems. https://openreview.net/forum?id=S0xrBMFihS [33] Tianyang Lin, Yuxin Wang, Xiangyang Liu, and Xipeng Qiu. 2022. A survey of transformers. AI Open 3 (2022), 111–132. doi:10.1016/j.aiopen.2022.10.001 [34] Drew Linsley, Junkyung Kim, Vijay Veerabadran, Charles Windolf, and Thomas Serre. 2018. Learning Long-Range Spatial Dependencies with Horizontal Gated Recurrent Units. In Advances in Neural Information Processing Systems, S. Bengio, H. Wallach, H. Larochelle, K. Grauman, N. Cesa-Bianchi, and R. Garnett (Eds.), Vol. 31. Curran Associates, Inc. [35] Tal Linzen, Grzegorz Chrupała, and Afra Alishahi (Eds.). 2018. GLUE: A Multi-Task Benchmark and Analysis Platform for Natural Language Understanding. Association for Computational Linguistics, Brussels, Belgium. doi:10.18653/v1/W18- 5446 [36] Fanghui Liu, Xiaolin Huang, Yudong Chen, and Johan A. K. Suykens. 2022. Random Features for Kernel Approximation: A Survey on Algorithms, Theory, and Beyond. IEEE Transactions on Pattern Analysis and Machine Intelligence 44, 10 (2022), 7128–7148. doi:10.1109/TPAMI.2021.3097011 [37] Yueming Lyu. 2017. Spherical Structured Feature Maps for Kernel Approximation. In Proceedings of the 34th International Conference on"
+  },
+  {
+    "paper_id": "2405.15310v5",
+    "title": "Spectraformer: A Unified Random Feature Framework for Transformer",
+    "page_num": 23,
+    "chunk_id": "2405.15310v5_page23_chunk3",
+    "text": "and Johan A. K. Suykens. 2022. Random Features for Kernel Approximation: A Survey on Algorithms, Theory, and Beyond. IEEE Transactions on Pattern Analysis and Machine Intelligence 44, 10 (2022), 7128–7148. doi:10.1109/TPAMI.2021.3097011 [37] Yueming Lyu. 2017. Spherical Structured Feature Maps for Kernel Approximation. In Proceedings of the 34th International Conference on Machine Learning (Proceedings of Machine Learning Research, Vol. 70), Doina Precup and Yee Whye Teh (Eds.). PMLR, 2256–2264. https://proceedings.mlr.press/v70/lyu17a.html [38] Yueming Lyu, Yuan Yuan, and Ivor Tsang. 2020. Subgroup-based Rank-1 Lattice Quasi-Monte Carlo. In Ad- vances in Neural Information Processing Systems, H. Larochelle, M. Ranzato, R. Hadsell, M.F. Balcan, and H. Lin (Eds.), Vol. 33. Curran Associates, Inc., 6269–6280. https://proceedings.neurips.cc/paper_files/paper/2020/file/ 456048afb7253926e1fbb7486e699180-Paper.pdf [39] Marina Munkhoeva, Yermek Kapushev, Evgeny Burnaev, and Ivan Oseledets. 2018. Quadrature-based features for kernel approximation. In Advances in Neural Information Processing Systems, S. Bengio, H. Wallach, H. Larochelle, K. Grauman, N. Cesa-Bianchi, and R. Garnett (Eds.), Vol. 31. Curran Associates, Inc. https://proceedings.neurips.cc/ paper_files/paper/2018/file/6e923226e43cd6fac7cfe1e13ad000ac-Paper.pdf [40] Nikita Nangia and Samuel Bowman. 2018. ListOps: A Diagnostic Dataset for Latent Tree Learning. In Proceedings of the 2018 Conference of the North American Chapter of the Association for Computational Linguistics: Student Research Workshop, Silvio Ricardo Cordeiro, Shereen Oraby, Umashanthi Pavalanathan, and Kyeongmin Rim"
+  },
+  {
+    "paper_id": "2405.15310v5",
+    "title": "Spectraformer: A Unified Random Feature Framework for Transformer",
+    "page_num": 23,
+    "chunk_id": "2405.15310v5_page23_chunk4",
+    "text": "Curran Associates, Inc. https://proceedings.neurips.cc/ paper_files/paper/2018/file/6e923226e43cd6fac7cfe1e13ad000ac-Paper.pdf [40] Nikita Nangia and Samuel Bowman. 2018. ListOps: A Diagnostic Dataset for Latent Tree Learning. In Proceedings of the 2018 Conference of the North American Chapter of the Association for Computational Linguistics: Student Research Workshop, Silvio Ricardo Cordeiro, Shereen Oraby, Umashanthi Pavalanathan, and Kyeongmin Rim (Eds.). Association for Computational Linguistics, New Orleans, Louisiana, USA, 92–99. doi:10.18653/v1/N18-4013 [41] Tan Nguyen, Minh Pham, Tam Nguyen, Khai Nguyen, Stanley Osher, and Nhat Ho. 2022. FourierFormer: Trans- former Meets Generalized Fourier Integral Theorem. In Advances in Neural Information Processing Systems, S. Koyejo, S. Mohamed, A. Agarwal, D. Belgrave, K. Cho, and A. Oh (Eds.), Vol. 35. Curran Associates, Inc., 29319–29335. https: //proceedings.neurips.cc/paper_files/paper/2022/file/bc968adbdff4a2551649d464b83f264a-Paper-Conference.pdf [42] Junier B. Oliva, Avinava Dubey, Andrew G. Wilson, Barnabas Poczos, Jeff Schneider, and Eric P. Xing. 2016. Bayesian Nonparametric Kernel-Learning. In Proceedings of the 19th International Conference on Artificial Intelligence and Statistics (Proceedings of Machine Learning Research, Vol. 51), Arthur Gretton and Christian C. Robert (Eds.). PMLR, Cadiz, Spain, 1078–1086. https://proceedings.mlr.press/v51/oliva16.html [43] Zhen Qin, Weixuan Sun, Hui Deng, Dongxu Li, Yunshen Wei, Baohong Lv, Junjie Yan, Lingpeng Kong, and Yiran Zhong. 2022. cosFormer: Rethinking Softmax in Attention. arXiv:2202.08791 [cs.CL] https://arxiv.org/abs/2202.08791 [44] Dragomir R. Radev, Pradeep Muthukrishnan,"
+  },
+  {
+    "paper_id": "2405.15310v5",
+    "title": "Spectraformer: A Unified Random Feature Framework for Transformer",
+    "page_num": 23,
+    "chunk_id": "2405.15310v5_page23_chunk5",
+    "text": "Research, Vol. 51), Arthur Gretton and Christian C. Robert (Eds.). PMLR, Cadiz, Spain, 1078–1086. https://proceedings.mlr.press/v51/oliva16.html [43] Zhen Qin, Weixuan Sun, Hui Deng, Dongxu Li, Yunshen Wei, Baohong Lv, Junjie Yan, Lingpeng Kong, and Yiran Zhong. 2022. cosFormer: Rethinking Softmax in Attention. arXiv:2202.08791 [cs.CL] https://arxiv.org/abs/2202.08791 [44] Dragomir R. Radev, Pradeep Muthukrishnan, Vahed Qazvinian, and Amjad Abu-Jbara. 2013. The ACL anthology network corpus. Language Resources and Evaluation 47, 4 (2013), 919–944. http://www.jstor.org/stable/42636383 J. ACM, Vol. 1, No. 1, Article . Publication date: September 2025."
+  },
+  {
+    "paper_id": "2405.15310v5",
+    "title": "Spectraformer: A Unified Random Feature Framework for Transformer",
+    "page_num": 24,
+    "chunk_id": "2405.15310v5_page24_chunk1",
+    "text": "24 Duke Nguyen, Du Yin, Aditya Joshi, and Flora Salim [45] Ali Rahimi and Benjamin Recht. 2007. Random Features for Large-Scale Kernel Machines. In Advances in Neural Information Processing Systems, J. Platt, D. Koller, Y. Singer, and S. Roweis (Eds.), Vol. 20. Curran Associates, Inc. https://proceedings.neurips.cc/paper_files/paper/2007/file/013a006f03dbc5392effeb8f18fda755-Paper.pdf [46] Isaac Reid, Krzysztof Marcin Choromanski, Valerii Likhosherstov, and Adrian Weller. 2023. Simplex Random Features. In Proceedings of the 40th International Conference on Machine Learning (Proceedings of Machine Learning Research, Vol. 202), Andreas Krause, Emma Brunskill, Kyunghyun Cho, Barbara Engelhardt, Sivan Sabato, and Jonathan Scarlett (Eds.). PMLR, 28864–28888. https://proceedings.mlr.press/v202/reid23a.html [47] Aurko Roy, Mohammad Saffar, Ashish Vaswani, and David Grangier. 2021. Efficient Content-Based Sparse Attention with Routing Transformers. Transactions of the Association for Computational Linguistics 9 (2021), 53–68. doi:10.1162/ tacl_a_00353 [48] Walter Rudin. 1990. The Basic Theorems of Fourier Analysis. John Wiley & Sons, Ltd, Chapter 1, 1–34. doi:10.1002/ 9781118165621.ch1 arXiv:https://onlinelibrary.wiley.com/doi/pdf/10.1002/9781118165621.ch1 [49] Bernhard Schölkopf and Alexander J Smola. 2018. Kernels. In Learning with Kernels: Support Vec- tor Machines, Regularization, Optimization, and Beyond. The MIT Press. doi:10.7551/mitpress/4175.003.0005 arXiv:https://direct.mit.edu/book/chapter-pdf/154459/9780262256933_cab.pdf [50] Weiwei Shen, Zhihui Yang, and Jun Wang. 2017. Random features for shift-invariant kernels with moment matching. In Proceedings of the Thirty-First AAAI Conference on Artificial Intelligence (San"
+  },
+  {
+    "paper_id": "2405.15310v5",
+    "title": "Spectraformer: A Unified Random Feature Framework for Transformer",
+    "page_num": 24,
+    "chunk_id": "2405.15310v5_page24_chunk2",
+    "text": "Alexander J Smola. 2018. Kernels. In Learning with Kernels: Support Vec- tor Machines, Regularization, Optimization, and Beyond. The MIT Press. doi:10.7551/mitpress/4175.003.0005 arXiv:https://direct.mit.edu/book/chapter-pdf/154459/9780262256933_cab.pdf [50] Weiwei Shen, Zhihui Yang, and Jun Wang. 2017. Random features for shift-invariant kernels with moment matching. In Proceedings of the Thirty-First AAAI Conference on Artificial Intelligence (San Francisco, California, USA) (AAAI’17). AAAI Press, 2520–2526. [51] Alex J. Smola and Bernhard Schökopf. 2000. Sparse Greedy Matrix Approximation for Machine Learning. In Proceedings of the Seventeenth International Conference on Machine Learning (ICML ’00). Morgan Kaufmann Publishers Inc., San Francisco, CA, USA, 911–918. [52] Kyungwoo Song, Yohan Jung, Dongjun Kim, and Il-Chul Moon. 2021. Implicit Kernel Attention. Proceedings of the AAAI Conference on Artificial Intelligence 35, 11 (May 2021), 9713–9721. doi:10.1609/aaai.v35i11.17168 [53] Yi Tay, Mostafa Dehghani, Samira Abnar, Yikang Shen, Dara Bahri, Philip Pham, Jinfeng Rao, Liu Yang, Sebastian Ruder, and Donald Metzler. 2021. Long Range Arena : A Benchmark for Efficient Transformers. In International Conference on Learning Representations. https://openreview.net/forum?id=qVyeW-grC2k [54] Yi Tay, Mostafa Dehghani, Dara Bahri, and Donald Metzler. 2022. Efficient Transformers: A Survey. ACM Comput. Surv. 55, 6, Article 109 (dec 2022), 28 pages. doi:10.1145/3530811 [55] Anna Thomas, Albert Gu, Tri Dao, Atri Rudra, and Christopher Ré. 2018."
+  },
+  {
+    "paper_id": "2405.15310v5",
+    "title": "Spectraformer: A Unified Random Feature Framework for Transformer",
+    "page_num": 24,
+    "chunk_id": "2405.15310v5_page24_chunk3",
+    "text": "for Efficient Transformers. In International Conference on Learning Representations. https://openreview.net/forum?id=qVyeW-grC2k [54] Yi Tay, Mostafa Dehghani, Dara Bahri, and Donald Metzler. 2022. Efficient Transformers: A Survey. ACM Comput. Surv. 55, 6, Article 109 (dec 2022), 28 pages. doi:10.1145/3530811 [55] Anna Thomas, Albert Gu, Tri Dao, Atri Rudra, and Christopher Ré. 2018. Learning Compressed Transforms with Low Displacement Rank. In Advances in Neural Information Processing Systems, S. Bengio, H. Wallach, H. Larochelle, K. Grauman, N. Cesa-Bianchi, and R. Garnett (Eds.), Vol. 31. Curran Associates, Inc. https://proceedings.neurips.cc/ paper_files/paper/2018/file/8e621619d71d0ae5ef4e631ad586334f-Paper.pdf [56] Anthony Tompkins, Ransalu Senanayake, Philippe Morere, and Fabio Ramos. 2019. Black Box Quantiles for Kernel Learning. In Proceedings of the Twenty-Second International Conference on Artificial Intelligence and Statistics (Proceedings of Machine Learning Research, Vol. 89), Kamalika Chaudhuri and Masashi Sugiyama (Eds.). PMLR, 1427–1437. https: //proceedings.mlr.press/v89/tompkins19a.html [57] Csaba Tóth, Harald Oberhauser, and Zoltán Szabó. 2025. Random Fourier Signature Features. SIAM Journal on Mathematics of Data Science 7, 1 (2025), 329–354. doi:10.1137/23M1620478 arXiv:https://doi.org/10.1137/23M1620478 [58] Yao-Hung Hubert Tsai, Shaojie Bai, Makoto Yamada, Louis-Philippe Morency, and Ruslan Salakhutdinov. 2019. Trans- former Dissection: An Unified Understanding for Transformer’s Attention via the Lens of Kernel. In Proceedings of the 2019 Conference on Empirical Methods in Natural Language Processing and the"
+  },
+  {
+    "paper_id": "2405.15310v5",
+    "title": "Spectraformer: A Unified Random Feature Framework for Transformer",
+    "page_num": 24,
+    "chunk_id": "2405.15310v5_page24_chunk4",
+    "text": "Science 7, 1 (2025), 329–354. doi:10.1137/23M1620478 arXiv:https://doi.org/10.1137/23M1620478 [58] Yao-Hung Hubert Tsai, Shaojie Bai, Makoto Yamada, Louis-Philippe Morency, and Ruslan Salakhutdinov. 2019. Trans- former Dissection: An Unified Understanding for Transformer’s Attention via the Lens of Kernel. In Proceedings of the 2019 Conference on Empirical Methods in Natural Language Processing and the 9th International Joint Conference on Natural Language Processing (EMNLP-IJCNLP), Kentaro Inui, Jing Jiang, Vincent Ng, and Xiaojun Wan (Eds.). Association for Computational Linguistics, Hong Kong, China, 4344–4353. doi:10.18653/v1/D19-1443 [59] Ashish Vaswani, Noam Shazeer, Niki Parmar, Jakob Uszkoreit, Llion Jones, Aidan N Gomez, Ł ukasz Kaiser, and Illia Polosukhin. 2017. Attention is All you Need. In Advances in Neural Information Processing Systems, I. Guyon, U. Von Luxburg, S. Bengio, H. Wallach, R. Fergus, S. Vishwanathan, and R. Garnett (Eds.), Vol. 30. Curran Associates, Inc. https://proceedings.neurips.cc/paper_files/paper/2017/file/3f5ee243547dee91fbd053c1c4a845aa-Paper.pdf [60] Sinong Wang, Belinda Z. Li, Madian Khabsa, Han Fang, and Hao Ma. 2020. Linformer: Self-Attention with Linear Complexity. arXiv:2006.04768 [cs.LG] [61] Tinghua Wang, Dongyan Zhao, and Shengfeng Tian. 2015. An overview of kernel alignment and its applications. Artificial Intelligence Review 43 (2015), 179–192. [62] Xiaolong Wang, Ross Girshick, Abhinav Gupta, and Kaiming He. 2018. Non-local Neural Networks. In 2018 IEEE/CVF Conference on Computer Vision and"
+  },
+  {
+    "paper_id": "2405.15310v5",
+    "title": "Spectraformer: A Unified Random Feature Framework for Transformer",
+    "page_num": 24,
+    "chunk_id": "2405.15310v5_page24_chunk5",
+    "text": "with Linear Complexity. arXiv:2006.04768 [cs.LG] [61] Tinghua Wang, Dongyan Zhao, and Shengfeng Tian. 2015. An overview of kernel alignment and its applications. Artificial Intelligence Review 43 (2015), 179–192. [62] Xiaolong Wang, Ross Girshick, Abhinav Gupta, and Kaiming He. 2018. Non-local Neural Networks. In 2018 IEEE/CVF Conference on Computer Vision and Pattern Recognition. 7794–7803. doi:10.1109/CVPR.2018.00813 [63] Laura Weidinger, John Mellor, Maribeth Rauh, Conor Griffin, Jonathan Uesato, Po-Sen Huang, Myra Cheng, Mia Glaese, Borja Balle, Atoosa Kasirzadeh, Zac Kenton, Sasha Brown, Will Hawkins, Tom Stepleton, Courtney Biles, Abeba Birhane, Julia Haas, Laura Rimell, Lisa Anne Hendricks, William Isaac, Sean Legassick, Geoffrey Irving, and Iason Gabriel. 2021. Ethical and social risks of harm from Language Models. arXiv:2112.04359 [cs.CL] J. ACM, Vol. 1, No. 1, Article . Publication date: September 2025."
+  },
+  {
+    "paper_id": "2405.15310v5",
+    "title": "Spectraformer: A Unified Random Feature Framework for Transformer",
+    "page_num": 25,
+    "chunk_id": "2405.15310v5_page25_chunk1",
+    "text": "Spectraformer: A Unified Random Feature Framework for Transformer 25 [64] Christopher Williams and Matthias Seeger. 2000. Using the Nyström Method to Speed Up Kernel Machines. In Advances in Neural Information Processing Systems, T. Leen, T. Dietterich, and V. Tresp (Eds.), Vol. 13. MIT Press. https://proceedings.neurips.cc/paper_files/paper/2000/file/19de10adbaa1b2ee13f77f679fa1483a-Paper.pdf [65] Andrew Wilson and Ryan Adams. 2013. Gaussian Process Kernels for Pattern Discovery and Extrapolation. In Proceedings of the 30th International Conference on Machine Learning (Proceedings of Machine Learning Research, Vol. 28), Sanjoy Dasgupta and David McAllester (Eds.). PMLR, Atlanta, Georgia, USA, 1067–1075. https://proceedings.mlr. press/v28/wilson13.html [66] Genta Indra Winata, Samuel Cahyawijaya, Zhaojiang Lin, Zihan Liu, and Pascale Fung. 2020. Lightweight and Efficient End-To-End Speech Recognition Using Low-Rank Transformer. In ICASSP 2020 - 2020 IEEE International Conference on Acoustics, Speech and Signal Processing (ICASSP). 6144–6148. doi:10.1109/ICASSP40776.2020.9053878 [67] Yunyang Xiong, Zhanpeng Zeng, Rudrasis Chakraborty, Mingxing Tan, Glenn Fung, Yin Li, and Vikas Singh. 2021. Nyströmformer: A Nyström-based Algorithm for Approximating Self-Attention. Proceedings of the AAAI Conference on Artificial Intelligence 35, 16 (May 2021), 14138–14148. doi:10.1609/aaai.v35i16.17664 [68] Zichao Yang, Andrew Wilson, Alex Smola, and Le Song. 2015. A la Carte – Learning Fast Kernels. In Proceedings of the Eighteenth International Conference on Artificial Intelligence and Statistics (Proceedings of"
+  },
+  {
+    "paper_id": "2405.15310v5",
+    "title": "Spectraformer: A Unified Random Feature Framework for Transformer",
+    "page_num": 25,
+    "chunk_id": "2405.15310v5_page25_chunk2",
+    "text": "Algorithm for Approximating Self-Attention. Proceedings of the AAAI Conference on Artificial Intelligence 35, 16 (May 2021), 14138–14148. doi:10.1609/aaai.v35i16.17664 [68] Zichao Yang, Andrew Wilson, Alex Smola, and Le Song. 2015. A la Carte – Learning Fast Kernels. In Proceedings of the Eighteenth International Conference on Artificial Intelligence and Statistics (Proceedings of Machine Learning Research, Vol. 38), Guy Lebanon and S. V. N. Vishwanathan (Eds.). PMLR, San Diego, California, USA, 1098–1106. https://proceedings.mlr.press/v38/yang15b.html [69] Junwen Yao, N. Benjamin Erichson, and Miles E. Lopes. 2023. Error Estimation for Random Fourier Features. In Proceedings of The 26th International Conference on Artificial Intelligence and Statistics (Proceedings of Machine Learning Research, Vol. 206), Francisco Ruiz, Jennifer Dy, and Jan-Willem van de Meent (Eds.). PMLR, 2348–2364. https: //proceedings.mlr.press/v206/yao23a.html [70] Felix X. Yu, Sanjiv Kumar, Henry Rowley, and Shih-Fu Chang. 2015. Compact Nonlinear Maps and Circulant Extensions. arXiv:1503.03893 [stat.ML] [71] Felix Xinnan X Yu, Ananda Theertha Suresh, Krzysztof M Choromanski, Daniel N Holtmann-Rice, and Sanjiv Kumar. 2016. Orthogonal Random Features. In Advances in Neural Information Processing Systems, D. Lee, M. Sugiyama, U. Luxburg, I. Guyon, and R. Garnett (Eds.), Vol. 29. Curran Associates, Inc. https://proceedings.neurips.cc/paper_ files/paper/2016/file/53adaf494dc89ef7196d73636eb2451b-Paper.pdf [72] Zitong Yu, Rizhao Cai, Yawen Cui, Xin Liu, Yongjian Hu, and Alex"
+  },
+  {
+    "paper_id": "2405.15310v5",
+    "title": "Spectraformer: A Unified Random Feature Framework for Transformer",
+    "page_num": 25,
+    "chunk_id": "2405.15310v5_page25_chunk3",
+    "text": "Choromanski, Daniel N Holtmann-Rice, and Sanjiv Kumar. 2016. Orthogonal Random Features. In Advances in Neural Information Processing Systems, D. Lee, M. Sugiyama, U. Luxburg, I. Guyon, and R. Garnett (Eds.), Vol. 29. Curran Associates, Inc. https://proceedings.neurips.cc/paper_ files/paper/2016/file/53adaf494dc89ef7196d73636eb2451b-Paper.pdf [72] Zitong Yu, Rizhao Cai, Yawen Cui, Xin Liu, Yongjian Hu, and Alex C Kot. 2024. Rethinking vision transformer and masked autoencoder in multimodal face anti-spoofing. International Journal of Computer Vision 132, 11 (2024), 5217–5238. [73] Kaishen Yuan, Zitong Yu, Xin Liu, Weicheng Xie, Huanjing Yue, and Jingyu Yang. 2025. AUFormer: Vision Transformers Are Parameter-Efficient Facial Action Unit Detectors. In Computer Vision – ECCV 2024, Aleš Leonardis, Elisa Ricci, Stefan Roth, Olga Russakovsky, Torsten Sattler, and Gül Varol (Eds.). Springer Nature Switzerland, Cham, 427–445. [74] Manzil Zaheer, Guru Guruganesh, Kumar Avinava Dubey, Joshua Ainslie, Chris Alberti, Santiago Ontanon, Philip Pham, Anirudh Ravula, Qifan Wang, Li Yang, and Amr Ahmed. 2020. Big Bird: Transformers for Longer Sequences. In Advances in Neural Information Processing Systems, H. Larochelle, M. Ranzato, R. Hadsell, M.F. Balcan, and H. Lin (Eds.), Vol. 33. Curran Associates, Inc., 17283–17297. https://proceedings.neurips.cc/paper_files/paper/2020/file/ c8512d142a2d849725f31a9a7a361ab9-Paper.pdf [75] Yuchen Zhang, John Duchi, and Martin Wainwright. 2013. Divide and Conquer Kernel Ridge Regression. In Proceedings of the 26th"
+  },
+  {
+    "paper_id": "2405.15310v5",
+    "title": "Spectraformer: A Unified Random Feature Framework for Transformer",
+    "page_num": 25,
+    "chunk_id": "2405.15310v5_page25_chunk4",
+    "text": "for Longer Sequences. In Advances in Neural Information Processing Systems, H. Larochelle, M. Ranzato, R. Hadsell, M.F. Balcan, and H. Lin (Eds.), Vol. 33. Curran Associates, Inc., 17283–17297. https://proceedings.neurips.cc/paper_files/paper/2020/file/ c8512d142a2d849725f31a9a7a361ab9-Paper.pdf [75] Yuchen Zhang, John Duchi, and Martin Wainwright. 2013. Divide and Conquer Kernel Ridge Regression. In Proceedings of the 26th Annual Conference on Learning Theory (Proceedings of Machine Learning Research, Vol. 30), Shai Shalev- Shwartz and Ingo Steinwart (Eds.). PMLR, Princeton, NJ, USA, 592–617. https://proceedings.mlr.press/v30/Zhang13. html [76] Haoyi Zhou, Shanghang Zhang, Jieqi Peng, Shuai Zhang, Jianxin Li, Hui Xiong, and Wancai Zhang. 2021. Informer: Beyond Efficient Transformer for Long Sequence Time-Series Forecasting. Proceedings of the AAAI Conference on Artificial Intelligence 35, 12 (May 2021), 11106–11115. doi:10.1609/aaai.v35i12.17325 J. ACM, Vol. 1, No. 1, Article . Publication date: September 2025."
+  },
+  {
+    "paper_id": "2405.15310v5",
+    "title": "Spectraformer: A Unified Random Feature Framework for Transformer",
+    "page_num": 26,
+    "chunk_id": "2405.15310v5_page26_chunk1",
+    "text": "26 Duke Nguyen, Du Yin, Aditya Joshi, and Flora Salim Appendix Table 6. Hyper-parameters for all Spectraformer experiments on the Long Range Arena (LRA) benchmark tasks. The settings follow Chen et al. [6] to ensure a fair comparison under limited computational power. ListOps (L) Text (T) Retrieval (R) Image (I) Pathfinder (P) Embedding dim. 64 Transformer dim 64 Hidden dim 128 Head dim 32 Num. heads 2 Num. layers 2 Vocabulary size 32 512 512 256 512 Sequence length 2000 4000 8000 1024 1024 Dropout rate 0.1 Att. dropout rate 0.1 Pooling mode mean Batch size 32 32 16 256 128 Learning rate 0.0001 0.0001 0.0002 0.0001 0.0002 Warmup steps 1000 80 800 175 312 Learning rate decay linear Weight decay 0 Evaluation freq. 500 500 1000 50 500 Num. epochs 50k Num. init steps 1k 3K 3k 0 3.5k Num. eval steps 62 200 300 20 156 Patience 10 Num. features {64, 128, 256, 512} Fig. 7. Efficiency of Training Time and Memory Usage w.r.t. Sequence Length for Different Number of Features. Only Text, Retrieval and Pathfinder data are used due to having the same number of labels (2) compared to ListOps and Image (10). J. ACM, Vol. 1,"
+  },
+  {
+    "paper_id": "2405.15310v5",
+    "title": "Spectraformer: A Unified Random Feature Framework for Transformer",
+    "page_num": 26,
+    "chunk_id": "2405.15310v5_page26_chunk2",
+    "text": "Num. features {64, 128, 256, 512} Fig. 7. Efficiency of Training Time and Memory Usage w.r.t. Sequence Length for Different Number of Features. Only Text, Retrieval and Pathfinder data are used due to having the same number of labels (2) compared to ListOps and Image (10). J. ACM, Vol. 1, No. 1, Article . Publication date: September 2025."
+  },
+  {
+    "paper_id": "2405.15310v5",
+    "title": "Spectraformer: A Unified Random Feature Framework for Transformer",
+    "page_num": 27,
+    "chunk_id": "2405.15310v5_page27_chunk1",
+    "text": "Spectraformer: A Unified Random Feature Framework for Transformer 27 Table 7. Detailed experimental results for all variants on the LRA benchmark over five seeds. We report mean accuracy, training time, and peak memory for feature dimensions (𝑑) of 64, 128, 256, and 512. L: ListOps, T: Text, R: Retrieval, I: Image, P: Pathfinder. Accuracy (%) ↑ Time (hour) ↓ Memory (GB) ↓ Model Variant 𝑑 L T R I P 𝜇 L T R I P 𝜇 L T R I P 𝜇 PosRF-FastFoodL 64 31.50 (6.32) 64.61 (0.29) 77.13 (0.99) 38.28 (0.43) 66.38 (0.71) 55.58 1.04 2.08 2.17 3.95 2.02 2.25 0.77 1.54 1.50 3.01 1.54 1.67 128 29.54 (5.46) 64.61 (0.29) 77.10 (1.02) 38.28 (0.43) 66.38 (0.71) 55.18 1.02 2.00 2.01 3.88 1.98 2.18 0.77 1.54 1.50 3.01 1.54 1.67 256 29.54 (5.46) 64.61 (0.29) 76.94 (0.77) 38.28 (0.43) 66.17 (0.29) 55.11 1.01 1.98 2.02 3.88 1.98 2.17 0.77 1.54 1.50 3.01 1.54 1.67 512 31.50 (6.32) 64.61 (0.29) 77.13 (0.99) 38.28 (0.43) 66.38 (0.71) 55.58 1.02 1.99 2.02 3.89 1.98 2.18 0.77 1.54 1.50 3.01 1.54 1.67 PosRF-ORF 64 37.51 (0.37) 60.46 (0.34) 80.68 (0.47) 34.41 (1.11) 66.93 (0.59) 56.00 0.48 0.80 0.81 1.52 0.80 0.88 0.76"
+  },
+  {
+    "paper_id": "2405.15310v5",
+    "title": "Spectraformer: A Unified Random Feature Framework for Transformer",
+    "page_num": 27,
+    "chunk_id": "2405.15310v5_page27_chunk2",
+    "text": "0.77 1.54 1.50 3.01 1.54 1.67 512 31.50 (6.32) 64.61 (0.29) 77.13 (0.99) 38.28 (0.43) 66.38 (0.71) 55.58 1.02 1.99 2.02 3.89 1.98 2.18 0.77 1.54 1.50 3.01 1.54 1.67 PosRF-ORF 64 37.51 (0.37) 60.46 (0.34) 80.68 (0.47) 34.41 (1.11) 66.93 (0.59) 56.00 0.48 0.80 0.81 1.52 0.80 0.88 0.76 1.51 1.42 2.99 1.50 1.64 128 34.50 (6.49) 61.10 (1.76) 80.53 (0.33) 33.72 (1.03) 65.52 (4.89) 55.07 0.56 1.05 1.06 2.02 1.06 1.15 1.14 2.26 2.05 4.49 2.26 2.44 256 37.31 (0.51) 62.19 (1.82) 80.73 (0.59) 32.82 (0.42) 64.22 (4.62) 55.46 0.78 1.54 1.55 3.06 1.55 1.70 1.89 3.76 3.31 7.50 3.76 4.04 512 37.13 (0.15) 61.34 (1.23) 80.30 (0.27) 33.79 (1.11) 67.35 (0.31) 55.98 1.22 2.55 2.49 5.07 2.53 2.77 3.40 6.77 5.82 13.52 6.77 7.26 PosRF-SORF 64 25.26 (8.01) 63.50 (0.63) 67.91 (0.39) 28.45 (0.81) 49.88 (0.13) 47.00 0.48 0.80 0.81 1.52 0.80 0.89 0.76 1.51 1.42 2.99 1.50 1.64 128 21.91 (5.98) 62.06 (1.36) 66.33 (0.41) 28.70 (3.87) 52.37 (5.24) 46.27 0.55 1.06 1.06 2.00 1.05 1.14 1.14 2.26 2.05 4.49 2.26 2.44 256 20.63 (3.02) 61.10 (1.11) 65.81 (0.78) 26.52 (2.40) 50.12 (0.36) 44.84 0.78 1.54 1.56 3.05 1.55 1.69 1.89 3.76 3.30 7.50 3.76 4.04"
+  },
+  {
+    "paper_id": "2405.15310v5",
+    "title": "Spectraformer: A Unified Random Feature Framework for Transformer",
+    "page_num": 27,
+    "chunk_id": "2405.15310v5_page27_chunk3",
+    "text": "1.50 1.64 128 21.91 (5.98) 62.06 (1.36) 66.33 (0.41) 28.70 (3.87) 52.37 (5.24) 46.27 0.55 1.06 1.06 2.00 1.05 1.14 1.14 2.26 2.05 4.49 2.26 2.44 256 20.63 (3.02) 61.10 (1.11) 65.81 (0.78) 26.52 (2.40) 50.12 (0.36) 44.84 0.78 1.54 1.56 3.05 1.55 1.69 1.89 3.76 3.30 7.50 3.76 4.04 512 20.21 (2.70) 61.48 (0.40) 65.12 (1.11) 25.77 (0.64) 50.05 (0.28) 44.53 1.22 2.56 2.50 5.07 2.54 2.78 3.40 6.77 5.82 13.52 6.77 7.26 PosRF-QMC 64 37.02 (0.17) 61.25 (1.67) 80.71 (0.58) 34.42 (1.36) 67.17 (0.35) 56.11 0.48 0.80 0.81 1.52 0.81 0.89 0.76 1.51 1.42 2.99 1.50 1.64 128 37.05 (0.16) 60.93 (0.59) 80.67 (0.29) 34.03 (0.94) 67.25 (0.44) 55.99 0.55 1.05 1.05 1.99 1.05 1.14 1.14 2.26 2.05 4.49 2.26 2.44 256 37.22 (0.13) 61.53 (1.43) 80.67 (0.32) 34.47 (0.71) 62.93 (5.13) 55.36 0.78 1.54 1.56 3.04 1.55 1.69 1.89 3.76 3.30 7.50 3.76 4.04 512 37.06 (0.63) 61.92 (1.91) 80.66 (0.24) 34.03 (0.55) 66.85 (0.70) 56.10 1.22 2.56 2.50 5.07 2.53 2.78 3.40 6.77 5.82 13.52 6.77 7.26 PosRF-MM 64 37.06 (0.10) 60.35 (1.02) 80.83 (0.18) 33.55 (1.07) 64.76 (4.63) 55.31 0.48 0.80 0.81 1.51 0.80 0.88 0.76 1.51 1.42 2.99 1.50 1.64 128 37.13 (0.27) 62.88"
+  },
+  {
+    "paper_id": "2405.15310v5",
+    "title": "Spectraformer: A Unified Random Feature Framework for Transformer",
+    "page_num": 27,
+    "chunk_id": "2405.15310v5_page27_chunk4",
+    "text": "61.92 (1.91) 80.66 (0.24) 34.03 (0.55) 66.85 (0.70) 56.10 1.22 2.56 2.50 5.07 2.53 2.78 3.40 6.77 5.82 13.52 6.77 7.26 PosRF-MM 64 37.06 (0.10) 60.35 (1.02) 80.83 (0.18) 33.55 (1.07) 64.76 (4.63) 55.31 0.48 0.80 0.81 1.51 0.80 0.88 0.76 1.51 1.42 2.99 1.50 1.64 128 37.13 (0.27) 62.88 (1.17) 80.58 (0.44) 33.82 (0.51) 67.11 (0.45) 56.30 0.56 1.05 1.06 2.02 1.05 1.15 1.14 2.26 2.05 4.49 2.26 2.44 256 37.14 (0.16) 62.66 (1.48) 80.10 (0.42) 33.71 (1.41) 64.43 (5.05) 55.61 0.77 1.54 1.54 3.03 1.55 1.69 1.89 3.76 3.30 7.50 3.76 4.04 512 34.31 (6.23) 62.78 (1.49) 80.32 (0.29) 33.14 (1.20) 64.97 (4.38) 55.10 1.22 2.55 2.50 5.09 2.54 2.78 3.40 6.77 5.82 13.52 6.77 7.26 PosRF-SGQ 64 34.40 (6.21) 63.04 (0.70) 78.11 (0.46) 37.26 (0.63) 57.72 (8.55) 54.10 0.48 0.80 0.81 1.52 0.80 0.88 0.76 1.51 1.42 2.99 1.50 1.64 128 28.81 (7.77) 62.30 (0.47) 78.31 (0.39) 37.96 (0.76) 59.71 (7.87) 53.42 0.56 1.06 1.05 2.01 1.06 1.15 1.14 2.26 2.05 4.49 2.26 2.44 256 31.58 (7.71) 62.26 (0.36) 78.28 (0.27) 37.90 (0.58) 57.46 (5.25) 53.50 0.78 1.54 1.55 3.03 1.56 1.69 1.89 3.76 3.30 7.50 3.76 4.04 512 31.52 (7.60) 62.57 (0.64) 78.02 (0.33) 37.42 (0.51)"
+  },
+  {
+    "paper_id": "2405.15310v5",
+    "title": "Spectraformer: A Unified Random Feature Framework for Transformer",
+    "page_num": 27,
+    "chunk_id": "2405.15310v5_page27_chunk5",
+    "text": "37.96 (0.76) 59.71 (7.87) 53.42 0.56 1.06 1.05 2.01 1.06 1.15 1.14 2.26 2.05 4.49 2.26 2.44 256 31.58 (7.71) 62.26 (0.36) 78.28 (0.27) 37.90 (0.58) 57.46 (5.25) 53.50 0.78 1.54 1.55 3.03 1.56 1.69 1.89 3.76 3.30 7.50 3.76 4.04 512 31.52 (7.60) 62.57 (0.64) 78.02 (0.33) 37.42 (0.51) 53.87 (3.06) 52.68 1.22 2.55 2.49 5.07 2.54 2.78 3.40 6.77 5.82 13.52 6.77 7.26 OPRF-FastFoodL 64 37.92 (0.39) 64.32 (0.61) 77.86 (1.37) 38.18 (0.71) 66.76 (0.39) 57.01 1.06 2.06 2.11 4.02 2.05 2.26 0.84 1.68 1.64 3.26 1.68 1.82 128 37.73 (0.28) 64.32 (0.61) 78.65 (1.94) 38.41 (0.66) 66.76 (0.39) 57.17 1.07 2.07 2.11 4.02 2.05 2.26 0.84 1.68 1.64 3.26 1.68 1.82 256 37.90 (0.36) 64.32 (0.61) 77.32 (0.22) 38.41 (0.66) 66.60 (0.15) 56.91 1.06 2.06 2.11 4.01 2.05 2.26 0.84 1.68 1.64 3.26 1.67 1.82 512 37.92 (0.39) 64.32 (0.61) 77.86 (1.37) 38.41 (0.66) 66.76 (0.39) 57.05 1.06 2.06 2.12 4.05 2.07 2.27 0.84 1.68 1.64 3.26 1.68 1.82 OPRF-ORF 64 38.03 (0.41) 60.29 (0.58) 80.81 (0.35) 34.43 (0.49) 66.82 (0.74) 56.08 0.55 0.92 0.93 1.76 0.93 1.02 0.86 1.70 1.65 3.37 1.70 1.86 128 38.05 (0.78) 60.18 (0.49) 81.19 (0.23) 33.70 (0.57) 67.24 (0.88) 56.07 0.68"
+  },
+  {
+    "paper_id": "2405.15310v5",
+    "title": "Spectraformer: A Unified Random Feature Framework for Transformer",
+    "page_num": 27,
+    "chunk_id": "2405.15310v5_page27_chunk6",
+    "text": "1.06 2.06 2.12 4.05 2.07 2.27 0.84 1.68 1.64 3.26 1.68 1.82 OPRF-ORF 64 38.03 (0.41) 60.29 (0.58) 80.81 (0.35) 34.43 (0.49) 66.82 (0.74) 56.08 0.55 0.92 0.93 1.76 0.93 1.02 0.86 1.70 1.65 3.37 1.70 1.86 128 38.05 (0.78) 60.18 (0.49) 81.19 (0.23) 33.70 (0.57) 67.24 (0.88) 56.07 0.68 1.26 1.24 2.47 1.29 1.39 1.33 2.64 2.50 5.25 2.64 2.87 256 37.67 (0.26) 60.95 (1.38) 80.76 (0.50) 33.29 (0.50) 64.66 (4.82) 55.47 0.98 1.92 1.86 4.21 2.11 2.22 2.27 4.52 4.19 9.01 4.52 4.90 512 37.68 (0.27) 60.07 (0.49) 80.61 (0.20) 34.01 (1.34) 66.92 (0.26) 55.86 1.63 3.34 3.11 7.72 3.55 3.87 4.15 8.28 7.58 16.53 8.28 8.96 OPRF-SORF 64 27.60 (3.10) 65.22 (0.18) 70.73 (1.65) 35.49 (2.67) 50.41 (0.50) 49.89 0.55 0.93 0.94 1.77 0.93 1.02 0.86 1.70 1.65 3.37 1.70 1.86 128 29.59 (3.77) 64.81 (0.22) 77.12 (0.78) 37.42 (0.47) 63.98 (5.38) 54.58 0.68 1.26 1.24 2.42 1.28 1.38 1.33 2.64 2.50 5.25 2.64 2.87 256 28.33 (5.15) 64.72 (0.31) 77.59 (0.95) 37.34 (1.16) 63.13 (3.80) 54.22 0.98 1.92 1.86 4.23 2.11 2.22 2.27 4.52 4.19 9.01 4.52 4.90 512 25.64 (1.89) 64.82 (0.27) 76.97 (0.68) 37.89 (0.70) 65.99 (0.50) 54.26 1.63 3.34 3.10 7.73 3.54 3.87"
+  },
+  {
+    "paper_id": "2405.15310v5",
+    "title": "Spectraformer: A Unified Random Feature Framework for Transformer",
+    "page_num": 27,
+    "chunk_id": "2405.15310v5_page27_chunk7",
+    "text": "1.28 1.38 1.33 2.64 2.50 5.25 2.64 2.87 256 28.33 (5.15) 64.72 (0.31) 77.59 (0.95) 37.34 (1.16) 63.13 (3.80) 54.22 0.98 1.92 1.86 4.23 2.11 2.22 2.27 4.52 4.19 9.01 4.52 4.90 512 25.64 (1.89) 64.82 (0.27) 76.97 (0.68) 37.89 (0.70) 65.99 (0.50) 54.26 1.63 3.34 3.10 7.73 3.54 3.87 4.15 8.28 7.58 16.53 8.28 8.96 OPRF-QMC 64 38.07 (0.69) 60.52 (0.62) 80.45 (0.69) 34.33 (1.02) 67.04 (0.18) 56.08 0.55 0.92 0.94 1.77 0.94 1.03 0.86 1.70 1.65 3.37 1.70 1.86 128 37.86 (0.40) 60.87 (1.85) 80.44 (0.20) 33.87 (0.69) 66.81 (0.68) 55.97 0.68 1.26 1.24 2.43 1.28 1.38 1.33 2.64 2.50 5.25 2.64 2.87 256 37.55 (0.06) 60.16 (0.65) 80.45 (0.22) 34.35 (0.40) 62.75 (5.33) 55.05 0.98 1.93 1.87 4.24 2.12 2.23 2.27 4.52 4.19 9.01 4.52 4.90 512 37.83 (0.58) 59.84 (0.87) 80.24 (0.83) 33.80 (0.56) 66.57 (0.90) 55.66 1.64 3.34 3.11 7.74 3.53 3.87 4.15 8.28 7.58 16.53 8.28 8.96 OPRF-MM 64 37.90 (0.66) 60.29 (0.61) 80.97 (0.31) 33.61 (0.62) 66.08 (2.11) 55.77 0.55 0.92 0.93 1.76 0.93 1.02 0.86 1.70 1.65 3.37 1.70 1.86 128 38.31 (0.38) 60.01 (1.01) 81.03 (0.31) 33.93 (0.85) 65.17 (5.17) 55.69 0.68 1.26 1.29 2.47 1.28 1.40 1.33 2.64 2.50 5.25"
+  },
+  {
+    "paper_id": "2405.15310v5",
+    "title": "Spectraformer: A Unified Random Feature Framework for Transformer",
+    "page_num": 27,
+    "chunk_id": "2405.15310v5_page27_chunk8",
+    "text": "16.53 8.28 8.96 OPRF-MM 64 37.90 (0.66) 60.29 (0.61) 80.97 (0.31) 33.61 (0.62) 66.08 (2.11) 55.77 0.55 0.92 0.93 1.76 0.93 1.02 0.86 1.70 1.65 3.37 1.70 1.86 128 38.31 (0.38) 60.01 (1.01) 81.03 (0.31) 33.93 (0.85) 65.17 (5.17) 55.69 0.68 1.26 1.29 2.47 1.28 1.40 1.33 2.64 2.50 5.25 2.64 2.87 256 37.59 (0.47) 60.27 (0.67) 80.94 (0.46) 33.47 (0.87) 63.15 (5.61) 55.09 0.98 1.92 1.87 4.23 2.10 2.22 2.27 4.52 4.19 9.01 4.52 4.90 512 37.73 (0.25) 60.39 (2.04) 80.82 (0.28) 33.49 (0.76) 66.43 (1.27) 55.77 1.63 3.33 3.09 7.71 3.54 3.86 4.15 8.28 7.58 16.53 8.28 8.96 OPRF-SGQ 64 37.66 (0.52) 61.25 (0.50) 78.68 (0.83) 36.64 (1.33) 59.77 (6.20) 54.80 0.55 0.92 0.93 1.76 0.93 1.02 0.86 1.70 1.65 3.37 1.70 1.86 128 37.08 (0.56) 61.09 (0.77) 79.39 (0.94) 36.68 (0.28) 67.53 (2.79) 56.35 0.68 1.27 1.25 2.46 1.29 1.39 1.33 2.64 2.50 5.25 2.64 2.87 256 37.16 (0.28) 61.36 (0.36) 79.24 (0.11) 36.34 (1.11) 65.11 (5.13) 55.84 0.98 1.92 1.87 4.22 2.11 2.22 2.27 4.52 4.19 9.01 4.52 4.90 512 37.20 (0.51) 61.37 (0.25) 79.27 (0.37) 36.91 (1.24) 64.75 (4.87) 55.90 1.63 3.34 3.10 7.72 3.53 3.86 4.15 8.28 7.58 16.53 8.28 8.96 SADERF-FastFoodL 64 29.72"
+  },
+  {
+    "paper_id": "2405.15310v5",
+    "title": "Spectraformer: A Unified Random Feature Framework for Transformer",
+    "page_num": 27,
+    "chunk_id": "2405.15310v5_page27_chunk9",
+    "text": "37.16 (0.28) 61.36 (0.36) 79.24 (0.11) 36.34 (1.11) 65.11 (5.13) 55.84 0.98 1.92 1.87 4.22 2.11 2.22 2.27 4.52 4.19 9.01 4.52 4.90 512 37.20 (0.51) 61.37 (0.25) 79.27 (0.37) 36.91 (1.24) 64.75 (4.87) 55.90 1.63 3.34 3.10 7.72 3.53 3.86 4.15 8.28 7.58 16.53 8.28 8.96 SADERF-FastFoodL 64 29.72 (7.27) 64.71 (0.45) 75.92 (1.17) 38.38 (0.82) 65.97 (0.88) 54.94 1.09 2.12 2.16 4.05 2.05 2.30 0.90 1.80 1.75 3.52 1.80 1.95 128 29.72 (7.27) 64.71 (0.45) 77.50 (0.96) 38.38 (0.82) 66.47 (1.47) 55.35 1.09 2.09 2.18 4.05 2.06 2.29 0.90 1.80 1.76 3.52 1.80 1.96 256 29.72 (7.27) 64.71 (0.45) 76.25 (0.73) 38.05 (1.18) 65.97 (0.88) 54.94 1.07 2.07 2.16 4.04 2.05 2.28 0.90 1.80 1.75 3.52 1.80 1.95 512 29.72 (7.27) 64.71 (0.45) 76.64 (1.59) 38.38 (0.82) 65.97 (0.88) 55.08 1.06 2.07 2.16 4.06 2.06 2.29 0.90 1.80 1.76 3.52 1.80 1.95 SADERF-ORF 64 37.19 (0.61) 60.33 (2.13) 80.83 (0.25) 33.68 (1.23) 66.96 (0.81) 55.80 0.56 0.92 0.98 1.76 0.92 1.03 0.93 1.85 1.78 3.68 1.85 2.02 128 37.41 (0.45) 59.92 (0.90) 81.05 (0.18) 33.06 (1.02) 67.11 (0.56) 55.71 0.69 1.25 1.28 2.50 1.28 1.40 1.40 2.79 2.63 5.56 2.79 3.04 256 33.98 (6.41) 60.05 (0.78) 80.96 (0.17)"
+  },
+  {
+    "paper_id": "2405.15310v5",
+    "title": "Spectraformer: A Unified Random Feature Framework for Transformer",
+    "page_num": 27,
+    "chunk_id": "2405.15310v5_page27_chunk10",
+    "text": "80.83 (0.25) 33.68 (1.23) 66.96 (0.81) 55.80 0.56 0.92 0.98 1.76 0.92 1.03 0.93 1.85 1.78 3.68 1.85 2.02 128 37.41 (0.45) 59.92 (0.90) 81.05 (0.18) 33.06 (1.02) 67.11 (0.56) 55.71 0.69 1.25 1.28 2.50 1.28 1.40 1.40 2.79 2.63 5.56 2.79 3.04 256 33.98 (6.41) 60.05 (0.78) 80.96 (0.17) 33.27 (0.89) 62.91 (5.16) 54.23 0.96 1.92 1.93 4.26 2.10 2.23 2.34 4.67 4.32 9.32 4.67 5.07 512 34.45 (6.19) 61.68 (2.08) 80.62 (0.16) 33.31 (1.60) 64.53 (4.48) 54.92 1.59 3.34 3.13 7.75 3.53 3.87 4.23 8.43 7.71 16.84 8.43 9.13 SADERF-SORF 64 26.42 (4.53) 65.22 (0.20) 68.74 (1.05) 33.39 (1.21) 50.31 (0.49) 48.82 0.56 0.92 0.98 1.76 0.92 1.03 0.93 1.85 1.78 3.68 1.85 2.02 128 34.31 (2.50) 64.82 (0.26) 75.24 (1.12) 36.76 (1.22) 60.98 (4.90) 54.42 0.68 1.25 1.28 2.47 1.26 1.39 1.40 2.79 2.63 5.56 2.79 3.04 256 32.36 (6.74) 64.92 (0.18) 76.65 (1.04) 36.73 (0.78) 58.76 (3.42) 53.88 0.96 1.91 1.91 4.25 2.10 2.23 2.34 4.67 4.32 9.32 4.67 5.07 512 31.60 (2.32) 64.85 (0.16) 76.99 (0.49) 37.23 (1.08) 61.54 (4.79) 54.44 1.60 3.35 3.14 7.74 3.52 3.87 4.23 8.43 7.71 16.84 8.43 9.13 SADERF-QMC 64 37.35 (0.40) 60.76 (1.74) 80.93 (0.20) 34.55 (1.23) 66.60 (1.77)"
+  },
+  {
+    "paper_id": "2405.15310v5",
+    "title": "Spectraformer: A Unified Random Feature Framework for Transformer",
+    "page_num": 27,
+    "chunk_id": "2405.15310v5_page27_chunk11",
+    "text": "(3.42) 53.88 0.96 1.91 1.91 4.25 2.10 2.23 2.34 4.67 4.32 9.32 4.67 5.07 512 31.60 (2.32) 64.85 (0.16) 76.99 (0.49) 37.23 (1.08) 61.54 (4.79) 54.44 1.60 3.35 3.14 7.74 3.52 3.87 4.23 8.43 7.71 16.84 8.43 9.13 SADERF-QMC 64 37.35 (0.40) 60.76 (1.74) 80.93 (0.20) 34.55 (1.23) 66.60 (1.77) 56.04 0.56 0.91 0.99 1.78 0.93 1.04 0.93 1.85 1.78 3.68 1.85 2.02 128 37.18 (0.47) 60.61 (2.06) 80.67 (0.44) 34.55 (0.63) 67.32 (0.40) 56.07 0.68 1.24 1.28 2.47 1.26 1.39 1.40 2.79 2.63 5.56 2.79 3.04 256 37.42 (0.45) 60.01 (0.63) 80.94 (0.31) 34.50 (0.64) 64.89 (4.75) 55.55 0.96 1.92 1.91 4.25 2.09 2.23 2.34 4.67 4.32 9.32 4.67 5.07 512 36.95 (0.46) 59.56 (1.23) 80.36 (0.76) 34.21 (1.28) 61.78 (5.53) 54.57 1.60 3.34 3.13 7.75 3.56 3.88 4.23 8.43 7.71 16.84 8.43 9.13 SADERF-MM 64 34.65 (5.94) 60.48 (3.13) 80.76 (0.29) 32.92 (0.95) 64.85 (4.74) 54.73 0.56 0.92 0.98 1.76 0.92 1.03 0.93 1.85 1.78 3.68 1.85 2.02 128 37.17 (0.27) 60.81 (1.82) 81.05 (0.20) 34.03 (1.04) 65.31 (4.85) 55.67 0.69 1.25 1.28 2.49 1.28 1.40 1.40 2.79 2.63 5.56 2.79 3.04 256 37.15 (0.64) 60.69 (1.64) 80.83 (0.19) 33.06 (0.82) 62.91 (5.97) 54.93 0.95 1.91 1.91 4.24"
+  },
+  {
+    "paper_id": "2405.15310v5",
+    "title": "Spectraformer: A Unified Random Feature Framework for Transformer",
+    "page_num": 27,
+    "chunk_id": "2405.15310v5_page27_chunk12",
+    "text": "0.98 1.76 0.92 1.03 0.93 1.85 1.78 3.68 1.85 2.02 128 37.17 (0.27) 60.81 (1.82) 81.05 (0.20) 34.03 (1.04) 65.31 (4.85) 55.67 0.69 1.25 1.28 2.49 1.28 1.40 1.40 2.79 2.63 5.56 2.79 3.04 256 37.15 (0.64) 60.69 (1.64) 80.83 (0.19) 33.06 (0.82) 62.91 (5.97) 54.93 0.95 1.91 1.91 4.24 2.08 2.22 2.34 4.67 4.32 9.32 4.67 5.07 512 37.69 (0.74) 61.38 (2.25) 80.81 (0.26) 33.63 (0.84) 64.97 (4.43) 55.70 1.59 3.33 3.13 7.73 3.53 3.86 4.23 8.43 7.71 16.84 8.43 9.13 SADERF-SGQ 64 34.19 (6.27) 62.69 (0.75) 77.96 (0.68) 37.81 (0.43) 59.31 (6.87) 54.39 0.56 0.92 0.98 1.77 0.92 1.03 0.93 1.85 1.78 3.68 1.85 2.02 128 37.22 (0.28) 62.86 (0.96) 78.51 (0.68) 37.82 (0.59) 61.27 (5.38) 55.54 0.68 1.25 1.28 2.50 1.27 1.39 1.40 2.79 2.63 5.56 2.79 3.04 256 37.18 (0.31) 63.66 (0.22) 77.94 (0.44) 37.62 (0.55) 62.61 (3.12) 55.80 0.97 1.94 1.93 4.28 2.11 2.24 2.34 4.67 4.32 9.32 4.67 5.07 512 37.08 (0.10) 62.92 (0.79) 78.40 (0.80) 37.89 (0.30) 65.79 (0.84) 56.42 1.60 3.35 3.14 7.75 3.53 3.88 4.23 8.43 7.71 16.84 8.43 9.13 J. ACM, Vol. 1, No. 1, Article . Publication date: September 2025."
+  },
+  {
+    "paper_id": "2405.15310v5",
+    "title": "Spectraformer: A Unified Random Feature Framework for Transformer",
+    "page_num": 27,
+    "chunk_id": "2405.15310v5_page27_chunk13",
+    "text": "4.67 4.32 9.32 4.67 5.07 512 37.08 (0.10) 62.92 (0.79) 78.40 (0.80) 37.89 (0.30) 65.79 (0.84) 56.42 1.60 3.35 3.14 7.75 3.53 3.88 4.23 8.43 7.71 16.84 8.43 9.13 J. ACM, Vol. 1, No. 1, Article . Publication date: September 2025."
+  },
+  {
+    "paper_id": "2405.15310v5",
+    "title": "Spectraformer: A Unified Random Feature Framework for Transformer",
+    "page_num": 28,
+    "chunk_id": "2405.15310v5_page28_chunk1",
+    "text": "28 Duke Nguyen, Du Yin, Aditya Joshi, and Flora Salim Table 8. Summary statistics across component functions (𝑓) and weight matrices (𝑊) for 64, 128, 256, and 512 feature settings. The original four tables have been consolidated for clarity and compactness. We report mean accuracy (test set %), mean training time (hours), and mean peak memory consumption (GB). Tasks are abbreviated as 𝐿: ListOps, 𝑇: Text, 𝑅: Retrieval, 𝐼: Image, 𝑃: Pathfinder, and 𝜇for the average. Type Method Features Accuracy (%) ↑ Time (hour) ↓ Memory (GB) ↓ L T R I P 𝜇 L T R I P 𝜇 L T R I P 𝜇 𝑓 PosRF 64 33.79 62.20 77.56 34.39 62.14 54.02 0.57 1.02 1.04 1.93 1.01 1.11 0.76 1.51 1.43 2.99 1.51 1.64 128 31.49 62.32 77.25 34.42 63.06 53.71 0.63 1.21 1.21 2.32 1.21 1.32 1.08 2.14 1.96 4.25 2.14 2.31 256 32.24 62.39 77.09 33.95 60.89 53.31 0.82 1.61 1.63 3.18 1.62 1.77 1.70 3.39 3.00 6.75 3.39 3.65 512 31.95 62.45 76.89 33.74 61.58 53.16 1.19 2.46 2.41 4.88 2.44 2.68 2.96 5.90 5.07 11.77 5.90 6.33 OPRF 64 36.20 61.98 78.25 35.45 62.81 54.94 0.63 1.11 1.13 2.14 1.12 1.23 0.86 1.70"
+  },
+  {
+    "paper_id": "2405.15310v5",
+    "title": "Spectraformer: A Unified Random Feature Framework for Transformer",
+    "page_num": 28,
+    "chunk_id": "2405.15310v5_page28_chunk2",
+    "text": "33.95 60.89 53.31 0.82 1.61 1.63 3.18 1.62 1.77 1.70 3.39 3.00 6.75 3.39 3.65 512 31.95 62.45 76.89 33.74 61.58 53.16 1.19 2.46 2.41 4.88 2.44 2.68 2.96 5.90 5.07 11.77 5.90 6.33 OPRF 64 36.20 61.98 78.25 35.45 62.81 54.94 0.63 1.11 1.13 2.14 1.12 1.23 0.86 1.70 1.65 3.35 1.69 1.85 128 36.44 61.88 79.64 35.67 66.25 55.97 0.74 1.40 1.40 2.71 1.41 1.53 1.25 2.48 2.36 4.92 2.48 2.70 256 36.03 61.97 79.38 35.53 64.23 55.43 0.99 1.94 1.91 4.19 2.10 2.23 2.03 4.05 3.77 8.05 4.04 4.39 512 35.67 61.80 79.30 35.75 66.24 55.75 1.54 3.12 2.94 7.11 3.29 3.60 3.60 7.18 6.59 14.32 7.18 7.77 SADERF 64 33.25 62.36 77.53 35.12 62.34 54.12 0.65 1.12 1.18 2.15 1.11 1.24 0.93 1.84 1.78 3.66 1.84 2.01 128 35.50 62.29 79.01 35.77 64.74 55.46 0.75 1.39 1.43 2.75 1.40 1.54 1.32 2.63 2.48 5.22 2.63 2.86 256 34.63 62.34 78.93 35.54 63.01 54.89 0.98 1.94 1.96 4.22 2.09 2.24 2.10 4.19 3.89 8.36 4.19 4.55 512 34.58 62.52 78.97 35.86 64.10 55.33 1.51 3.13 2.97 7.11 3.29 3.58 3.67 7.32 6.72 14.54 7.33 7.87 𝑊 FastFoodL 64 33.05 64.55 76.97 38.28 66.37 55.84 1.06 2.09 2.15"
+  },
+  {
+    "paper_id": "2405.15310v5",
+    "title": "Spectraformer: A Unified Random Feature Framework for Transformer",
+    "page_num": 28,
+    "chunk_id": "2405.15310v5_page28_chunk3",
+    "text": "256 34.63 62.34 78.93 35.54 63.01 54.89 0.98 1.94 1.96 4.22 2.09 2.24 2.10 4.19 3.89 8.36 4.19 4.55 512 34.58 62.52 78.97 35.86 64.10 55.33 1.51 3.13 2.97 7.11 3.29 3.58 3.67 7.32 6.72 14.54 7.33 7.87 𝑊 FastFoodL 64 33.05 64.55 76.97 38.28 66.37 55.84 1.06 2.09 2.15 4.01 2.04 2.27 0.84 1.67 1.63 3.26 1.67 1.82 128 32.33 64.55 77.75 38.35 66.54 55.90 1.06 2.05 2.10 3.99 2.03 2.25 0.84 1.67 1.63 3.26 1.67 1.82 256 32.38 64.55 76.83 38.25 66.25 55.65 1.05 2.03 2.10 3.98 2.03 2.24 0.84 1.67 1.63 3.26 1.67 1.82 512 33.05 64.55 77.21 38.35 66.37 55.91 1.05 2.04 2.10 4.00 2.04 2.25 0.84 1.67 1.63 3.26 1.67 1.82 MM 64 36.54 60.37 80.85 33.36 65.23 55.27 0.53 0.88 0.91 1.68 0.88 0.97 0.85 1.69 1.62 3.35 1.68 1.84 128 37.53 61.23 80.89 33.93 65.86 55.89 0.64 1.19 1.21 2.33 1.21 1.32 1.29 2.56 2.39 5.10 2.56 2.78 256 37.29 61.21 80.62 33.41 63.50 55.21 0.90 1.79 1.77 3.83 1.91 2.04 2.17 4.32 3.94 8.61 4.32 4.67 512 36.58 61.52 80.65 33.42 65.46 55.52 1.48 3.07 2.91 6.85 3.20 3.50 3.92 7.83 7.03 15.63 7.83 8.45 ORF 64 37.58 60.36 80.78 34.17 66.90"
+  },
+  {
+    "paper_id": "2405.15310v5",
+    "title": "Spectraformer: A Unified Random Feature Framework for Transformer",
+    "page_num": 28,
+    "chunk_id": "2405.15310v5_page28_chunk4",
+    "text": "2.56 2.39 5.10 2.56 2.78 256 37.29 61.21 80.62 33.41 63.50 55.21 0.90 1.79 1.77 3.83 1.91 2.04 2.17 4.32 3.94 8.61 4.32 4.67 512 36.58 61.52 80.65 33.42 65.46 55.52 1.48 3.07 2.91 6.85 3.20 3.50 3.92 7.83 7.03 15.63 7.83 8.45 ORF 64 37.58 60.36 80.78 34.17 66.90 55.96 0.53 0.88 0.91 1.68 0.89 0.98 0.85 1.69 1.62 3.35 1.68 1.84 128 36.65 60.40 80.92 33.49 66.62 55.62 0.64 1.19 1.19 2.33 1.21 1.31 1.29 2.56 2.39 5.10 2.56 2.78 256 36.32 61.06 80.82 33.13 63.93 55.05 0.91 1.80 1.78 3.84 1.92 2.05 2.17 4.32 3.94 8.61 4.32 4.67 512 36.42 61.03 80.51 33.73 66.27 55.89 1.48 3.08 2.91 6.78 3.20 3.45 3.92 7.83 7.03 15.54 7.83 8.34 QMC 64 37.48 60.84 80.70 34.43 66.93 56.08 0.53 0.88 0.91 1.69 0.89 0.98 0.85 1.69 1.62 3.35 1.68 1.84 128 37.36 60.80 80.59 34.15 67.13 56.01 0.64 1.18 1.19 2.30 1.20 1.30 1.29 2.56 2.39 5.10 2.56 2.78 256 37.40 60.57 80.68 34.44 63.52 55.32 0.91 1.79 1.78 3.84 1.92 2.05 2.17 4.32 3.94 8.61 4.32 4.67 512 37.28 60.44 80.42 34.01 65.07 55.44 1.49 3.08 2.91 6.86 3.21 3.51 3.92 7.83 7.03 15.63 7.83 8.45 SGQ 64 35.42"
+  },
+  {
+    "paper_id": "2405.15310v5",
+    "title": "Spectraformer: A Unified Random Feature Framework for Transformer",
+    "page_num": 28,
+    "chunk_id": "2405.15310v5_page28_chunk5",
+    "text": "2.30 1.20 1.30 1.29 2.56 2.39 5.10 2.56 2.78 256 37.40 60.57 80.68 34.44 63.52 55.32 0.91 1.79 1.78 3.84 1.92 2.05 2.17 4.32 3.94 8.61 4.32 4.67 512 37.28 60.44 80.42 34.01 65.07 55.44 1.49 3.08 2.91 6.86 3.21 3.51 3.92 7.83 7.03 15.63 7.83 8.45 SGQ 64 35.42 62.33 78.25 37.23 58.93 54.43 0.53 0.88 0.91 1.68 0.88 0.98 0.85 1.69 1.62 3.35 1.68 1.84 128 34.37 62.08 78.74 37.49 62.84 55.10 0.64 1.19 1.19 2.32 1.21 1.31 1.29 2.56 2.39 5.10 2.56 2.78 256 35.31 62.43 78.49 37.29 61.72 55.05 0.91 1.80 1.79 3.84 1.93 2.05 2.17 4.32 3.94 8.61 4.32 4.67 512 35.27 62.29 78.60 37.41 61.47 54.69 1.48 3.08 2.94 6.85 3.20 3.52 3.92 7.83 7.12 15.63 7.83 8.48 SORF 64 26.43 64.65 69.13 32.44 50.20 48.57 0.53 0.88 0.91 1.68 0.89 0.98 0.85 1.69 1.62 3.35 1.68 1.84 128 28.60 63.90 72.90 34.29 59.11 51.76 0.64 1.19 1.19 2.30 1.20 1.30 1.29 2.56 2.39 5.10 2.56 2.78 256 27.10 63.58 73.35 33.53 57.34 50.98 0.91 1.79 1.78 3.84 1.92 2.05 2.17 4.32 3.94 8.61 4.32 4.67 512 25.82 63.71 73.03 33.63 59.19 51.08 1.49 3.08 2.91 6.85 3.20 3.51 3.92 7.83 7.03 15.63 7.83"
+  },
+  {
+    "paper_id": "2405.15310v5",
+    "title": "Spectraformer: A Unified Random Feature Framework for Transformer",
+    "page_num": 28,
+    "chunk_id": "2405.15310v5_page28_chunk6",
+    "text": "51.76 0.64 1.19 1.19 2.30 1.20 1.30 1.29 2.56 2.39 5.10 2.56 2.78 256 27.10 63.58 73.35 33.53 57.34 50.98 0.91 1.79 1.78 3.84 1.92 2.05 2.17 4.32 3.94 8.61 4.32 4.67 512 25.82 63.71 73.03 33.63 59.19 51.08 1.49 3.08 2.91 6.85 3.20 3.51 3.92 7.83 7.03 15.63 7.83 8.45 J. ACM, Vol. 1, No. 1, Article . Publication date: September 2025."
+  }
+]

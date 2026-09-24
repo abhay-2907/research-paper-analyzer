@@ -1,0 +1,268 @@
+[
+  {
+    "paper_id": "2004.13542v4",
+    "title": "Faster Depth-Adaptive Transformers",
+    "page_num": 1,
+    "chunk_id": "2004.13542v4_page1_chunk1",
+    "text": "Faster Depth-Adaptive Transformers Yijin Liu, 1* Fandong Meng,2 Jie Zhou,2 Yufeng Chen1 and Jinan Xu1† 1Beijing Jiaotong University, China 2Pattern Recognition Center, WeChat AI, Tencent Inc, China {yijinliu, fandongmeng, withtomzhou}@tencent.com {chenyf, jaxu}@bjtu.edu.cn Abstract Depth-adaptive neural networks can dynamically adjust depths according to the hardness of input words, and thus improve efﬁciency. The main challenge is how to measure such hardness and decide the required depths (i.e., layers) to conduct. Previous works generally build a halting unit to decide whether the computation should continue or stop at each layer. As there is no speciﬁc supervision of depth se- lection, the halting unit may be under-optimized and inaccu- rate, which results in suboptimal and unstable performance when modeling sentences. In this paper, we get rid of the halting unit and estimate the required depths in advance, which yields a faster depth-adaptive model. Speciﬁcally, two approaches are proposed to explicitly measure the hardness of input words and estimate corresponding adaptive depth, namely 1) mutual information (MI) based estimation and 2) reconstruction loss based estimation. We conduct experi- ments on the text classiﬁcation task with 24 datasets in var- ious sizes and domains. Results conﬁrm that our approaches can speed up the vanilla Transformer"
+  },
+  {
+    "paper_id": "2004.13542v4",
+    "title": "Faster Depth-Adaptive Transformers",
+    "page_num": 1,
+    "chunk_id": "2004.13542v4_page1_chunk2",
+    "text": "of input words and estimate corresponding adaptive depth, namely 1) mutual information (MI) based estimation and 2) reconstruction loss based estimation. We conduct experi- ments on the text classiﬁcation task with 24 datasets in var- ious sizes and domains. Results conﬁrm that our approaches can speed up the vanilla Transformer (up to 7x) while pre- serving high accuracy. Moreover, efﬁciency and robustness are signiﬁcantly improved when compared with other depth- adaptive approaches. Introduction In the NLP literature, neural networks generally conduct a ﬁxed number of computations over all words in a sentence, regardless of whether they are easy or difﬁcult. In terms of both efﬁciency and ease of learning, it is preferable to dy- namically vary the numbers of computations according to the hardness of input words (Dehghani et al. 2019). Graves (2016) ﬁrstly proposes adaptive computation time (ACT) to improve efﬁciency of neural networks. Speciﬁ- cally, ACT employs a halting unit upon each word when processing a sentence, then this halting unit determines a probability that computation should continue or stop layer- by-layer. Its application to sequence processing is attractive and promising. For instance, ACT has been extended to re- duce computations either by exiting early or by skipping"
+  },
+  {
+    "paper_id": "2004.13542v4",
+    "title": "Faster Depth-Adaptive Transformers",
+    "page_num": 1,
+    "chunk_id": "2004.13542v4_page1_chunk3",
+    "text": "halting unit upon each word when processing a sentence, then this halting unit determines a probability that computation should continue or stop layer- by-layer. Its application to sequence processing is attractive and promising. For instance, ACT has been extended to re- duce computations either by exiting early or by skipping lay- ers for the ResNet (Figurnov et al. 2017), the vanilla Trans- * This work was done when Yijin Liu was interning at Pattern Recognition Center, WeChat AI, Tencent Inc, China † Jinan Xu is the corresponding author of the paper. Copyright © 2021, Association for the Advancement of Artiﬁcial Intelligence (www.aaai.org). All rights reserved. former (Elbayad et al. 2020), and the Universal Transformer (Dehghani et al. 2019). However, there is no explicit supervision to directly train the halting unit of ACT, and thus how to measure the hard- ness of input words and decide required depths is the key point. Given a task, previous works generally treat the loss from different layers as a measure to implicitly estimate the required depths, e.g., gradient estimation in ACT, or re- inforcement rewards in SkipNet (Wang et al. 2018). Un- fortunately, these approaches may lead to inaccurate depth selections with high variances,"
+  },
+  {
+    "paper_id": "2004.13542v4",
+    "title": "Faster Depth-Adaptive Transformers",
+    "page_num": 1,
+    "chunk_id": "2004.13542v4_page1_chunk4",
+    "text": "point. Given a task, previous works generally treat the loss from different layers as a measure to implicitly estimate the required depths, e.g., gradient estimation in ACT, or re- inforcement rewards in SkipNet (Wang et al. 2018). Un- fortunately, these approaches may lead to inaccurate depth selections with high variances, and thus unstable perfor- mance. More recently, the depth-adaptive Transformer (El- bayad et al. 2020) directly trains the halting unit with the supervision of ‘pseudo-labels’, which is generated by com- paring task-speciﬁc losses over all layers. Despite its suc- cess, the depth-adaptive Transformer still relays on a halting unit, which brings additional computing costs for depth pre- dictions, hindering its potential performance. In this paper, we get rid of a halting unit when building our model, and thus no additional computing costs need to esti- mate depth. Instead, we propose two approaches to explicitly estimate the required depths in advance, which yield a faster depth-adaptive Transformer. Speciﬁcally, the MI-based ap- proach calculates the mutual dependence between a word and all categorical labels. The larger the MI value of the word is, the more information of labels is obtained through observing this word, thus fewer depths are needed to learn an"
+  },
+  {
+    "paper_id": "2004.13542v4",
+    "title": "Faster Depth-Adaptive Transformers",
+    "page_num": 1,
+    "chunk_id": "2004.13542v4_page1_chunk5",
+    "text": "which yield a faster depth-adaptive Transformer. Speciﬁcally, the MI-based ap- proach calculates the mutual dependence between a word and all categorical labels. The larger the MI value of the word is, the more information of labels is obtained through observing this word, thus fewer depths are needed to learn an adequate representation for this word, and vice versa. Due to the MI-based approach is purely conducted in the data preprocessing stage, the computing cost is ignorable when compared with training a neural model in the depth-adaptive Transformer. The reconstruction loss based approach mea- sures the hardness of learning a word by reconstructing it with its contexts in a sentence. The less reconstruction loss of the word is, the more easily its representation is learned. Therefore the index of the layer with minimum reconstruc- tion loss can be regarded as an approximation for required depths. As a by-product, the reconstruction loss based ap- proach is easy to apply to unsupervised scenarios, as it needs no task-speciﬁc labels. Both of the above approaches aim to ﬁnd a suitable depth estimation. Afterward, the estimated depths are directly used to guide our model to conduct cor- responding depth for both training and testing. Without"
+  },
+  {
+    "paper_id": "2004.13542v4",
+    "title": "Faster Depth-Adaptive Transformers",
+    "page_num": 1,
+    "chunk_id": "2004.13542v4_page1_chunk6",
+    "text": "based ap- proach is easy to apply to unsupervised scenarios, as it needs no task-speciﬁc labels. Both of the above approaches aim to ﬁnd a suitable depth estimation. Afterward, the estimated depths are directly used to guide our model to conduct cor- responding depth for both training and testing. Without loss of generality, we base our model on the arXiv:2004.13542v4 [cs.CL] 16 Dec 2020"
+  },
+  {
+    "paper_id": "2004.13542v4",
+    "title": "Faster Depth-Adaptive Transformers",
+    "page_num": 2,
+    "chunk_id": "2004.13542v4_page2_chunk1",
+    "text": "Transformer encoder. Extensive experiments are conducted on the text classiﬁcation task (24 datasets in various sizes and domains). Results show that our proposed approaches can accelerate the vanilla Transformer up to 7x, while pre- serving high accuracy. Furthermore, we improve the efﬁ- ciency and robustness of previous depth-adaptive models. Our main contributions are as follows1: • We are the ﬁrst to estimate the adaptive depths in advance and do not rely on a halting unit to predict depths. • We propose two effective approaches to explicitly esti- mate the required computational depths for input words. Speciﬁcally, the MI-based approach is computing efﬁ- cient and the reconstruction loss based one is also appli- cable in unsupervised scenarios. • Both of our approaches can accelerate the vanilla Trans- former up to 7x, while preserving high accuracy. Fur- thermore, we improve previous depth-adaptive models in terms of accuracy, efﬁciency, and robustness. • We provide thorough analyses to offer more insights and elucidate properties of our approaches. Model Depth Estimation In this section, we introduce how to quantify the hardness of learning representations for input words and obtain corre- sponding estimated depths. Mutual Information Based Estimation. Mutual Infor- mation (MI) is a general concept"
+  },
+  {
+    "paper_id": "2004.13542v4",
+    "title": "Faster Depth-Adaptive Transformers",
+    "page_num": 2,
+    "chunk_id": "2004.13542v4_page2_chunk2",
+    "text": "provide thorough analyses to offer more insights and elucidate properties of our approaches. Model Depth Estimation In this section, we introduce how to quantify the hardness of learning representations for input words and obtain corre- sponding estimated depths. Mutual Information Based Estimation. Mutual Infor- mation (MI) is a general concept in information theory. It measures the mutual dependence between two random vari- ables X and Y . Formally, the MI value is calculated as: MI(X; Y ) = X y∈Y X x∈X p(X,Y ) · log( p(X,Y )(x, y) pX(x) · pY (y)) (1) where p(X,Y ) is the joint probability of X and Y , and pX and pY are the probability functions of X and Y respec- tively. MI has been widely used for feature selection in the statis- tic machine learning literature (Peng, Long, and Ding 2005). In our case of text classiﬁcation, X is the set of all words, and Y is the set of predeﬁned labels. Given a word x ∈X and a label y ∈Y , the value of MI(x, y) measures the degree of dependence between them. The larger MI(x, y) is, the greater certainty between this word x and label y is,"
+  },
+  {
+    "paper_id": "2004.13542v4",
+    "title": "Faster Depth-Adaptive Transformers",
+    "page_num": 2,
+    "chunk_id": "2004.13542v4_page2_chunk3",
+    "text": "of all words, and Y is the set of predeﬁned labels. Given a word x ∈X and a label y ∈Y , the value of MI(x, y) measures the degree of dependence between them. The larger MI(x, y) is, the greater certainty between this word x and label y is, and thus fewer computations are needed to learn an adequate repre- sentation for x to predict y. For example, the word ‘terrible’ can decide a ‘negative’ label with high conﬁdence in senti- ment analysis tasks, and thus it is unnecessary to conduct a very deep transformation when processing words with high MI values, and vice versa. Namely, we force our models not to merely focus on a few ‘important’ words and pay more 1Codes will appear at https://github.com/Adaxry/Adaptive- Transformer attention to overview contexts when learning the representa- tion of a sentence. In this way, our models avoid overﬁlling limited ‘important’ words, which also takes an effect of reg- ularization, and thus improve generalization and robustness. Based on the above assumptions, it is intuitive and suitable to choose MI to quantify the difﬁculty of learning a word. Formally, given a dataset with vocab X and label set Y , the MI"
+  },
+  {
+    "paper_id": "2004.13542v4",
+    "title": "Faster Depth-Adaptive Transformers",
+    "page_num": 2,
+    "chunk_id": "2004.13542v4_page2_chunk4",
+    "text": "words, which also takes an effect of reg- ularization, and thus improve generalization and robustness. Based on the above assumptions, it is intuitive and suitable to choose MI to quantify the difﬁculty of learning a word. Formally, given a dataset with vocab X and label set Y , the MI value MI(x) for word x is calculated as: MI(x) = X y∈{Y } X ix∈{0,1} X iy∈{0,1} P(ix, iy) · log \u0012 P (ix, iy) P (ix) · P (iy) \u0013 (2) where ix is a boolean indicator whether word x exists in a sentence. Similarly, iy indicates the existence of label y. In practice, the probability formulas P(·) in Equation (2) are calculated by frequencies of words, labels, or their combi- nations. A smooth factor (0.1 in our experiments) is intro- duced to avoid zero division. To avoid injecting information of golden labels when testing, we only use the training set to calculate MI values, Once the MI value MI(x) for each word is obtained, we proceed to generate the pesudo-label of depth distribution d(x) accordingly. As the histogram of MI values shown in Figure 1 (the upper part), there is an obvious long tail phe- nomenon, which manifests"
+  },
+  {
+    "paper_id": "2004.13542v4",
+    "title": "Faster Depth-Adaptive Transformers",
+    "page_num": 2,
+    "chunk_id": "2004.13542v4_page2_chunk5",
+    "text": "training set to calculate MI values, Once the MI value MI(x) for each word is obtained, we proceed to generate the pesudo-label of depth distribution d(x) accordingly. As the histogram of MI values shown in Figure 1 (the upper part), there is an obvious long tail phe- nomenon, which manifests that the distribution is extremely imbalanced. To alleviate this issue, we perform a logarithmic scaling for the original MI(x) as: MIlog(x) = −log (MI(x)) (3) Next, according to the scaled MIlog(x), we uniformly divide all words into N bins 2 with ﬁxed-width margin, where N denotes a predeﬁned number of bins (i.e., maximum depth). Consequently, the estimated depth value d(x) for word x is the index of corresponding bins. The MI-based approach is purely calculated at the data preprocessing stage, thus it is highly efﬁcient in computation and does not rely on additional trainable parameters. Reconstruction Loss Based Estimation. Generally in a sentence, several words may bring redundant information that has been included by their contexts. Thus if we mask out these trivial words, it would be easier to reconstruct them than others. Namely, The less reconstruction loss of a word is, the more easily its representation is learned. Based"
+  },
+  {
+    "paper_id": "2004.13542v4",
+    "title": "Faster Depth-Adaptive Transformers",
+    "page_num": 2,
+    "chunk_id": "2004.13542v4_page2_chunk6",
+    "text": "in a sentence, several words may bring redundant information that has been included by their contexts. Thus if we mask out these trivial words, it would be easier to reconstruct them than others. Namely, The less reconstruction loss of a word is, the more easily its representation is learned. Based on the above principle, we utilize this property of recon- struction loss to quantify the hardness of learning the rep- resentation for input words and then estimate their required depths. Firstly, we ﬁnetune BERT (Devlin et al. 2019) with a masked language model task (MLM) on datasets of down- stream tasks. Note that we modify BERT to make predic- tions at any layers with a shared classiﬁer, which is also known as anytime prediction (Huang et al. 2017; Elbayad 2We set N to 12 for the compatibility of BERT."
+  },
+  {
+    "paper_id": "2004.13542v4",
+    "title": "Faster Depth-Adaptive Transformers",
+    "page_num": 3,
+    "chunk_id": "2004.13542v4_page3_chunk1",
+    "text": "MI (bit) bad great boring best dull horrible worst excellent highly upset waste well love stupid perfect dumb unless silly hoping maybe noble kept today legendary minutes classic wrong brat hocker earning precious one me hope clip some 1 2 3 4 Estimated Depth 5 5 4 3 2 1 Figure 1: The histogram of MI values of partial words from IMDB (the upper part), and corresponding depths of these words by using the reconstruction loss based estimation (the bottom part). et al. 2020). The losses from all layers are summed up 3 to the ﬁnal loss. After ﬁnetuning the MLM, given an input sen- tence x with |x| words, we sequentially replace each word xt (t ∈[1, |x|]) with a special symbol <MASK>, and then feed the sentence with a <MASK> into the MLM. Finally, the index of a layer with the minimum loss is selected as the estimated depth value d(xt): d(xt) = arg min n (lossn −λn) (4) where n ∈N is the index of layer, lossn is the loss of <MASK> in the n-th layer, and λn is the penalty factor to en- courage a lower selection 4. Speciﬁcally, we train MLMs fol- lowing the experimental"
+  },
+  {
+    "paper_id": "2004.13542v4",
+    "title": "Faster Depth-Adaptive Transformers",
+    "page_num": 3,
+    "chunk_id": "2004.13542v4_page3_chunk2",
+    "text": "depth value d(xt): d(xt) = arg min n (lossn −λn) (4) where n ∈N is the index of layer, lossn is the loss of <MASK> in the n-th layer, and λn is the penalty factor to en- courage a lower selection 4. Speciﬁcally, we train MLMs fol- lowing the experimental setup of BERT (Devlin et al. 2019) with two major differences: 1) We make predictions at ev- ery layer with a shared classiﬁer instead of only at the ﬁnal layer in BERT; 2) We remove the next sentence prediction task following RoBERTa (Liu et al. 2019). Comparisons Between the Two Approaches. Although the above approaches perform differently, they both serve as a measure to estimate required depths for input words from the perspective of learning their representations. We proceed to make a detailed comparison between the two approaches. In the term of computational cost, the MI-based ap- proach calculates MI values, and then stores the word-depth pairs that resemble word embeddings. The above procedures 3We experimented with different weights (e.g., random sample, or linearly decaying with the number of layers) for different layers, and ﬁnally choose the simple equal weights. 4We elaborate the effect and choice of λ in the"
+  },
+  {
+    "paper_id": "2004.13542v4",
+    "title": "Faster Depth-Adaptive Transformers",
+    "page_num": 3,
+    "chunk_id": "2004.13542v4_page3_chunk3",
+    "text": "values, and then stores the word-depth pairs that resemble word embeddings. The above procedures 3We experimented with different weights (e.g., random sample, or linearly decaying with the number of layers) for different layers, and ﬁnally choose the simple equal weights. 4We elaborate the effect and choice of λ in the following ana- lytical Section. x1 x2 ··· xt Calculated block Copied block ··· Figure 2: The overview of our depth-adaptive Transformer. Once a word xt achieve its own depth d(xt), it will simply copy states to upper layers. merely happen at the stage of data preprocessing, which re- quires trivial computational cost and does not rely on addi- tional trainable parameters, and thus the MI-based approach is highly efﬁcient in computation. In contrast, the recon- struction loss based approach needs to train several MLMs with anytime prediction, which yields extra computational costs. Considering the MLMs are dependent on the main model, the calculation of depths can be conducted in ad- vance in a piplined manner. As the histogram shown in Figure 1, we observe differ- ent preferences between the two estimations. Firstly, the MI- based approach (upper part) tends to assign higher MI val- ues to label-relevant words (e.g., opinion"
+  },
+  {
+    "paper_id": "2004.13542v4",
+    "title": "Faster Depth-Adaptive Transformers",
+    "page_num": 3,
+    "chunk_id": "2004.13542v4_page3_chunk4",
+    "text": "model, the calculation of depths can be conducted in ad- vance in a piplined manner. As the histogram shown in Figure 1, we observe differ- ent preferences between the two estimations. Firstly, the MI- based approach (upper part) tends to assign higher MI val- ues to label-relevant words (e.g., opinion words ‘perfect’ and ‘horrible’ in IMDB). After the scaling function described by Equation (3), these opinion words are assigned a lower number of depths, namely fewer computational steps. Such operations make our models not only focus on a few ‘im- portant’ words, but also pay more attention to the overview contexts, which takes an effect of regularization, and thus improve generalization and robustness. Unlike the bias for label-related words in the MI-based approach, the reconstruction based approach (bottom part in Figure 1) purely relies on the unsupervised context to mea- sures the hardness of learning, which is good at recognizing common words (e.g., ‘today’, ‘one’ and ‘me’), and assigns a smaller number of computations, and vice versa. As a by- product, the reconstruction loss based approach is applicable to unsupervised scenarios, as it needs no task-speciﬁc labels. Depth-Adaptive Mechanism As the overview shown in Figure 2, we stack N layers"
+  },
+  {
+    "paper_id": "2004.13542v4",
+    "title": "Faster Depth-Adaptive Transformers",
+    "page_num": 3,
+    "chunk_id": "2004.13542v4_page3_chunk5",
+    "text": "common words (e.g., ‘today’, ‘one’ and ‘me’), and assigns a smaller number of computations, and vice versa. As a by- product, the reconstruction loss based approach is applicable to unsupervised scenarios, as it needs no task-speciﬁc labels. Depth-Adaptive Mechanism As the overview shown in Figure 2, we stack N layers of the Transformer encoder to model a sentence. The Transformer encoder consists of two sub-layers in each layer. The ﬁrst sub-layer is a multi-head dot-product self-attention and the second one is a position-wise fully connected feed-forward network. We refer readers to the original paper (Vaswani"
+  },
+  {
+    "paper_id": "2004.13542v4",
+    "title": "Faster Depth-Adaptive Transformers",
+    "page_num": 4,
+    "chunk_id": "2004.13542v4_page4_chunk1",
+    "text": "Dataset Classes Type Average Lenghts Max Lengths Train Sample Test Sample TREC (Li and Roth 2002) 6 Question 12 39 5,952 500 AG’s News (Zhang, Zhao, and LeCun 2015) 4 Topic 44 221 120,000 7,600 DBPedia (Zhang, Zhao, and LeCun 2015) 14 Topic 67 3,841 560,000 70,000 Subj (Pang and Lee 2004) 2 Sentiment 26 122 10,000 CV MR (Pang and Lee 2005) 2 Sentiment 23 61 10,622 CV Amazon-16 (Liu, Qiu, and Huang 2017) 2 Sentiment 133 5,942 31,880 6,400 IMDB (Maas et al. 2011) 2 Sentiment 230 2,472 25,000 25,000 Yelp Polarity (Zhang, Zhao, and LeCun 2015) 2 Sentiment 177 2,066 560,000 38,000 Yelp Full (Zhang, Zhao, and LeCun 2015) 5 Sentiment 179 2,342 650,000 50,000 Table 1: Dataset statistics. ‘CV’ refers to 5-fold cross-validation. There are 16 subsets in Amazon-16. et al. 2017) for more details. To make sure all hidden states of the same layer are avail- able to compute self-attention, once a word xt reaches its own maximal layer d(xt), it will stop computation, and sim- ply copy its states to the next layer until all words stop or the maximal layer N is reached. Formally, at the n-th layer, for the word xt, its"
+  },
+  {
+    "paper_id": "2004.13542v4",
+    "title": "Faster Depth-Adaptive Transformers",
+    "page_num": 4,
+    "chunk_id": "2004.13542v4_page4_chunk2",
+    "text": "avail- able to compute self-attention, once a word xt reaches its own maximal layer d(xt), it will stop computation, and sim- ply copy its states to the next layer until all words stop or the maximal layer N is reached. Formally, at the n-th layer, for the word xt, its hidden state hn i are updated as follows: hn t = \u001ahn−1 t if n > d(xt) Transformer(hn−1 t ) else (5) where n ∈[1, N] refers to the index of the layer. Especially, h0 t is initialized by the BERT embedding. Task-speciﬁc Settings After dynamic steps of computation for each word position, we make task-speciﬁc predictions upon the maximal stop layer nmax ∈[1, N] among all word positions. The feature vector v consists of mean and max pooling of output hidden states hnmax, and is activated by ReLU. Finally, a softmax classiﬁer are built on v. Formally, the above-mentioned pro- cedures are computed as follows: v = ReLU([max(hnmax); mean(hnmax)]) P(ey|v) = softmax(W v + b) (6) where W ∈Rdmodel×|S| and b ∈R|S| are parameters of the classiﬁer, |S| is the size of the label set, and P(ey|v) is the probability distribution. At the training stage, we use the cross-entropy"
+  },
+  {
+    "paper_id": "2004.13542v4",
+    "title": "Faster Depth-Adaptive Transformers",
+    "page_num": 4,
+    "chunk_id": "2004.13542v4_page4_chunk3",
+    "text": "pro- cedures are computed as follows: v = ReLU([max(hnmax); mean(hnmax)]) P(ey|v) = softmax(W v + b) (6) where W ∈Rdmodel×|S| and b ∈R|S| are parameters of the classiﬁer, |S| is the size of the label set, and P(ey|v) is the probability distribution. At the training stage, we use the cross-entropy loss computed as: Loss = − |S| X i=1 yilog(Pi(ey|v)) (7) where yi is the golden label. For testing, the most proba- ble label ˆy is chosen from above probability distribution de- scribed by Equation (6): ˆy = arg max P(ey|v) (8) Experiments Task and Datasets Text classiﬁcation aims to assign a predeﬁned label to text (Zhang, Zhao, and LeCun 2015), which is a classic task for natural language processing and is generally evaluated by accuracy score. Generally, The number of labels may range from two to more, which corresponds to binary and ﬁne- grained classiﬁcation. We conduct extensive experiments on the 24 popular benchmarks collected from diverse domains (e.g., topic, sentiment) ranging from modestly sized to large- scaled. The statistics of these datasets are listed in Table 1. Implementation Details For the MI-based estimation approach, we calculate word- depth pairs on the training set in advance and then calcu-"
+  },
+  {
+    "paper_id": "2004.13542v4",
+    "title": "Faster Depth-Adaptive Transformers",
+    "page_num": 4,
+    "chunk_id": "2004.13542v4_page4_chunk4",
+    "text": "on the 24 popular benchmarks collected from diverse domains (e.g., topic, sentiment) ranging from modestly sized to large- scaled. The statistics of these datasets are listed in Table 1. Implementation Details For the MI-based estimation approach, we calculate word- depth pairs on the training set in advance and then calcu- late depths for words in the test set. For the reconstruction based approach, we calculate word-depth pairs for both train and test set without using label information. The penalty factor λ in the reconstruction loss based approach is set to 0.1. Dropout (Srivastava et al. 2014) is applied to word em- beddings, residual connection , and attention scores with a rate of 0.1. Models are optimized by the Adam optimizer (Kingma and Ba 2014) with gradient clipping of 5 (Pascanu, Mikolov, and Bengio 2013). BERTbase is used to initialize the Transformer encoder. Long sentences exceed 512 words are clipped. Main Results Results on Amazon-16. Amazon-16 consists of consumer comments from 16 different domains (e.g., Apparel). We compare our approaches with different baseline models in Table 2. The Multi-Scale Transformer (Guo et al. 2019b) is designed to capture features from different scales, and the Star-Transformer (Guo et al. 2019a) is a"
+  },
+  {
+    "paper_id": "2004.13542v4",
+    "title": "Faster Depth-Adaptive Transformers",
+    "page_num": 4,
+    "chunk_id": "2004.13542v4_page4_chunk5",
+    "text": "Results Results on Amazon-16. Amazon-16 consists of consumer comments from 16 different domains (e.g., Apparel). We compare our approaches with different baseline models in Table 2. The Multi-Scale Transformer (Guo et al. 2019b) is designed to capture features from different scales, and the Star-Transformer (Guo et al. 2019a) is a lightweight Trans- former with a star-shaped topology. Due to the absence of a powerful contextual model (e.g., BERT), their results un- derperform others by a margin. The Transformer model is ﬁnetuned on BERT and conducts ﬁxed 12 layers for every instance, which yields a strong baseline model. Following the setup of depth-adaptive Transformer, we add a halting unit on the bottom layer of the Transformer encoder, and generate a ‘pesudo-label’ for the halting unit by classiﬁca- tion accuracy. Our approaches (the last two columns in Ta-"
+  },
+  {
+    "paper_id": "2004.13542v4",
+    "title": "Faster Depth-Adaptive Transformers",
+    "page_num": 5,
+    "chunk_id": "2004.13542v4_page5_chunk4",
+    "text": "83.23 96.00 95.80 95.50 99.30 98.25 69.75 91.70 w/ MI estimation (ours) † 96.50 84.20 96.00 96.72 95.90 99.32 98.10 72.98 92.46 w/ Reconstruction estimation (ours) † 96.20 83.90 96.30 96.60 95.65 99.25 98.00 69.58 91.93 Table 3: Accuracy scores (%) on modestly sized and large-scaled datasets. ‘AG.’, ‘DBP.’, ‘Yelp P.’ and ‘Yelp F.’ are the abbre- viations of ‘AG’s News‘, ‘DBPedia’, ‘Yelp Polarity’ and ‘Yelp Full’, respectively. † is our implementations with several recent advanced techniques and analogous parameter sizes. ‘Transformer’ is the Transformer encoder initialized by BERTbase with 12 ﬁxed layers. ble 2) achieve better or comparable performance over these strong baseline models. The MI-based approach also takes a regularization effect, and thus it achieves better performance than the reconstruction counterpart. Results on Larger Benchmarks. Although the Amazon- 16 benchmark is challenging, its small data size makes the results prone to be unstable, therefore we conduct experi- ments on larger benchmarks for a more convincing conclu- sion. In this paragraph, we only focus on the classiﬁcation accuracy listed in Table 3, and more detailed results about computing speed and model robustness will be discussed in the next section. The upper part of Table 3 lists several high-performance baseline"
+  },
+  {
+    "paper_id": "2004.13542v4",
+    "title": "Faster Depth-Adaptive Transformers",
+    "page_num": 5,
+    "chunk_id": "2004.13542v4_page5_chunk5",
+    "text": "on larger benchmarks for a more convincing conclu- sion. In this paragraph, we only focus on the classiﬁcation accuracy listed in Table 3, and more detailed results about computing speed and model robustness will be discussed in the next section. The upper part of Table 3 lists several high-performance baseline models. Their detailed descriptions are omitted here. In terms of accuracy, our approaches achieve compa- rable performance with these state-of-the-art models. At the bottom part of Table 3, we ﬁnetune BERT as our strong base- line model. Results show that this baseline model performs on par with the state-of-the-art XLNet (Yang et al. 2019). Then we build a halting unit at the bottom of the baseline model under the same setup with the depth-adaptive Trans-"
+  },
+  {
+    "paper_id": "2004.13542v4",
+    "title": "Faster Depth-Adaptive Transformers",
+    "page_num": 6,
+    "chunk_id": "2004.13542v4_page6_chunk2",
+    "text": "a small margin. Analysis We conduct analytical experiments on the modestly sized IMDB to offer more insights and elucidate the properties of our approaches. Effect of the maximum number of layer Firstly, we train several ﬁxed-layer Transformers with N ranging from one to twelve, and then build a halting unit on the above Transformers to dynamically adjust the actual number of layers to conduct. Meanwhile, we respectively utilize our two approaches on the ﬁxed-layer Transformer to activate dynamic layers. Note that each model is trained with different random initialization three times and we re- port the mean and variance. Here, we take the variance value to measure the robustness against the random initialization and different depth selections. As drawn in Figure 3, solid lines are the mean performance, and the size of the colored areas indicate variances. Accuracy and Robustness. Results of accuracy and ro- bustness are drawn in Figure 3 (a). In the lower layers Figure 4: Speed for each model on IMDB when batchsize ∈ [1, 15]. The solid line indicates the mean performance, and the size of the colored area indicates variance (used to mea- sure robustness). ‘speed’ is the number of samples calcu- lated in ten"
+  },
+  {
+    "paper_id": "2004.13542v4",
+    "title": "Faster Depth-Adaptive Transformers",
+    "page_num": 6,
+    "chunk_id": "2004.13542v4_page6_chunk3",
+    "text": "3 (a). In the lower layers Figure 4: Speed for each model on IMDB when batchsize ∈ [1, 15]. The solid line indicates the mean performance, and the size of the colored area indicates variance (used to mea- sure robustness). ‘speed’ is the number of samples calcu- lated in ten seconds on one Tesla P40 GPU. (N ∈[1, 6]), as the searching space for depth selection is small, the depth-adaptive models perform worse than the Transformer baseline. In contrast, when N ∈[6, 12], the depth-adaptive models come up with the baseline. Due to the additional depth supervision and the regularization effect, the application of our approaches can further signiﬁcantly"
+  },
+  {
+    "paper_id": "2004.13542v4",
+    "title": "Faster Depth-Adaptive Transformers",
+    "page_num": 7,
+    "chunk_id": "2004.13542v4_page7_chunk1",
+    "text": "2 4 6 depth I have anticipated the various Sci-ﬁ and thriller MI based estimation Reconstruction based estimation Figure 5: The histogram of the depth distribution of a case from IMDB, which is estimated by our approaches. improve accuracy and robustness over both the Transformer and w/ a halting unit. (green and blue lines vs. purple line in Figure 3 (a)) Speed and Robustness. Figure 3 (b) shows the speed and robustness of each model. The speed of vanilla Transformer almost linearly decays with the growth of the number of layers. As N ∈[1, 3], due to the additional prediction for depths, models w/ halting unit runs a bit slower than the baseline. However, the superiority of adaptive depths be- comes apparent with the growth of the number of layers. In particular, as N = 12, the model w/ halting run 3.4x faster than the ﬁxed-layer baseline (pure lines vs. red line in Fig- ure 3 (b)). As our approaches free the dependency for depth prediction and can further speed up the model, both of our approaches run about 7x faster than the ﬁxed-layer baseline (green and blue lines vs. red line in Figure 3 (b)). In ad- dition, our"
+  },
+  {
+    "paper_id": "2004.13542v4",
+    "title": "Faster Depth-Adaptive Transformers",
+    "page_num": 7,
+    "chunk_id": "2004.13542v4_page7_chunk2",
+    "text": "red line in Fig- ure 3 (b)). As our approaches free the dependency for depth prediction and can further speed up the model, both of our approaches run about 7x faster than the ﬁxed-layer baseline (green and blue lines vs. red line in Figure 3 (b)). In ad- dition, our approaches perform more robust in the term of speed gains than the Transformer w/ a halting unit. Speed on different batch size The depth-adaptive models conduct dynamic computations at each word position, and thus the actually activated depths are decided by the maximal depth value. As a result, when the batch size gets larger, the ﬁnal activated depth may po- tentially become larger as well, which may hurt the effec- tiveness of depth-adaptive models. In this section, we ﬁx the maximal number of layer N to 12, and then compare the speed of each model. As shown in Figure 4, the speed gain of the depth-adaptive models (green, blue and purple lines in Figure 4) grows slower than the vanilla Transformer (red line in Figure 4). However, the absolute speed of depth-adaptive models is still much faster than the vanilla Transformer. We leave the further improvement of depth-adaptive models on"
+  },
+  {
+    "paper_id": "2004.13542v4",
+    "title": "Faster Depth-Adaptive Transformers",
+    "page_num": 7,
+    "chunk_id": "2004.13542v4_page7_chunk3",
+    "text": "the speed gain of the depth-adaptive models (green, blue and purple lines in Figure 4) grows slower than the vanilla Transformer (red line in Figure 4). However, the absolute speed of depth-adaptive models is still much faster than the vanilla Transformer. We leave the further improvement of depth-adaptive models on larger batch sizes to future works. Effect of penalty factor λ If no constraints are applied on the depth selection, the re- construction loss based approach tends to choose a layer as deep as possible, and thus an extra penalty factor λ is necessary to encourage a lower choice. We simply search λ 0 0.05 0.10 0.15 0.20 accuracy 96.54 96.31 96.55 96.27 96.29 speed 23 33 48 54 58 average depth 9.5 6.3 4.5 3.9 3.6 Table 4: Effect of penalty factor λ. The deﬁnition of ‘speed’ is same as that in Figure 3. ‘average depth’ is the average predicted depth of words in test set. λ ∈[0, 0.2], and ﬁnally set it to 0.1 for a good accuracy- speed trade-off. The detailed results are list in Table 4. Case Study We choose a random sentence from the IMDB dataset, and show the estimated depths outputted by both approaches"
+  },
+  {
+    "paper_id": "2004.13542v4",
+    "title": "Faster Depth-Adaptive Transformers",
+    "page_num": 7,
+    "chunk_id": "2004.13542v4_page7_chunk4",
+    "text": "predicted depth of words in test set. λ ∈[0, 0.2], and ﬁnally set it to 0.1 for a good accuracy- speed trade-off. The detailed results are list in Table 4. Case Study We choose a random sentence from the IMDB dataset, and show the estimated depths outputted by both approaches in Figure 5 (upper part). We observe that the MI-based estima- tion tends to assign a smaller number of depths for opin- ion words, e.g., ‘anticipated’ and ‘thriller’. While the re- construction loss based estimation is prone to omit common words, e.g., ‘and’. Related Work Our work is mainly inspired by ACT (Graves 2016), and we further explicitly train the halting union with the super- vision of estimated depths. Unlike Universal Transformer (Dehghani et al. 2019) iteratively applies ACT on the same layer, we dynamically adjust the amount of both computa- tion and model capacity. A closely related work named ‘Depth-Adaptive Trans- former’ (Elbayad et al. 2020) uses task-speciﬁc loss as an estimation of depth selection. Our approaches are different from it in three major aspects: 1) We get rid of the halting unit and remove the additional computing cost for depths, thus yield a faster depth-adaptive Transformer; 2) our"
+  },
+  {
+    "paper_id": "2004.13542v4",
+    "title": "Faster Depth-Adaptive Transformers",
+    "page_num": 7,
+    "chunk_id": "2004.13542v4_page7_chunk5",
+    "text": "‘Depth-Adaptive Trans- former’ (Elbayad et al. 2020) uses task-speciﬁc loss as an estimation of depth selection. Our approaches are different from it in three major aspects: 1) We get rid of the halting unit and remove the additional computing cost for depths, thus yield a faster depth-adaptive Transformer; 2) our MI- based estimation does not need to train an extra module, and is highly efﬁcient in computation; 3) our reconstruction loss based estimation is unsupervised, and can be easily applied on general unlabeled texts. Another group of works also aims to improve efﬁciency of neural network through re- ducing the entire layers, e.g., DynaBERT (Hou et al. 2020), LayerDrop (Fan, Grave, and Joulin 2019) and MobileBERT (Sun et al. 2020). In contrast, our approaches perform adap- tive depths in the ﬁne-grained word level. Conclusion We get rid of the halting unit and remove the additional computing cost for depths, thus yield a faster depth-adaptive Transformer. Speciﬁcally, we propose two effective ap- proaches 1) mutual information based estimation and 2) reconstruction loss based estimation. Experimental results conﬁrm that our approaches can speed up the vanilla Trans- former (up to 7x) while preserving high accuracy. Moreover, we signiﬁcantly improve previous depth-adaptive models"
+  },
+  {
+    "paper_id": "2004.13542v4",
+    "title": "Faster Depth-Adaptive Transformers",
+    "page_num": 7,
+    "chunk_id": "2004.13542v4_page7_chunk6",
+    "text": "yield a faster depth-adaptive Transformer. Speciﬁcally, we propose two effective ap- proaches 1) mutual information based estimation and 2) reconstruction loss based estimation. Experimental results conﬁrm that our approaches can speed up the vanilla Trans- former (up to 7x) while preserving high accuracy. Moreover, we signiﬁcantly improve previous depth-adaptive models in terms of accuracy, efﬁciency, and robustness. We will fur- ther explore the potential improvement of the depth-adaptive Transformer when facing larger batch size in future work."
+  },
+  {
+    "paper_id": "2004.13542v4",
+    "title": "Faster Depth-Adaptive Transformers",
+    "page_num": 8,
+    "chunk_id": "2004.13542v4_page8_chunk1",
+    "text": "Acknowledgments. The research work described in this paper has been sup- ported by the National Key R&D Program of China (2020AAA0108001) and the National Nature Science Foun- dation of China (No. 61976015, 61976016, 61876198 and 61370130). The authors would like to thank the anonymous reviewers for their valuable comments and suggestions to improve this paper. References Amplayo, R. K.; Lee, K.; Yeo, J.; and Hwang, S.-w. 2018. Translations as additional contexts for sentence classiﬁca- tion. In Proceedings of IJCAI. Dehghani, M.; Gouws, S.; Vinyals, O.; Uszkoreit, J.; and Łukasz Kaiser. 2019. Universal Transformers. In Proceed- ings of ICLR. Devlin, J.; Chang, M.-W.; Lee, K.; and Toutanova, K. 2019. BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding. In Proceedings of NAACL. Elbayad, M.; Gu, J.; Grave, E.; and Auli, M. 2020. Depth- Adaptive Transformer. In ICLR. Fan, A.; Grave, E.; and Joulin, A. 2019. Reducing Trans- former Depth on Demand with Structured Dropout. Figurnov, M.; Collins, M. D.; Zhu, Y.; Zhang, L.; Huang, J.; Vetrov, D.; and Salakhutdinov, R. 2017. Spatially Adaptive Computation Time for Residual Networks. In Proceedings of CVPR. Graves, A. 2016. Adaptive computation time for recurrent neural networks. arXiv . Guo, Q.; Qiu, X.; Liu, P.; Shao,"
+  },
+  {
+    "paper_id": "2004.13542v4",
+    "title": "Faster Depth-Adaptive Transformers",
+    "page_num": 8,
+    "chunk_id": "2004.13542v4_page8_chunk2",
+    "text": "with Structured Dropout. Figurnov, M.; Collins, M. D.; Zhu, Y.; Zhang, L.; Huang, J.; Vetrov, D.; and Salakhutdinov, R. 2017. Spatially Adaptive Computation Time for Residual Networks. In Proceedings of CVPR. Graves, A. 2016. Adaptive computation time for recurrent neural networks. arXiv . Guo, Q.; Qiu, X.; Liu, P.; Shao, Y.; Xue, X.; and Zhang, Z. 2019a. Star-transformer. In Proceedings of NAACL. Guo, Q.; Qiu, X.; Liu, P.; Xue, X.; and Zhang, Z. 2019b. Multi-Scale Self-Attention for Text Classiﬁcation. arXiv preprint arXiv:1912.00544 . Hou, L.; Shang, L.; Jiang, X.; and Liu, Q. 2020. DynaBERT: Dynamic BERT with Adaptive Width and Depth. arXiv preprint arXiv:2004.04037 . Huang, G.; Chen, D.; Li, T.; Wu, F.; van der Maaten, L.; and Weinberger, K. Q. 2017. Multi-scale dense networks for resource efﬁcient image classiﬁcation. arXiv preprint arXiv:1703.09844 . Johnson, R.; and Zhang, T. 2017. Deep Pyramid Convolu- tional Neural Networks for Text Categorization. In Proceed- ings of ACL. Kim, Y. 2014. Convolutional neural networks for sentence classiﬁcation. In Proceedings of EMNLP. Kingma, D. P.; and Ba, J. 2014. Adam: A method for stochastic optimization. arXiv . Le, H.; Tran, T.; and Venkatesh, S. 2019. Learning to Re- member More with Less Memorization. In Proceedings"
+  },
+  {
+    "paper_id": "2004.13542v4",
+    "title": "Faster Depth-Adaptive Transformers",
+    "page_num": 8,
+    "chunk_id": "2004.13542v4_page8_chunk3",
+    "text": "Proceed- ings of ACL. Kim, Y. 2014. Convolutional neural networks for sentence classiﬁcation. In Proceedings of EMNLP. Kingma, D. P.; and Ba, J. 2014. Adam: A method for stochastic optimization. arXiv . Le, H.; Tran, T.; and Venkatesh, S. 2019. Learning to Re- member More with Less Memorization. In Proceedings of ICLR. Li, X.; and Roth, D. 2002. Learning question classiﬁers. In Proceedings of COLING, 1–7. Liu, P.; Qiu, X.; and Huang, X. 2017. Adversarial Multi-task Learning for Text Classiﬁcation. In Proceedings of ACL. Liu, Y.; Ott, M.; Goyal, N.; Du, J.; Joshi, M.; Chen, D.; Levy, O.; Lewis, M.; Zettlemoyer, L.; and Stoyanov, V. 2019. Roberta: A robustly optimized bert pretraining ap- proach. arXiv preprint arXiv:1907.11692 . Logeswaran, L.; and Lee, H. 2018. An efﬁcient framework for learning sentence representations. arXiv . Maas, A. L.; Daly, R. E.; Pham, P. T.; Huang, D.; Ng, A. Y.; and Potts, C. 2011. Learning word vectors for sentiment analysis. In Proceedings of ACL, 142–150. McCann, B.; Bradbury, J.; Xiong, C.; and Socher, R. 2017. Learned in Translation: Contextualized Word Vectors. In Proceedings of NeurIPS. Pang, B.; and Lee, L. 2004. A Sentimental Education: Senti- ment Analysis Using Subjectivity Summarization Based on Minimum"
+  },
+  {
+    "paper_id": "2004.13542v4",
+    "title": "Faster Depth-Adaptive Transformers",
+    "page_num": 8,
+    "chunk_id": "2004.13542v4_page8_chunk4",
+    "text": "2011. Learning word vectors for sentiment analysis. In Proceedings of ACL, 142–150. McCann, B.; Bradbury, J.; Xiong, C.; and Socher, R. 2017. Learned in Translation: Contextualized Word Vectors. In Proceedings of NeurIPS. Pang, B.; and Lee, L. 2004. A Sentimental Education: Senti- ment Analysis Using Subjectivity Summarization Based on Minimum Cuts. In Proceedings of ACL. Pang, B.; and Lee, L. 2005. Seeing Stars: Exploiting Class Relationships for Sentiment Categorization with Respect to Rating Scales. In Proceedings of ACL. Pascanu, R.; Mikolov, T.; and Bengio, Y. 2013. On the difﬁ- culty of training recurrent neural networks. In Proceedings of ICML. Peng, H.; Long, F.; and Ding, C. 2005. Feature selection based on mutual information criteria of max-dependency, max-relevance, and min-redundancy. IEEE Transactions on pattern analysis and machine intelligence 27(8): 1226– 1238. Qiao, C.; Huang, B.; Niu, G.; Li, D.; Dong, D.; He, W.; Yu, D.; and Wu, H. 2018. A New Method of Region Embedding for Text Classiﬁcation. In Proceedings of ICLR. Shen, D.; Wang, G.; Wang, W.; Min, M. R.; Su, Q.; Zhang, Y.; Li, C.; Henao, R.; and Carin, L. 2018. Baseline needs more love: On simple word-embedding-based models and associated pooling mechanisms. In Proceedings of ACL. Srivastava, N.;"
+  },
+  {
+    "paper_id": "2004.13542v4",
+    "title": "Faster Depth-Adaptive Transformers",
+    "page_num": 8,
+    "chunk_id": "2004.13542v4_page8_chunk5",
+    "text": "Method of Region Embedding for Text Classiﬁcation. In Proceedings of ICLR. Shen, D.; Wang, G.; Wang, W.; Min, M. R.; Su, Q.; Zhang, Y.; Li, C.; Henao, R.; and Carin, L. 2018. Baseline needs more love: On simple word-embedding-based models and associated pooling mechanisms. In Proceedings of ACL. Srivastava, N.; Hinton, G.; Krizhevsky, A.; Sutskever, I.; and Salakhutdinov, R. 2014. Dropout: A Simple Way to Prevent Neural Networks from Overﬁtting. The journal of machine learning research . Sun, Z.; Yu, H.; Song, X.; Liu, R.; Yang, Y.; and Zhou, D. 2020. MobileBERT: a Compact Task-Agnostic BERT for Resource-Limited Devices. In Proceedings of the 58th Annual Meeting of the Association for Computational Lin- guistics, 2158–2170. Online: Association for Computational Linguistics. doi:10.18653/v1/2020.acl-main.195. URL https://www.aclweb.org/anthology/2020.acl-main.195. Tay, Y.; Tuan, L. A.; and Hui, S. C. 2018. Recurrently Con- trolled Recurrent Networks. In Proceedings of NeurIPS. Vaswani, A.; Shazeer, N.; Parmar, N.; Uszkoreit, J.; Jones, L.; Gomez, A. N.; Kaiser, Ł.; and Polosukhin, I. 2017. At- tention is all you need. In Advances in neural information processing systems. Wang, B. 2018. Disconnected Recurrent Neural Networks for Text Categorization. In Proceedings of ACL."
+  },
+  {
+    "paper_id": "2004.13542v4",
+    "title": "Faster Depth-Adaptive Transformers",
+    "page_num": 9,
+    "chunk_id": "2004.13542v4_page9_chunk1",
+    "text": "Wang, X.; Yu, F.; Dou, Z.-Y.; Darrell, T.; and Gonzalez, J. E. 2018. SkipNet: Learning Dynamic Routing in Convolutional Networks. In The European Conference on Computer Vision (ECCV). Yang, M.; Zhao, W.; Ye, J.; Lei, Z.; Zhao, Z.; and Zhang, S. 2018. Investigating Capsule Networks with Dynamic Rout- ing for Text Classiﬁcation. In Proceedings of EMNLP. Brus- sels, Belgium. Yang, Z.; Dai, Z.; Yang, Y.; Carbonell, J.; Salakhut- dinov, R. R.; and Le, Q. V. 2019. XLNet: General- ized Autoregressive Pretraining for Language Under- standing. In Advances in Neural Information Pro- cessing Systems 32. Curran Associates, Inc. URL http://papers.nips.cc/paper/8812-xlnet-generalized- autoregressive-pretraining-for-language-understanding.pdf. Zhang, X.; Zhao, J.; and LeCun, Y. 2015. Character-level convolutional networks for text classiﬁcation. In Advances in neural information processing systems, 649–657. Zhao, H.; Lu, Z.; and Poupart, P. 2015. Self-adaptive hierar- chical sentence model. In Proceedings of IJCAI."
+  }
+]

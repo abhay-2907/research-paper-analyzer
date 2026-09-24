@@ -1,0 +1,401 @@
+[
+  {
+    "paper_id": "2106.11895v2",
+    "title": "A Latent Transformer for Disentangled Face Editing in Images and Videos",
+    "page_num": 1,
+    "chunk_id": "2106.11895v2_page1_chunk1",
+    "text": "A Latent Transformer for Disentangled Face Editing in Images and Videos Xu Yao1,2, Alasdair Newson1, Yann Gousseau1, Pierre Hellier2 1 LTCI, T´el´ecom Paris, Institut Polytechnique de Paris, France 2 InterDigital R&I, 975 avenue des Champs Blancs, Cesson-S´evign´e, France {xu.yao,anewson,yann.gousseau}@telecom-paris.fr, Pierre.Hellier@InterDigital.com Original Projected + Smile + Bangs + Arched Eyebrows + Age - Age + Smile + Beard + Eyeglasses Figure 1: We project real images to the latent space of a StyleGAN generator and achieve sequential disentangled attribute editing on the encoded latent codes. From the original and the projected image, we can edit sequentially a list of attributes such as: ‘smile’, ‘bangs’, ‘arched eyebrows’, ‘age’, ‘beard’ and ‘eyeglasses’. All results are obtained at resolution 1024 × 1024. Abstract High quality facial image editing is a challenging prob- lem in the movie post-production industry, requiring a high degree of control and identity preservation. Previous works that attempt to tackle this problem may suffer from the en- tanglement of facial attributes and the loss of the person’s identity. Furthermore, many algorithms are limited to a cer- tain task. To tackle these limitations, we propose to edit facial attributes via the latent space of a StyleGAN gen- erator, by training a dedicated"
+  },
+  {
+    "paper_id": "2106.11895v2",
+    "title": "A Latent Transformer for Disentangled Face Editing in Images and Videos",
+    "page_num": 1,
+    "chunk_id": "2106.11895v2_page1_chunk2",
+    "text": "problem may suffer from the en- tanglement of facial attributes and the loss of the person’s identity. Furthermore, many algorithms are limited to a cer- tain task. To tackle these limitations, we propose to edit facial attributes via the latent space of a StyleGAN gen- erator, by training a dedicated latent transformation net- work and incorporating explicit disentanglement and iden- tity preservation terms in the loss function. We further intro- duce a pipeline to generalize our face editing to videos. Our model achieves a disentangled, controllable, and identity- preserving facial attribute editing, even in the challenging case of real (i.e., non-synthetic) images and videos. We conduct extensive experiments on image and video datasets and show that our model outperforms other state-of-the- art methods in visual quality and quantitative evaluation. Source codes are available at https://github.com/ InterDigitalInc/latent-transformer. 1. Introduction Facial attribute editing is a crucial task for photo retouch- ing or in the ﬁlm post-production industry. For example, many actors are retouched for beautiﬁcation or other spe- cial makeup effects. For such tasks, it is highly desirable for artists to be able to control a facial attribute without affecting other informations. Consequently, a face editing method should rely on disentangled attributes"
+  },
+  {
+    "paper_id": "2106.11895v2",
+    "title": "A Latent Transformer for Disentangled Face Editing in Images and Videos",
+    "page_num": 1,
+    "chunk_id": "2106.11895v2_page1_chunk3",
+    "text": "in the ﬁlm post-production industry. For example, many actors are retouched for beautiﬁcation or other spe- cial makeup effects. For such tasks, it is highly desirable for artists to be able to control a facial attribute without affecting other informations. Consequently, a face editing method should rely on disentangled attributes and permit identity-preserving manipulations. Earlier works based on deep learning focus on encoder- decoder based architectures [8, 17]. Despite the improve- ments in quality of recent results, these approaches are lim- ited in resolution and generate noticeable artifacts on high resolution images. Therefore, they are not appropriate for high quality video editing. In addition, these methods are difﬁcult to control, because the modiﬁcation of one facial arXiv:2106.11895v2 [cs.CV] 17 Aug 2021"
+  },
+  {
+    "paper_id": "2106.11895v2",
+    "title": "A Latent Transformer for Disentangled Face Editing in Images and Videos",
+    "page_num": 2,
+    "chunk_id": "2106.11895v2_page2_chunk1",
+    "text": "attribute tends to modify other attributes. Recently, generative networks have shown impressive progress in high quality image synthesis [5, 19, 20, 21]. Studies show that moving latent codes along certain direc- tions in the latent space of generative models can result in variations of visual attributes in the corresponding gener- ated images [2, 9, 35, 3, 42]. These assume that for a binary attribute, there exists a hyper-plane in the latent space which divides the data into two groups. However, this hypothe- sis has several limitations. Firstly, successful manipulations can only be achieved in well disentangled and linearized la- tent spaces. Although the latent space is disentangled com- pared to the image space, we show in this paper that achiev- ing facial attribute manipulation with linear transformations is a very strong and limiting hypothesis. Furthermore, since these methods are trained on synthetic images (generated from random points in the latent space), their performance on real images (natural, “in-the-wild” photos) is less satis- fying. This is an often ignored, but critical, problem. In this work, we tackle the problem of editing facial at- tributes on real images. To address the aforementioned lim- itations, we propose a transformation network to navigate the"
+  },
+  {
+    "paper_id": "2106.11895v2",
+    "title": "A Latent Transformer for Disentangled Face Editing in Images and Videos",
+    "page_num": 2,
+    "chunk_id": "2106.11895v2_page2_chunk2",
+    "text": "space), their performance on real images (natural, “in-the-wild” photos) is less satis- fying. This is an often ignored, but critical, problem. In this work, we tackle the problem of editing facial at- tributes on real images. To address the aforementioned lim- itations, we propose a transformation network to navigate the latent space of the generative model. We project real images to the latent space of the state-of-the-art image gen- erator StyleGAN and train our model on the projected latent codes. The transformation network generates disentangled, identity-preserving and controllable attribute editing results on real images. These key advantages allow us to extend our method to the case of videos, where stability and quality are of crucial importance. For this, we introduce a pipeline which achieves stable and realistic facial attribute editing on high resolution videos. Our contributions can be summarized as follows. We propose a latent transformation network for facial attribute editing, achieving disentangled and controllable manipula- tions on real images with good identity preservation. Our method can carry out efﬁcient sequential attribute editing on real images. We introduce a pipeline to generalize the face editing to videos and generate realistic and stable ma- nipulations on high resolution videos. The rest"
+  },
+  {
+    "paper_id": "2106.11895v2",
+    "title": "A Latent Transformer for Disentangled Face Editing in Images and Videos",
+    "page_num": 2,
+    "chunk_id": "2106.11895v2_page2_chunk3",
+    "text": "editing, achieving disentangled and controllable manipula- tions on real images with good identity preservation. Our method can carry out efﬁcient sequential attribute editing on real images. We introduce a pipeline to generalize the face editing to videos and generate realistic and stable ma- nipulations on high resolution videos. The rest of the paper is organized as follows: In Sec- tion 2 we summarize the related works in facial attribute editing, disentangled representation and video editing. Sec- tion 3 presents our latent transformation network and the training details. In Section 4 we present the experimental results of disentangled attribute editing on real images, and provide qualitative and quantitative comparisons with state- of-the-art methods. We further present results of sequential attribute editing on real images and give an ablation study on the choice of loss compositions. In Section 5 we intro- duce the pipeline to apply facial attribute editing on videos and show experimental results on video sequences. We con- clude the paper in Section 6. 2. Related works Facial Attribute Editing. Previous works regarding fa- cial attributes are extensive and mainly focus on images of limited resolution. An optimization-based approach by Up- church et al. [38] showed that it is possible"
+  },
+  {
+    "paper_id": "2106.11895v2",
+    "title": "A Latent Transformer for Disentangled Face Editing in Images and Videos",
+    "page_num": 2,
+    "chunk_id": "2106.11895v2_page2_chunk4",
+    "text": "show experimental results on video sequences. We con- clude the paper in Section 6. 2. Related works Facial Attribute Editing. Previous works regarding fa- cial attributes are extensive and mainly focus on images of limited resolution. An optimization-based approach by Up- church et al. [38] showed that it is possible to achieve se- mantic transformations such as aging or adding facial hair by interpolating deep features in a pre-trained feature space. Another type of approach train feed-forward models for the attribute editing task. Attribute2image [43] proposed to train a Conditional Variational Auto-Encoder to gener- ate attribute-conditioned images. With the success of gen- erative networks in image synthesis, a number of studies [8, 15, 24, 25, 41] explored the possibility of training auto- encoders using adversarial learning. FaderNet [24] and StarGAN [8] proposed to disentangle different attributes in the latent space of auto-encoder and generate the output image conditioned on the target attributes. AttGAN [15] and STGAN [25] enhanced the ﬂexible translation of at- tributes to improve the image quality by relaxing the strict constraints on the target attributes. Several studies investi- gate different possibilities to tackle high resolution images. CooGAN [7] proposed a patch-based local-global frame- work to process HR"
+  },
+  {
+    "paper_id": "2106.11895v2",
+    "title": "A Latent Transformer for Disentangled Face Editing in Images and Videos",
+    "page_num": 2,
+    "chunk_id": "2106.11895v2_page2_chunk5",
+    "text": "target attributes. AttGAN [15] and STGAN [25] enhanced the ﬂexible translation of at- tributes to improve the image quality by relaxing the strict constraints on the target attributes. Several studies investi- gate different possibilities to tackle high resolution images. CooGAN [7] proposed a patch-based local-global frame- work to process HR images in patches. Observing the great progress of generative networks in high quality image syn- thesis, Viazovetskyi et al. [39] trained the pix2pixHD model [40] for single attribute editing with the synthetic images generated by StyleGAN2 [21]. Disentangled Representations. In the paper of Style- GAN [20], the authors examined the effects of mixing two latent codes on the generated image (which is referred as style mixing), and found that each subset controls mean- ingful high-level attributes of the image. Inspired by this, some studies have attempted to explore disentangled rep- resentations in the latent space of generative networks, es- pecially StyleGAN. One optimization-based method, Im- age2StyleGAN++ [2], carried out local editing along with global semantic edits on images by applying masked inter- polation on the activation features of StyleGAN. Collins et al. [9] performed a k-means clustering on the activations of StyleGAN and detected a disentanglement of semantic ob- jects,"
+  },
+  {
+    "paper_id": "2106.11895v2",
+    "title": "A Latent Transformer for Disentangled Face Editing in Images and Videos",
+    "page_num": 2,
+    "chunk_id": "2106.11895v2_page2_chunk6",
+    "text": "StyleGAN. One optimization-based method, Im- age2StyleGAN++ [2], carried out local editing along with global semantic edits on images by applying masked inter- polation on the activation features of StyleGAN. Collins et al. [9] performed a k-means clustering on the activations of StyleGAN and detected a disentanglement of semantic ob- jects, which enables further local semantic editing on the generated image. For high level semantic edits, Ganalyze [13] learned a manifold in the latent space of BigGAN [5] to generate images of different memorability. InterFaceGAN [35] proposed to learn a hyper-plane for a binary classiﬁ- cation in the latent space, which one can use to manipulate the target facial attribute by simple interpolation. Follow- ing their work, StyleSpace [42] carried out a quantitative study on the latent spaces of StyleGAN [21] and realized a highly localized and disentangled control of the visual at- tributes. StyleFlow [3] achieved conditional exploration of the latent space by training conditional normalizing ﬂows. StyleRig [36] introduced a method to provide a face rig-"
+  },
+  {
+    "paper_id": "2106.11895v2",
+    "title": "A Latent Transformer for Disentangled Face Editing in Images and Videos",
+    "page_num": 2,
+    "chunk_id": "2106.11895v2_page2_chunk7",
+    "text": "latent space by training conditional normalizing ﬂows. StyleRig [36] introduced a method to provide a face rig-"
+  },
+  {
+    "paper_id": "2106.11895v2",
+    "title": "A Latent Transformer for Disentangled Face Editing in Images and Videos",
+    "page_num": 3,
+    "chunk_id": "2106.11895v2_page3_chunk1",
+    "text": "like control over a pretrained and ﬁxed StyleGAN via a 3D morphable face model. Yao et al. [44] proposed to navi- gate the latent space of StyleGAN in a non-linear manner to achieve disentangled manipulations of facial attributes. To ﬁnd out the disentangled directions, some researches at- tempted to analyze the latent space of generative networks using Principal Component Analysis (PCA). PCAAE [31] presented an PCA auto-encoder, whose latent space is pro- gressively increased during training and results in a sepa- ration of intrinsic data attributes into different components. GANSpace [18] performed PCA in the latent space of gen- erative networks, explored the principal directions and dis- covered interpretable controls. The above-mentioned meth- ods generally focus on manipulations of synthetic images, as it remains a challenge to project real images to the la- tent space of StyleGAN. Image2StyleGAN used optimiza- tion method to project real images to an extended latent space of StyleGAN, but the characteristics of which differ from the original latent space thus not suitable for manipu- lation. Some recent works [27, 32, 34, 46] trying to train an encoder together with the StyleGAN model. Although the images cannot be perfectly reconstructed, we see the possi- bility of"
+  },
+  {
+    "paper_id": "2106.11895v2",
+    "title": "A Latent Transformer for Disentangled Face Editing in Images and Videos",
+    "page_num": 3,
+    "chunk_id": "2106.11895v2_page3_chunk2",
+    "text": "space of StyleGAN, but the characteristics of which differ from the original latent space thus not suitable for manipu- lation. Some recent works [27, 32, 34, 46] trying to train an encoder together with the StyleGAN model. Although the images cannot be perfectly reconstructed, we see the possi- bility of carrying out attribute editing on real images using the disentanglement characteristics of the StyleGAN latent space. Video-based Face Editing. Recent works on face video synthesis mainly address two problems: 1) generating a face video sequence from a sketch video or a reference im- age (often referred as face reenactment), and 2) facial at- tribute editing on videos. Garrido et al. [12] proposed an image-based reenactment system to achieve face replace- ment in video. Face2Face [37] presented an approach for real-time facial reenactment of a target video using non- rigid model-based bundling. Averbuch-Elor et al. [4] pre- sented a technique to animate a still portrait with a driving video, but limited to mild movements. Kim et al. [22] pro- posed to use generative neural networks for re-animation of portrait videos, which transforms not only the facial expres- sions but also the full upper body and background. Most of these methods handle"
+  },
+  {
+    "paper_id": "2106.11895v2",
+    "title": "A Latent Transformer for Disentangled Face Editing in Images and Videos",
+    "page_num": 3,
+    "chunk_id": "2106.11895v2_page3_chunk3",
+    "text": "animate a still portrait with a driving video, but limited to mild movements. Kim et al. [22] pro- posed to use generative neural networks for re-animation of portrait videos, which transforms not only the facial expres- sions but also the full upper body and background. Most of these methods handle only low-quality video shots. A pop- ular open-source deepfake system DeepFaceLab [30] has attracted much attention. Incorporating productivity tools such as manual face detection and landmark extraction tool, their pipeline generates high ﬁdelity face swapping results on videos. To realize facial attribute editing directly on videos, Rav-Acha et al. [33] suggested to convert video frames to an “unwrap mosaic”, paint and re-render the mo- saic to videos. Despite satisfying results, computing the mosaic for each video shot is a long process and requires a smooth variation to construct successfully. Duong et al. [10] proposed an approach to generate age-progressed fa- cial images in video sequences using deep reinforcement learning. Many recent works use deep learning techniques to realize facial attribute editing on still images. However, up to now, only a few works have addressed video-based attribute editing problem [45]. 3. Method In this section, we propose a framework to edit"
+  },
+  {
+    "paper_id": "2106.11895v2",
+    "title": "A Latent Transformer for Disentangled Face Editing in Images and Videos",
+    "page_num": 3,
+    "chunk_id": "2106.11895v2_page3_chunk4",
+    "text": "cial images in video sequences using deep reinforcement learning. Many recent works use deep learning techniques to realize facial attribute editing on still images. However, up to now, only a few works have addressed video-based attribute editing problem [45]. 3. Method In this section, we propose a framework to edit faces in real images and videos via the latent space of StyleGAN. 3.1. Overview For a given real image I, we assume that we can compute a latent representation w ∈W associated to a generator G. An inversion method is trained so that I ≈G(w). We aim to train a latent transformer T in the latent space to edit a single attribute of the projected image G(w). The image synthesized from T(w) is denoted by G(T(w)). It shares all the attributes with G(w) except the target attribute being manipulated. To train the latent transformer, we propose a training framework that computes all the losses solely in the latent space W. Let {a1, a2, ..., aN} be a set of image attributes, where N is the total number of considered attributes. For each attribute ak, a different Tk is trained. To predict the attributes from the latent codes we use a"
+  },
+  {
+    "paper_id": "2106.11895v2",
+    "title": "A Latent Transformer for Disentangled Face Editing in Images and Videos",
+    "page_num": 3,
+    "chunk_id": "2106.11895v2_page3_chunk5",
+    "text": "computes all the losses solely in the latent space W. Let {a1, a2, ..., aN} be a set of image attributes, where N is the total number of considered attributes. For each attribute ak, a different Tk is trained. To predict the attributes from the latent codes we use a latent classiﬁer C : W →{0, 1}N. C is pre-trained and then its weights are frozen during the training of Tk. We train Tk with the following three objectives: • To ensure that Tk manipulates attribute ak effectively, we minimize the binary classiﬁcation loss: Lcls = −yk log (pk) −(1 −yk) log (1 −pk), (1) where pk = C(Tk(w))[k] is the probability of the target attribute and yk ∈{0, 1} is the desired label. • To ensure that other attributes ai, i ̸= k remain the same, we apply an attribute regularization term: Lattr = X i̸=k (1 −γik) Ew,i[||pi −C(w)[i]||2], (2) where γik is the absolute correlation value between ai and the target attribute ak, measured on the training dataset. This regularization term is weighted based on correlation to prevent the attributes which are naturally correlated with the target from being over-constrained, i.e. ‘chubby’ and ‘double chin’. • To"
+  },
+  {
+    "paper_id": "2106.11895v2",
+    "title": "A Latent Transformer for Disentangled Face Editing in Images and Videos",
+    "page_num": 3,
+    "chunk_id": "2106.11895v2_page3_chunk6",
+    "text": "−C(w)[i]||2], (2) where γik is the absolute correlation value between ai and the target attribute ak, measured on the training dataset. This regularization term is weighted based on correlation to prevent the attributes which are naturally correlated with the target from being over-constrained, i.e. ‘chubby’ and ‘double chin’. • To ensure that the identity of the person is preserved, we further apply a latent code regularization: Lrec = Ew[||T(w) −w||2]. (3) The full objective loss can be described as: L = Lcls + λattrLattr + λrecLrec, (4) where λattr and λrec are weights balancing each loss."
+  },
+  {
+    "paper_id": "2106.11895v2",
+    "title": "A Latent Transformer for Disentangled Face Editing in Images and Videos",
+    "page_num": 4,
+    "chunk_id": "2106.11895v2_page4_chunk1",
+    "text": "Figure 2: Video manipulation pipeline. Each input frame is cropped and aligned to a face image individually. A pretrained encoder [34] is used to encode the face images to the latent space W+ of StyleGAN [21]. The obtained latent codes are processed by the proposed latent transformer T to realize the attribute editing. The manipulated latent codes are further decoded by StyleGAN to generate the manipulated face images, which are blended with the original input frames to get the output frames. 3.2. Training and models To realize attribute editing on real images, we ﬁrst need to compute the corresponding latent codes in the latent space of StyleGAN. Unlike a traditional generative network which feeds random vectors as an input to the ﬁrst layers, StyleGAN has a different design. The generator takes a con- stant tensor as input, while each convolution layer output is controlled by style codes via adaptive instance normaliza- tion layers [16]. A Gaussian random latent code z ∈Z is ﬁrst passed through a mapping network to get an interme- diate latent code w ∈W, which is further specialized by learned afﬁne transforms to style codes y. Given a target image x, ﬁnding the corresponding latent code in"
+  },
+  {
+    "paper_id": "2106.11895v2",
+    "title": "A Latent Transformer for Disentangled Face Editing in Images and Videos",
+    "page_num": 4,
+    "chunk_id": "2106.11895v2_page4_chunk2",
+    "text": "normaliza- tion layers [16]. A Gaussian random latent code z ∈Z is ﬁrst passed through a mapping network to get an interme- diate latent code w ∈W, which is further specialized by learned afﬁne transforms to style codes y. Given a target image x, ﬁnding the corresponding latent code in W re- mains difﬁcult, and the quality of the reconstruction is not fully satisfactory. Image2StyleGAN [1] go a step further by computing the latent code in an extended latent space W+, where latent code w controlling each layer may be different, whereas the original setting requires them to be the same. The target image is thus better reconstructed from the latent code obtained in W+. In our approach, we train the latent transformer T in the latent space W+, which is speciﬁcally designed for the pro- jection of latent codes of real images. To prepare the train- ing data, we compute the latent codes in W+ for each image in CelebA-HQ dataset [19], using a pre-trained StyleGAN encoder proposed by Richardson et al. [34]. Combined with the annotations for each image, we obtain the “latent code - label” pairs as our training data. Latent Classiﬁer. To predict attributes on the"
+  },
+  {
+    "paper_id": "2106.11895v2",
+    "title": "A Latent Transformer for Disentangled Face Editing in Images and Videos",
+    "page_num": 4,
+    "chunk_id": "2106.11895v2_page4_chunk3",
+    "text": "compute the latent codes in W+ for each image in CelebA-HQ dataset [19], using a pre-trained StyleGAN encoder proposed by Richardson et al. [34]. Combined with the annotations for each image, we obtain the “latent code - label” pairs as our training data. Latent Classiﬁer. To predict attributes on the manipu- lated latent codes, we train an attribute classiﬁer C on the “latent code - label” pairs. The classiﬁer consists of three fully connected layers with ReLU activations in between. C is ﬁxed during the training of the latent transformer. Latent Transformer. Given a latent code w ∈W+, the latent transformer T generates the direction for a single attribute modiﬁcation, where the amount of changes is con- trolled by a scaling factor α. The network is expressed with a single layer of linear transformation f: T(w, α) = w + α · f(w). (5) During training the scaling factor α is set according to the probability p of the target attribute of the input latent code (1 −p for p < 0.5, −p for p > 0.5). At test time, α can be sampled from [−1, 1] or set beyond this range based on the desired amount of changes. 3.3."
+  },
+  {
+    "paper_id": "2106.11895v2",
+    "title": "A Latent Transformer for Disentangled Face Editing in Images and Videos",
+    "page_num": 4,
+    "chunk_id": "2106.11895v2_page4_chunk4",
+    "text": "is set according to the probability p of the target attribute of the input latent code (1 −p for p < 0.5, −p for p > 0.5). At test time, α can be sampled from [−1, 1] or set beyond this range based on the desired amount of changes. 3.3. Video manipulation In this section, we propose a pipeline which applies the image editing method to the case of videos. The encoding process ensures that the encoded latent codes of two con- secutive frames are similar to each other. Therefore, we can reconstruct a face video using the frames projected to the latent space of StyleGAN, which provides the basics for the next manipulation step. Thanks to the stability of our proposed latent transformer, the manipulation does not af- fect the consistency between the latent codes and generates stable edits on the projected frames. An overview of our proposed pipeline is presented in Figure 2. The pipeline consists of three steps: pre-processing, image editing and seamless cloning. Pre-processing. In order to edit the video in the latent space of StyleGAN, we ﬁrst extract face images from the frames, according to the StyleGAN setting. We crop and align each frame around"
+  },
+  {
+    "paper_id": "2106.11895v2",
+    "title": "A Latent Transformer for Disentangled Face Editing in Images and Videos",
+    "page_num": 4,
+    "chunk_id": "2106.11895v2_page4_chunk5",
+    "text": "is presented in Figure 2. The pipeline consists of three steps: pre-processing, image editing and seamless cloning. Pre-processing. In order to edit the video in the latent space of StyleGAN, we ﬁrst extract face images from the frames, according to the StyleGAN setting. We crop and align each frame around the face, following the pre-processing step of FFHQ dataset [20], on which the StyleGAN is pretrained. For face alignment we detect landmarks independently on each frame using a state-of-the-art method [6]. To avoid jitter, we further process the landmarks using optical ﬂow between two consecutive frames and a Gaussian ﬁltering along the whole sequence. All frames are cropped and aligned to have eyes at the center and resized to 1024×1024. Image editing. In this step, we apply our manipulation method on the processed face images. Each frame is en- coded to the latent space of StyleGAN using the pre-trained encoder [34]. The encoded latent codes are processed by the proposed latent transformer to realize the attribute edit- ing. The manipulated latent codes are further decoded by StyleGAN to generate the manipulated face images. Seamless cloning. We use Poisson image editing method [29] to blend the modiﬁed faces with the original"
+  },
+  {
+    "paper_id": "2106.11895v2",
+    "title": "A Latent Transformer for Disentangled Face Editing in Images and Videos",
+    "page_num": 4,
+    "chunk_id": "2106.11895v2_page4_chunk6",
+    "text": "[34]. The encoded latent codes are processed by the proposed latent transformer to realize the attribute edit- ing. The manipulated latent codes are further decoded by StyleGAN to generate the manipulated face images. Seamless cloning. We use Poisson image editing method [29] to blend the modiﬁed faces with the original input frames. In order to blend only the face area, we use the segmentation mask obtained from the detected facial land-"
+  },
+  {
+    "paper_id": "2106.11895v2",
+    "title": "A Latent Transformer for Disentangled Face Editing in Images and Videos",
+    "page_num": 5,
+    "chunk_id": "2106.11895v2_page5_chunk1",
+    "text": "+ Gender + Beard +/- Age + Makeup Original Projected GANSpace InterFaceGAN Ours GANSpace InterFaceGAN Ours Figure 3: Disentangled facial attribute editing on real images. The ﬁrst two columns show the original image and the projected image reconstructed with the encoded latent code in StyleGAN. From the 3rd column in each subﬁgure, from left to right are the manipulation result of GANSpace [18], that of InterFaceGAN [35] and ours. Compared to recent approaches, our method achieves a controllable, disentangled and realistic editing, where the person’s identity is preserved. marks. 3.4. Implementation details We explore disentangled manipulations in the latent space of StyleGAN2 [21] pretrained on FFHQ dataset [20]. In this paper, we conduct all the experiments with the latest StyleGAN2. For simplicity, when we mention StyleGAN, it refers to the latest version - StyleGAN2. To prepare the training data, we project images of CelebA-HQ [19] to the latent space W+ of StyleGAN using a pre-trained encoder [34] and obtain the corresponding latent codes. CelebA-HQ contains 30K face images at 10242 resolution, each anno- tated by 40 facial attributes. We train a separate latent trans- former for each facial attribute. To predict the attributes on the latent codes, we train a"
+  },
+  {
+    "paper_id": "2106.11895v2",
+    "title": "A Latent Transformer for Disentangled Face Editing in Images and Videos",
+    "page_num": 5,
+    "chunk_id": "2106.11895v2_page5_chunk2",
+    "text": "of StyleGAN using a pre-trained encoder [34] and obtain the corresponding latent codes. CelebA-HQ contains 30K face images at 10242 resolution, each anno- tated by 40 facial attributes. We train a separate latent trans- former for each facial attribute. To predict the attributes on the latent codes, we train a latent classiﬁer on the ‘latent code - label’ pairs, which is ﬁxed during the training of the latent transformer. The model is designed to predict all the 40 attributes together, and trained with binary cross entropy loss. For the training of the latent transformer, we use 90% of the prepared data for training set and train the model for 100K iterations, with a batch size of 32. The weights bal- ancing each loss are set to λattr = 1 and λrec = 10. We use Adam optimizer [23] with a learning rate of 0.001, β1 = 0.9 and β2 = 0.999. 4. Experiments 4.1. Disentangled manipulation on real images We compare our results with two state-of-the-art meth- ods: InterFaceGAN [35] and GANSpace [18]. For a fair comparison, we follow the methodology of InterFaceGAN and train their model on StyleGAN2 for the attributes of CelebA-HQ using their ofﬁcial code. The ofﬁcial"
+  },
+  {
+    "paper_id": "2106.11895v2",
+    "title": "A Latent Transformer for Disentangled Face Editing in Images and Videos",
+    "page_num": 5,
+    "chunk_id": "2106.11895v2_page5_chunk3",
+    "text": "0.999. 4. Experiments 4.1. Disentangled manipulation on real images We compare our results with two state-of-the-art meth- ods: InterFaceGAN [35] and GANSpace [18]. For a fair comparison, we follow the methodology of InterFaceGAN and train their model on StyleGAN2 for the attributes of CelebA-HQ using their ofﬁcial code. The ofﬁcial imple- mentation of GANSpace on StyleGAN2 is available. For the evaluation data we use FFHQ, independent from the training of all methods. We project the real images of FFHQ to the latent space W+ of StyleGAN using the pre- trained encoder [34], and manipulate the latent codes us- ing each method with the suggested magnitude of edits (3 for InterFaceGAN, speciﬁed range based on attributes for GANSpace and 1 for our method). Figure 3 compares the manipulation results on the attributes which are available for all methods (‘gender’, ‘age’, ‘beard’ and ‘makeup’). Our method achieves better disentangled manipulations. For example, when changing ‘gender’, both GANSpace and InterFaceGAN modify the hairstyle, and when changing ‘age’, GANSpace adds eyeglasses and InterFaceGAN af-"
+  },
+  {
+    "paper_id": "2106.11895v2",
+    "title": "A Latent Transformer for Disentangled Face Editing in Images and Videos",
+    "page_num": 5,
+    "chunk_id": "2106.11895v2_page5_chunk4",
+    "text": "when changing ‘gender’, both GANSpace and InterFaceGAN modify the hairstyle, and when changing ‘age’, GANSpace adds eyeglasses and InterFaceGAN af-"
+  },
+  {
+    "paper_id": "2106.11895v2",
+    "title": "A Latent Transformer for Disentangled Face Editing in Images and Videos",
+    "page_num": 6,
+    "chunk_id": "2106.11895v2_page6_chunk1",
+    "text": "Figure 4: Attribute and identity preservation vs. target attribute change. For each method, we edit each target attribute with 10 different scaling factors ({0.2 · d, 0.4 · d, ..., 2 · d}, d is the magnitude of change suggested in each method), and generate the modiﬁed images. Attribute preservation rate and identity preservation score are measured on the output images. In the ﬁgure, each point corresponds to a scaling factor, where the position x indicates the target attribute change rate (the fraction of the samples with target attribute successfully changed among all the manipulations). In the upper sub-ﬁgure, the position y indicates the average attribute preservation rate on the other attributes. In the bottom sub-ﬁgure, the position y indicates the average identity preservation score. Ideally, we want higher attribute and identity preservation for the same amount of change on the target attribute (higher curve is better). Original Projected - Chubby + Blond Hair + Smile + Lipstick + Eyeglasses - Eyeglasses + Bangs + Bags Under Eyes - Smiling + Age + Smiling + Beard + Receding Hairline + Eyeglasses + Arched Eyebrows - Smiling - Chubby + Goatee + Eyeglasses + Pale Skin Figure 5: Sequential facial attribute"
+  },
+  {
+    "paper_id": "2106.11895v2",
+    "title": "A Latent Transformer for Disentangled Face Editing in Images and Videos",
+    "page_num": 6,
+    "chunk_id": "2106.11895v2_page6_chunk2",
+    "text": "Chubby + Blond Hair + Smile + Lipstick + Eyeglasses - Eyeglasses + Bangs + Bags Under Eyes - Smiling + Age + Smiling + Beard + Receding Hairline + Eyeglasses + Arched Eyebrows - Smiling - Chubby + Goatee + Eyeglasses + Pale Skin Figure 5: Sequential facial attribute editing on real images. Given an input image, we manipulate a list of attributes sequentially, where each time a single attribute is modiﬁed from the previous latent representation. fects smile. In contrast, our method succeeds to separate hairstyle from ‘gender’ and disentangle ‘eyeglasses’ from ‘age’, thanks to the attribute and latent code regularization terms. The directions of GANSpace are discovered from PCA so that they may control several attributes simultane- ously. For InterFaceGAN, no attribute preservation is ap- plied when searching the semantic boundary. Compared with their methods, our editing results are of better visual quality and preserve the original facial identities better."
+  },
+  {
+    "paper_id": "2106.11895v2",
+    "title": "A Latent Transformer for Disentangled Face Editing in Images and Videos",
+    "page_num": 6,
+    "chunk_id": "2106.11895v2_page6_chunk3",
+    "text": "facial identities better."
+  },
+  {
+    "paper_id": "2106.11895v2",
+    "title": "A Latent Transformer for Disentangled Face Editing in Images and Videos",
+    "page_num": 7,
+    "chunk_id": "2106.11895v2_page7_chunk1",
+    "text": "4.2. Quantitative evaluation We compare our method quantitatively with GANSpace and InterFaceGAN using three metrics: target attribute change rate, attribute preservation rate and identity preser- vation score. Given a set of manipulated samples, the target attribute change rate refers to the percentage of the sam- ples with target attribute varied among all the samples. The attribute preservation rate indicates the proportion of un- changed samples on the other attributes apart from the tar- get. The identity preservation score refers to the average co- sine similarity between the VGG-Face [28] embeddings of the original projected images and the manipulated results. For the evaluation data, we project the ﬁrst 1K images of FFHQ into the the latent space W+ of StyleGAN us- ing the pre-trained encoder [34]. For each input image and each method, we edit each attribute with 10 different scal- ing factors ({0.2 · d, 0.4 · d, ..., 2 · d}, d is the magnitude of change suggested by each method) and generate the corre- sponding images. To predict the attributes on the modiﬁed images, we use a state-of-the-art facial attribute classiﬁer [14], independent from all methods. Based on the classi- ﬁcation result, we consider an attribute active if"
+  },
+  {
+    "paper_id": "2106.11895v2",
+    "title": "A Latent Transformer for Disentangled Face Editing in Images and Videos",
+    "page_num": 7,
+    "chunk_id": "2106.11895v2_page7_chunk2",
+    "text": "· d}, d is the magnitude of change suggested by each method) and generate the corre- sponding images. To predict the attributes on the modiﬁed images, we use a state-of-the-art facial attribute classiﬁer [14], independent from all methods. Based on the classi- ﬁcation result, we consider an attribute active if its proba- bility is greater than 0.5, otherwise inactive (i.e., w/ bangs versus w/o bangs). For each scaling factor, we compute the target attribute change rate, and the attribute preservation rate averaged on the other attributes. To check the identity preservation, we compute the average identity preservation score. Figure 4 presents the attribute and identity preser- vation w.r.t. the target attribute change on the attributes detected by all methods. For attributes like ‘beard’, ‘gen- der’ and ‘smile’, all the methods handle well. For other attributes, we observe that for the same amount of change on the target attribute, our approach has a higher attribute preservation rate while achieving a comparable or better identity preservation score. Overall our method achieves better disentanglement and better identity preservation than existing methods. 4.3. Sequential editing Thanks to the disentanglement property of our approach, it achieves sequential modiﬁcations of several attributes on real images. We"
+  },
+  {
+    "paper_id": "2106.11895v2",
+    "title": "A Latent Transformer for Disentangled Face Editing in Images and Videos",
+    "page_num": 7,
+    "chunk_id": "2106.11895v2_page7_chunk3",
+    "text": "has a higher attribute preservation rate while achieving a comparable or better identity preservation score. Overall our method achieves better disentanglement and better identity preservation than existing methods. 4.3. Sequential editing Thanks to the disentanglement property of our approach, it achieves sequential modiﬁcations of several attributes on real images. We project real images of FFHQ to the latent space W+ of StyleGAN using the pre-trained encoder [34], and apply manipulations on a list of attributes sequentially. As shown in Figure 5, our method achieves disentangled and realistic modiﬁcations, and is not limited to a deﬁned order of attributes. 4.4. Loss analysis We carry out an ablation study to analyze the effects of each regularization terms in Eq. (4). In our proposed base- line, the weights balancing each regularization term are set Original λattr = 0 λrec = 0 Ours Gender Eyeglasse Young Figure 6: Ablation study on the loss composition in Eq. (4). Each row corresponds to a single attribute editing. From left to right: original image, manipulation results of different scenarios. When λattr = 0, editing target attribute affects the others. When λrec = 0 it fails to preserve the facial identity. Our proposed baseline yields better disentangled results"
+  },
+  {
+    "paper_id": "2106.11895v2",
+    "title": "A Latent Transformer for Disentangled Face Editing in Images and Videos",
+    "page_num": 7,
+    "chunk_id": "2106.11895v2_page7_chunk4",
+    "text": "in Eq. (4). Each row corresponds to a single attribute editing. From left to right: original image, manipulation results of different scenarios. When λattr = 0, editing target attribute affects the others. When λrec = 0 it fails to preserve the facial identity. Our proposed baseline yields better disentangled results with identity preserved. Figure 7: Quantitative comparison of different loss compositions. For each scenario, we edit each attribute with 10 scaling factors ({0.2, 0.4, ..., 2}) and measure the attribute preservation rate and identity preservation score on the modiﬁed images. Each point marker represents a scaling factor. The upper sub-ﬁgure presents the average attribute preservation rate w.r.t. target attribute change rate. The bottom sub-ﬁgure presents the average identity preserva- tion score w.r.t. target attribute change rate. Our chosen baseline has a better trade-off between attribute and identity preservation. to λattr = 1 and λrec = 10. We compare with two differ- ent scenarios: λattr = 0 (w/o attribute regularization) and λrec = 0 (w/o latent regularization). As shown in Figure 6, when λattr = 0 the output is not only manipulated on the target attribute but also affected on the other attributes, e.g., beard added when changing gender, mouth affected"
+  },
+  {
+    "paper_id": "2106.11895v2",
+    "title": "A Latent Transformer for Disentangled Face Editing in Images and Videos",
+    "page_num": 7,
+    "chunk_id": "2106.11895v2_page7_chunk5",
+    "text": "differ- ent scenarios: λattr = 0 (w/o attribute regularization) and λrec = 0 (w/o latent regularization). As shown in Figure 6, when λattr = 0 the output is not only manipulated on the target attribute but also affected on the other attributes, e.g., beard added when changing gender, mouth affected when changing age. When λrec = 0, the manipulated images fail to preserve the original facial identity. Balancing each"
+  },
+  {
+    "paper_id": "2106.11895v2",
+    "title": "A Latent Transformer for Disentangled Face Editing in Images and Videos",
+    "page_num": 8,
+    "chunk_id": "2106.11895v2_page8_chunk1",
+    "text": "Input frames - Beard Input frames + Makeup Figure 8: Facial attribute editing on videos. In each sub-ﬁgure, the top row shows the input frames, the bottom row shows the output frames obtained from our proposed video manipulation pipeline. A face image is cropped and aligned from each frame, and encoded to latent space of StyleGAN. The encoded latent code is passed into the latent transformer to get the target attribute varied, then decoded to an output face and blended with the input frame. term, our proposed baseline achieves attribute editing with better disentanglement and identity preservation. Figure 7 provides a quantitative comparison of the three scenarios. As can be observed, our chosen baseline preserves the other attributes best, with the same amount of attribute change, without sacriﬁcing the identity preservation. 4.5. Video editing We apply our manipulation method on real-world videos collected from FILMPAC library [11]. Figure 8 shows the qualitative results of facial attribute editing on videos ob- tained from our proposed pipeline. From each input frame, we crop and align a face image and encode it to the latent space of StyleGAN with a pre-trained encoder [34]. The en- coded latent code is processed by the latent"
+  },
+  {
+    "paper_id": "2106.11895v2",
+    "title": "A Latent Transformer for Disentangled Face Editing in Images and Videos",
+    "page_num": 8,
+    "chunk_id": "2106.11895v2_page8_chunk2",
+    "text": "the qualitative results of facial attribute editing on videos ob- tained from our proposed pipeline. From each input frame, we crop and align a face image and encode it to the latent space of StyleGAN with a pre-trained encoder [34]. The en- coded latent code is processed by the latent transformer to vary the target attribute, then decoded to an output face im- age and blended with the input frame. As can be seen from the results, our proposed method succeeds in removing the facial hair or adding the makeup, without inﬂuencing the consistency between the frames. Nevertheless, we also ob- serve that the proposed method has more difﬁculty handling extreme pose (side face), which may be due to the limitation of the generation capacity of the StyleGAN model. Please refer to the appendix to check the videos and see more video results. 5. Conclusion and future work In this paper, we have presented a latent transformation network to perform facial attribute editing in real images and videos via the latent space of StyleGAN. Our method generates realistic manipulations with better disentangle- ment and identity preservation than other approaches. We have extended our method to the case of videos, achiev-"
+  },
+  {
+    "paper_id": "2106.11895v2",
+    "title": "A Latent Transformer for Disentangled Face Editing in Images and Videos",
+    "page_num": 8,
+    "chunk_id": "2106.11895v2_page8_chunk3",
+    "text": "paper, we have presented a latent transformation network to perform facial attribute editing in real images and videos via the latent space of StyleGAN. Our method generates realistic manipulations with better disentangle- ment and identity preservation than other approaches. We have extended our method to the case of videos, achiev- ing stable and consistent modiﬁcations. To the best of our knowledge, this is the ﬁrst work to present stable facial at- tribute editing on high resolution videos. Some future work could be dedicated to improve both the applicability of the method and the performance on videos. In particular, the method has difﬁculty handling side poses due to the fact that StyleGAN has difﬁculties in generating faces in side poses. This could be potentially addressed by jointly train- ing the StyleGAN encoder with the generator, or training an improved StyleGAN generator using images with better diversity of poses."
+  },
+  {
+    "paper_id": "2106.11895v2",
+    "title": "A Latent Transformer for Disentangled Face Editing in Images and Videos",
+    "page_num": 9,
+    "chunk_id": "2106.11895v2_page9_chunk1",
+    "text": "References [1] Rameen Abdal, Yipeng Qin, and Peter Wonka. Im- age2stylegan: How to embed images into the stylegan latent space? In Proceedings of the IEEE/CVF International Con- ference on Computer Vision, pages 4432–4441, 2019. 4 [2] Rameen Abdal, Yipeng Qin, and Peter Wonka. Im- age2stylegan++: How to edit the embedded images? In Pro- ceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition, pages 8296–8305, 2020. 2 [3] Rameen Abdal, Peihao Zhu, Niloy Mitra, and Peter Wonka. Styleﬂow: Attribute-conditioned exploration of stylegan- generated images using conditional continuous normalizing ﬂows. arXiv e-prints, pages arXiv–2008, 2020. 2 [4] Hadar Averbuch-Elor, Daniel Cohen-Or, Johannes Kopf, and Michael F Cohen. Bringing portraits to life. ACM Transac- tions on Graphics (TOG), 36(6):1–13, 2017. 3 [5] Andrew Brock, Jeff Donahue, and Karen Simonyan. Large scale GAN training for high ﬁdelity natural image synthe- sis. In International Conference on Learning Representa- tions, 2019. 2 [6] Adrian Bulat and Georgios Tzimiropoulos. How far are we from solving the 2d & 3d face alignment problem?(and a dataset of 230,000 3d facial landmarks). In Proceedings of the IEEE International Conference on Computer Vision, pages 1021–1030, 2017. 4 [7] Xuanhong Chen, Bingbing Ni, Naiyuan Liu, Ziang Liu, Yiliu Jiang, Loc"
+  },
+  {
+    "paper_id": "2106.11895v2",
+    "title": "A Latent Transformer for Disentangled Face Editing in Images and Videos",
+    "page_num": 9,
+    "chunk_id": "2106.11895v2_page9_chunk2",
+    "text": "Bulat and Georgios Tzimiropoulos. How far are we from solving the 2d & 3d face alignment problem?(and a dataset of 230,000 3d facial landmarks). In Proceedings of the IEEE International Conference on Computer Vision, pages 1021–1030, 2017. 4 [7] Xuanhong Chen, Bingbing Ni, Naiyuan Liu, Ziang Liu, Yiliu Jiang, Loc Truong, and Qi Tian. Coogan: A memory- efﬁcient framework for high-resolution facial attribute edit- ing. In European Conference on Computer Vision, pages 670–686. Springer, 2020. 2 [8] Yunjey Choi, Minje Choi, Munyoung Kim, Jung-Woo Ha, Sunghun Kim, and Jaegul Choo. Stargan: Uniﬁed genera- tive adversarial networks for multi-domain image-to-image translation. In Proceedings of the IEEE Conference on Com- puter Vision and Pattern Recognition, pages 8789–8797, 2018. 1, 2 [9] Edo Collins, Raja Bala, Bob Price, and Sabine Susstrunk. Editing in style: Uncovering the local semantics of gans. In Proceedings of the IEEE/CVF Conference on Computer Vi- sion and Pattern Recognition, pages 5771–5780, 2020. 2 [10] Chi Nhan Duong, Khoa Luu, Kha Gia Quach, Nghia Nguyen, Eric Patterson, Tien D Bui, and Ngan Le. Auto- matic face aging in videos via deep reinforcement learning. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition, pages 10013–10022, 2019. 3 [11]"
+  },
+  {
+    "paper_id": "2106.11895v2",
+    "title": "A Latent Transformer for Disentangled Face Editing in Images and Videos",
+    "page_num": 9,
+    "chunk_id": "2106.11895v2_page9_chunk3",
+    "text": "pages 5771–5780, 2020. 2 [10] Chi Nhan Duong, Khoa Luu, Kha Gia Quach, Nghia Nguyen, Eric Patterson, Tien D Bui, and Ngan Le. Auto- matic face aging in videos via deep reinforcement learning. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition, pages 10013–10022, 2019. 3 [11] FILMPAC. Filmpac footage boutique library. https:// filmpac.com, 2017. 8, 11 [12] Pablo Garrido, Levi Valgaerts, Ole Rehmsen, Thorsten Thormahlen, Patrick Perez, and Christian Theobalt. Auto- matic face reenactment. In Proceedings of the IEEE con- ference on computer vision and pattern recognition, pages 4217–4224, 2014. 3 [13] Lore Goetschalckx, Alex Andonian, Aude Oliva, and Phillip Isola. Ganalyze: Toward visual deﬁnitions of cognitive im- age properties. In Proceedings of the IEEE International Conference on Computer Vision, pages 5744–5753, 2019. 2 [14] Keke He, Yanwei Fu, Wuhao Zhang, Chengjie Wang, Yu- Gang Jiang, Feiyue Huang, and Xiangyang Xue. Harness- ing synthesized abstraction images to improve facial attribute recognition. In IJCAI, pages 733–740, 2018. 7 [15] Zhenliang He, Wangmeng Zuo, Meina Kan, Shiguang Shan, and Xilin Chen. Attgan: Facial attribute editing by only changing what you want. IEEE Transactions on Image Pro- cessing, 28(11):5464–5478, 2019. 2 [16] Xun Huang and Serge Belongie. Arbitrary style"
+  },
+  {
+    "paper_id": "2106.11895v2",
+    "title": "A Latent Transformer for Disentangled Face Editing in Images and Videos",
+    "page_num": 9,
+    "chunk_id": "2106.11895v2_page9_chunk4",
+    "text": "to improve facial attribute recognition. In IJCAI, pages 733–740, 2018. 7 [15] Zhenliang He, Wangmeng Zuo, Meina Kan, Shiguang Shan, and Xilin Chen. Attgan: Facial attribute editing by only changing what you want. IEEE Transactions on Image Pro- cessing, 28(11):5464–5478, 2019. 2 [16] Xun Huang and Serge Belongie. Arbitrary style transfer in real-time with adaptive instance normalization. In Proceed- ings of the IEEE International Conference on Computer Vi- sion, pages 1501–1510, 2017. 4 [17] Xun Huang, Ming-Yu Liu, Serge Belongie, and Jan Kautz. Multimodal unsupervised image-to-image translation. In Proceedings of the European Conference on Computer Vi- sion (ECCV), pages 172–189, 2018. 1 [18] Erik H¨ark¨onen, Aaron Hertzmann, Jaakko Lehtinen, and Sylvain Paris. Ganspace: Discovering interpretable gan con- trols. In Proc. NeurIPS, 2020. 3, 5 [19] Tero Karras, Timo Aila, Samuli Laine, and Jaakko Lehtinen. Progressive growing of gans for improved quality, stability, and variation. In International Conference on Learning Rep- resentations, 2018. 2, 4, 5, 11 [20] Tero Karras, Samuli Laine, and Timo Aila. A style-based generator architecture for generative adversarial networks. In Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition, pages 4401–4410, 2019. 2, 4, 5, 11 [21] Tero Karras, Samuli Laine, Miika Aittala, Janne Hellsten,"
+  },
+  {
+    "paper_id": "2106.11895v2",
+    "title": "A Latent Transformer for Disentangled Face Editing in Images and Videos",
+    "page_num": 9,
+    "chunk_id": "2106.11895v2_page9_chunk5",
+    "text": "resentations, 2018. 2, 4, 5, 11 [20] Tero Karras, Samuli Laine, and Timo Aila. A style-based generator architecture for generative adversarial networks. In Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition, pages 4401–4410, 2019. 2, 4, 5, 11 [21] Tero Karras, Samuli Laine, Miika Aittala, Janne Hellsten, Jaakko Lehtinen, and Timo Aila. Analyzing and improv- ing the image quality of stylegan. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition, pages 8110–8119, 2020. 2, 4, 5, 11 [22] Hyeongwoo Kim, Pablo Garrido, Ayush Tewari, Weipeng Xu, Justus Thies, Matthias Niessner, Patrick P´erez, Chris- tian Richardt, Michael Zollh¨ofer, and Christian Theobalt. Deep video portraits. ACM Transactions on Graphics (TOG), 37(4):1–14, 2018. 3 [23] D. P. Kingma and J. Ba. Adam: A method for stochastic optimization. arXiv:1412.6980, 2014. 5 [24] Guillaume Lample, Neil Zeghidour, Nicolas Usunier, An- toine Bordes, Ludovic Denoyer, and Marc’Aurelio Ran- zato. Fader networks: Manipulating images by sliding at- tributes. In Advances in Neural Information Processing Sys- tems, pages 5967–5976, 2017. 2 [25] Ming Liu, Yukang Ding, Min Xia, Xiao Liu, Errui Ding, Wangmeng Zuo, and Shilei Wen. Stgan: A uniﬁed selective transfer network for arbitrary image attribute editing. In Pro- ceedings of"
+  },
+  {
+    "paper_id": "2106.11895v2",
+    "title": "A Latent Transformer for Disentangled Face Editing in Images and Videos",
+    "page_num": 9,
+    "chunk_id": "2106.11895v2_page9_chunk6",
+    "text": "networks: Manipulating images by sliding at- tributes. In Advances in Neural Information Processing Sys- tems, pages 5967–5976, 2017. 2 [25] Ming Liu, Yukang Ding, Min Xia, Xiao Liu, Errui Ding, Wangmeng Zuo, and Shilei Wen. Stgan: A uniﬁed selective transfer network for arbitrary image attribute editing. In Pro- ceedings of the IEEE Conference on Computer Vision and Pattern Recognition, pages 3673–3682, 2019. 2 [26] Steven R Livingstone and Frank A Russo. The ryer- son audio-visual database of emotional speech and song (ravdess): A dynamic, multimodal set of facial and vo- cal expressions in north american english. PloS one, 13(5):e0196391, 2018. 11 [27] Taesung Park, Jun-Yan Zhu, Oliver Wang, Jingwan Lu, Eli Shechtman, Alexei Efros, and Richard Zhang. Swapping au- toencoder for deep image manipulation. In H. Larochelle,"
+  },
+  {
+    "paper_id": "2106.11895v2",
+    "title": "A Latent Transformer for Disentangled Face Editing in Images and Videos",
+    "page_num": 10,
+    "chunk_id": "2106.11895v2_page10_chunk1",
+    "text": "M. Ranzato, R. Hadsell, M. F. Balcan, and H. Lin, editors, Advances in Neural Information Processing Systems, vol- ume 33, pages 7198–7211. Curran Associates, Inc., 2020. 3 [28] Omkar M Parkhi, Andrea Vedaldi, and Andrew Zisserman. Deep face recognition. British Machine Vision Conference, 2015. 7 [29] Patrick P´erez, Michel Gangnet, and Andrew Blake. Poisson image editing. In ACM SIGGRAPH 2003 Papers, pages 313– 318. 2003. 4 [30] Ivan Petrov, Daiheng Gao, Nikolay Chervoniy, Kunlin Liu, Sugasa Marangonda, Chris Um´e, Jian Jiang, Luis RP, Sheng Zhang, Pingyu Wu, et al. Deepfacelab: A simple, ﬂexi- ble and extensible face swapping framework. arXiv preprint arXiv:2005.05535, 2020. 3 [31] Chi-Hieu Pham, Sa¨ıd Ladjal, and Alasdair Newson. Pcaae: Principal component analysis autoencoder for organising the latent space of generative networks. arXiv preprint arXiv:2006.07827, 2020. 3 [32] Stanislav Pidhorskyi, Donald A Adjeroh, and Gianfranco Doretto. Adversarial latent autoencoders. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition, pages 14104–14113, 2020. 3 [33] Alex Rav-Acha, Pushmeet Kohli, Carsten Rother, and An- drew Fitzgibbon. Unwrap mosaics: A new representation for video editing. In ACM SIGGRAPH 2008 papers, pages 1–11. 2008. 3 [34] Elad Richardson, Yuval Alaluf, Or Patashnik, Yotam Nitzan, Yaniv Azar, Stav Shapiro, and"
+  },
+  {
+    "paper_id": "2106.11895v2",
+    "title": "A Latent Transformer for Disentangled Face Editing in Images and Videos",
+    "page_num": 10,
+    "chunk_id": "2106.11895v2_page10_chunk2",
+    "text": "Vision and Pattern Recognition, pages 14104–14113, 2020. 3 [33] Alex Rav-Acha, Pushmeet Kohli, Carsten Rother, and An- drew Fitzgibbon. Unwrap mosaics: A new representation for video editing. In ACM SIGGRAPH 2008 papers, pages 1–11. 2008. 3 [34] Elad Richardson, Yuval Alaluf, Or Patashnik, Yotam Nitzan, Yaniv Azar, Stav Shapiro, and Daniel Cohen-Or. Encoding in style: a stylegan encoder for image-to-image translation. arXiv preprint arXiv:2008.00951, 2020. 3, 4, 5, 7, 8, 11 [35] Yujun Shen, Jinjin Gu, Xiaoou Tang, and Bolei Zhou. In- terpreting the latent space of gans for semantic face editing. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition, pages 9243–9252, 2020. 2, 5 [36] Ayush Tewari, Mohamed Elgharib, Gaurav Bharaj, Florian Bernard, Hans-Peter Seidel, Patrick P´erez, Michael Zoll- hofer, and Christian Theobalt. Stylerig: Rigging style- gan for 3d control over portrait images. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition, pages 6142–6151, 2020. 2 [37] Justus Thies, Michael Zollhofer, Marc Stamminger, Chris- tian Theobalt, and Matthias Nießner. Face2face: Real-time face capture and reenactment of rgb videos. In Proceed- ings of the IEEE conference on computer vision and pattern recognition, pages 2387–2395, 2016. 3 [38] Paul Upchurch, Jacob Gardner, Geoff Pleiss,"
+  },
+  {
+    "paper_id": "2106.11895v2",
+    "title": "A Latent Transformer for Disentangled Face Editing in Images and Videos",
+    "page_num": 10,
+    "chunk_id": "2106.11895v2_page10_chunk3",
+    "text": "pages 6142–6151, 2020. 2 [37] Justus Thies, Michael Zollhofer, Marc Stamminger, Chris- tian Theobalt, and Matthias Nießner. Face2face: Real-time face capture and reenactment of rgb videos. In Proceed- ings of the IEEE conference on computer vision and pattern recognition, pages 2387–2395, 2016. 3 [38] Paul Upchurch, Jacob Gardner, Geoff Pleiss, Robert Pless, Noah Snavely, Kavita Bala, and Kilian Weinberger. Deep feature interpolation for image content changes. In Proceed- ings of the IEEE Conference on Computer Vision and Pattern Recognition, pages 7064–7073, 2017. 2 [39] Yuri Viazovetskyi, Vladimir Ivashkin, and Evgeny Kashin. Stylegan2 distillation for feed-forward image manipulation. In European Conference on Computer Vision, pages 170– 186. Springer, 2020. 2 [40] Ting-Chun Wang, Ming-Yu Liu, Jun-Yan Zhu, Andrew Tao, Jan Kautz, and Bryan Catanzaro. High-resolution image syn- thesis and semantic manipulation with conditional gans. In Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition, pages 8798–8807, 2018. 2 [41] Rongliang Wu and Shijian Lu. Leed: Label-free expres- sion editing via disentanglement. In European Conference on Computer Vision, pages 781–798. Springer, 2020. 2 [42] Zongze Wu, Dani Lischinski, and Eli Shechtman. Stylespace analysis: Disentangled controls for stylegan image genera- tion. arXiv preprint arXiv:2011.12799, 2020. 2 [43] Xinchen Yan, Jimei Yang,"
+  },
+  {
+    "paper_id": "2106.11895v2",
+    "title": "A Latent Transformer for Disentangled Face Editing in Images and Videos",
+    "page_num": 10,
+    "chunk_id": "2106.11895v2_page10_chunk4",
+    "text": "Rongliang Wu and Shijian Lu. Leed: Label-free expres- sion editing via disentanglement. In European Conference on Computer Vision, pages 781–798. Springer, 2020. 2 [42] Zongze Wu, Dani Lischinski, and Eli Shechtman. Stylespace analysis: Disentangled controls for stylegan image genera- tion. arXiv preprint arXiv:2011.12799, 2020. 2 [43] Xinchen Yan, Jimei Yang, Kihyuk Sohn, and Honglak Lee. Attribute2image: Conditional image generation from visual attributes. In European Conference on Computer Vision, pages 776–791. Springer, 2016. 2 [44] Xu Yao, Alasdair Newson, Yann Gousseau, and Pierre Hel- lier. Learning non-linear disentangled editing for stylegan. In 2021 IEEE International Conference on Image Process- ing (ICIP). IEEE, 2021. 3 [45] Xin Zheng, Yanqing Guo, Huaibo Huang, Yi Li, and Ran He. A survey of deep facial attribute analysis. International Journal of Computer Vision, pages 1–33, 2020. 3 [46] Jiapeng Zhu, Yujun Shen, Deli Zhao, and Bolei Zhou. In- domain gan inversion for real image editing. In European Conference on Computer Vision, pages 592–608. Springer, 2020. 3"
+  },
+  {
+    "paper_id": "2106.11895v2",
+    "title": "A Latent Transformer for Disentangled Face Editing in Images and Videos",
+    "page_num": 10,
+    "chunk_id": "2106.11895v2_page10_chunk5",
+    "text": "European Conference on Computer Vision, pages 592–608. Springer, 2020. 3"
+  },
+  {
+    "paper_id": "2106.11895v2",
+    "title": "A Latent Transformer for Disentangled Face Editing in Images and Videos",
+    "page_num": 11,
+    "chunk_id": "2106.11895v2_page11_chunk1",
+    "text": "Appendix We provide further details on the experiments described in the main paper. Sec. A presents additional results of disentangled attribute manipulation and sequential attribute manipulation on real images of FFHQ dataset [20]. Sec. B provides additional results of facial attribute editing on videos collected from FILMPAC library [11] and RAVDESS dataset [26]. We show that our method handles disentangled and sequential facial attribute ma- nipulation on images and videos. Please refer to our project page to view the facial attribute editing on videos: https://github.com/InterDigitalInc/ latent-transformer/tree/master/image. A. More results on real image editing We provide additional results of disentangled attribute manipulation on real images in Figure 9, where only one at- tribute is modiﬁed at a time from the ﬁrst projected image. Figure 10 presents additional results on sequential attribute manipulation. Here, we successively manipulate a list of attributes, meaning that each modiﬁcation is performed on top of all previous modiﬁcations. We have trained a separate latent transformer for each of the 40 attributes in CelebA- HQ dataset [19]. Our method generates disentangled and identity-preserving manipulations for most of the attributes. We show some failure cases in Figure 13. When changing ‘wavy hair’, only slight changes appear in the hair."
+  },
+  {
+    "paper_id": "2106.11895v2",
+    "title": "A Latent Transformer for Disentangled Face Editing in Images and Videos",
+    "page_num": 11,
+    "chunk_id": "2106.11895v2_page11_chunk2",
+    "text": "modiﬁcations. We have trained a separate latent transformer for each of the 40 attributes in CelebA- HQ dataset [19]. Our method generates disentangled and identity-preserving manipulations for most of the attributes. We show some failure cases in Figure 13. When changing ‘wavy hair’, only slight changes appear in the hair. One possible reason is that the hair structures are controlled by the noise inputs in StyleGAN [21], while the pre-trained en- coder [34] uses ﬁxed noise inputs during training, which is a reasonable choice as the noise inputs have too many de- grees of freedom to be reconstructed. In the case of ‘wear- ing hat’, we fail to generate a real hat. This attribute is very unbalanced in CelebA-HQ, so that it is difﬁcult to learn the correct transformation. B. More results on video manipulation As mentioned in Sec. 5.2 of the main paper, we present additional facial attribute editing results on videos in Figure 11. Each sub-ﬁgure corresponds to a frame extracted from the corresponding video, in which the indicated attributes are modiﬁed. For each video, we edit two attributes se- quentially, and generate disentangled manipulation results. For example, in Figure 11(c) when changing the person to woman, our"
+  },
+  {
+    "paper_id": "2106.11895v2",
+    "title": "A Latent Transformer for Disentangled Face Editing in Images and Videos",
+    "page_num": 11,
+    "chunk_id": "2106.11895v2_page11_chunk3",
+    "text": "results on videos in Figure 11. Each sub-ﬁgure corresponds to a frame extracted from the corresponding video, in which the indicated attributes are modiﬁed. For each video, we edit two attributes se- quentially, and generate disentangled manipulation results. For example, in Figure 11(c) when changing the person to woman, our method does not inﬂuence the attribute ‘beard’, despite the fact that it is correlated with gender. Besides, by varying the scaling factor progressively along the se- quence, we achieve progressive attribute editing on videos. As shown by the video in Figure 12, we can simulate a pro- gressive smiling process by smoothly varying the scaling factor. Overall, our method generates stable and consistent manipulation results on videos, provided that motion is not too strong. When there are quick changes of pose, we ob- serve lighting or geometric artifacts. These artifacts are in fact due to the projection in the latent space, and therefore necessarily extend to the manipulated videos. As can be seen from the video in Figure 14, the manipulation during the ﬁrst half of the video is realistic and consistent. But when the face turns to a side pose, the projected face is not well reconstructed and therefore"
+  },
+  {
+    "paper_id": "2106.11895v2",
+    "title": "A Latent Transformer for Disentangled Face Editing in Images and Videos",
+    "page_num": 11,
+    "chunk_id": "2106.11895v2_page11_chunk4",
+    "text": "space, and therefore necessarily extend to the manipulated videos. As can be seen from the video in Figure 14, the manipulation during the ﬁrst half of the video is realistic and consistent. But when the face turns to a side pose, the projected face is not well reconstructed and therefore neither is the manipulated face. This may be due to the limited reconstruction capacity of the pre-trained encoder and StyleGAN model when the pose is not frontal."
+  },
+  {
+    "paper_id": "2106.11895v2",
+    "title": "A Latent Transformer for Disentangled Face Editing in Images and Videos",
+    "page_num": 12,
+    "chunk_id": "2106.11895v2_page12_chunk1",
+    "text": "Single attribute manipulation Original Projected Arched Eyebrows - Chubby - Pointy Nose - Smiling Pale Skin Original Projected Black Hair Smiling Bags Under Eyes - Age Eyeglasses Original Projected - Chubby Bangs Smiling Age Makeup Original Projected - Chubby - Smiling - Narrow Eyes Makeup Eyeglasses Original Projected - Eyeglasses Smiling Goatee Arched Eyebrows - Age Original Projected Beard Bushy Eyebrows Mouth Slightly Open Receding Hairline Eyeglasses Original Projected - Smiling - Chubby Beard Eyeglasses Receding Hairline Original Projected Smiling Goatee - Eyeglasses - Arched Eyebrows - Age Figure 9: Single attribute editing on real images. Given an input image, we show manipulation results on several attributes, where each time a single attribute is modiﬁed from the ﬁrst projected latent representation."
+  },
+  {
+    "paper_id": "2106.11895v2",
+    "title": "A Latent Transformer for Disentangled Face Editing in Images and Videos",
+    "page_num": 13,
+    "chunk_id": "2106.11895v2_page13_chunk1",
+    "text": "Sequential attribute manipulation Original Projected + Arched Eyebrows - Chubby - Pointy Nose - Smiling + Pale Skin Original Projected + Black Hair + Smiling + Bags Under Eyes - Age + Eyeglasses Original Projected - Chubby + Bangs + Smiling + Age + Makeup Original Projected - Chubby - Smiling - Narrow Eyes + Makeup + Eyeglasses Original Projected - Eyeglasses + Smiling + Goatee + Arched Eyebrows - Age Original Projected + Beard + Bushy Eyebrows + Mouth Slightly Open + Receding Hairline + Eyeglasses Original Projected - Smiling - Chubby + Beard + Eyeglasses + Receding Hairline Original Projected + Smiling + Goatee - Eyeglasses - Arched Eyebrows - Age Figure 10: Sequential attribute editing on real images. Given an input image, we manipulate a list of attributes sequentially, where each time a single attribute is modiﬁed on top of the previous modﬁcations."
+  },
+  {
+    "paper_id": "2106.11895v2",
+    "title": "A Latent Transformer for Disentangled Face Editing in Images and Videos",
+    "page_num": 14,
+    "chunk_id": "2106.11895v2_page14_chunk1",
+    "text": "(a) 1 man with hat Arched Eyebrows Beard.avi (b) 2 woman with bricks Eyeglasses Age.avi - Arched Eyebrows, - Beard + Eyeglasses, + Age (c) 3 man in forest Gender Beard.avi (d) 4 man with muscle Smiling Young.avi Gender, - Beard + Smile, - Age (e) 5 man talking Bags Under Eyes Eyeglasses.avi (f) 6 woman turning Smiling Makeup.avi - Bags under eyes, + Eyeglasses - Smile, + Makeup Figure 11: Facial attribute editing on videos. Each sub-ﬁgure corresponds to a frame extracted from the speciﬁed video, corresponding to the manipulation result of the indicated attributes. In each sub-ﬁgure, the upper row shows the original frame and the projected frame reconstructed with the encoded latent code in StyleGAN, the bottom row shows the manipulated frames for the ﬁrst attribute and then for two attributes. Please open the video ﬁles to visualize the manipulation details."
+  },
+  {
+    "paper_id": "2106.11895v2",
+    "title": "A Latent Transformer for Disentangled Face Editing in Images and Videos",
+    "page_num": 15,
+    "chunk_id": "2106.11895v2_page15_chunk1",
+    "text": "7 woman with bricks progressive Smiling.avi, + Smile progressively Figure 12: Progressive attribute editing on videos. By varying the scaling factor progressively along the sequence, the corresponding attribute is gradually varied. This ﬁgure show a frame extracted from the edited video, which corresponds to the progressive manipulation of the attribute ‘smile’. From left to right: the original frame, the projected frame, and the manipulated frame. Please open the video ﬁle to fully visualize the manipulation. Original Projected + Wavy Hair Original Projected + Wearing Hat Figure 13: Failure case of attribute manipulation on real images. Each row corresponds to the manipulation of an attribute. From left to right: the original image, the projected image and the manipulated image. For ‘wavy hair’, our model yields only slight changes. In the case of ‘wearing hat’, we fail to generate a real hat. failure case woman sitting Makeup.avi, + Makeup Figure 14: Failure case of attribute manipulation on a video. This is a side pose frame extracted from the named video, which is the manipulation result of the attribute ‘makeup’. From left to right: the original frame, the projected frame, and the manipulated frame. The face is not well reconstructed in the projected"
+  },
+  {
+    "paper_id": "2106.11895v2",
+    "title": "A Latent Transformer for Disentangled Face Editing in Images and Videos",
+    "page_num": 15,
+    "chunk_id": "2106.11895v2_page15_chunk2",
+    "text": "case of attribute manipulation on a video. This is a side pose frame extracted from the named video, which is the manipulation result of the attribute ‘makeup’. From left to right: the original frame, the projected frame, and the manipulated frame. The face is not well reconstructed in the projected frame, and consequently the manipulated output contains defects. This is due to the limited generation capacity of the pre-trained encoder and the StyleGAN generator."
+  }
+]

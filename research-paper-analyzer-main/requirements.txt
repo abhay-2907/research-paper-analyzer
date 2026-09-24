@@ -1,0 +1,10 @@
+streamlit
+sentence-transformers
+pymupdf
+groq
+pandas
+numpy
+tqdm
+feedparser
+requests
+python-dotenv

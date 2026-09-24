@@ -1,0 +1,520 @@
+[
+  {
+    "paper_id": "2209.15001v3",
+    "title": "Dilated Neighborhood Attention Transformer",
+    "page_num": 1,
+    "chunk_id": "2209.15001v3_page1_chunk1",
+    "text": "Dilated Neighborhood Attention Transformer Ali Hassani1, Humphrey Shi1,2 1SHI Lab @ U of Oregon & UIUC, 2Picsart AI Research (PAIR) NA / DiNA (dilation = 1) DiNA (dilation = 2) DiNA (dilation = 3) DiNA (dilation = 4) Figure 1. An illustration of a single pixel’s attention span in Neighborhood Attention (NA) and Dilated Neighborhood Attention (DiNA). NA localizes attention to the pixel’s nearest neighbors. DiNA extends NA’s local attention to a less constrained sparse global attention without additional computational burden. Transformers comprised of both NA and DiNA are capable of preserving locality, maintaining translational equivariance, expanding the receptive ﬁeld exponentially, and capturing longer-range inter-dependencies, leading to signiﬁcant performance boosts in downstream vision tasks. Abstract Transformers are quickly becoming one of the most heavily applied deep learning architectures across modal- ities, domains, and tasks. In vision, on top of ongoing efforts into plain transformers, hierarchical transformers have also gained signiﬁcant attention, thanks to their per- formance and easy integration into existing frameworks. These models typically employ localized attention mecha- nisms, such as the sliding-window Neighborhood Attention (NA) or Swin Transformer’s Shifted Window Self Attention. While effective at reducing self attention’s quadratic com- plexity, local attention weakens two of the most"
+  },
+  {
+    "paper_id": "2209.15001v3",
+    "title": "Dilated Neighborhood Attention Transformer",
+    "page_num": 1,
+    "chunk_id": "2209.15001v3_page1_chunk2",
+    "text": "attention, thanks to their per- formance and easy integration into existing frameworks. These models typically employ localized attention mecha- nisms, such as the sliding-window Neighborhood Attention (NA) or Swin Transformer’s Shifted Window Self Attention. While effective at reducing self attention’s quadratic com- plexity, local attention weakens two of the most desirable properties of self attention: long range inter-dependency modeling, and global receptive ﬁeld. In this paper, we intro- duce Dilated Neighborhood Attention (DiNA), a natural, ﬂexible and efﬁcient extension to NA that can capture more global context and expand receptive ﬁelds exponentially at no additional cost. NA’s local attention and DiNA’s sparse global attention complement each other, and therefore we introduce Dilated Neighborhood Attention Transformer (DiNAT), a new hierarchical vision transformer built upon both. DiNAT variants enjoy signiﬁcant improvements over strong baselines such as NAT, Swin, and ConvNeXt. Our large model is faster and ahead of its Swin counterpart by 1.6% box AP in COCO object detection, 1.4% mask AP in COCO instance segmentation, and 1.4% mIoU in ADE20K semantic segmentation. Paired with new frame- works, our large variant is the new state of the art panop- tic segmentation model on COCO (58.5 PQ) and ADE20K (49.4 PQ), and instance"
+  },
+  {
+    "paper_id": "2209.15001v3",
+    "title": "Dilated Neighborhood Attention Transformer",
+    "page_num": 1,
+    "chunk_id": "2209.15001v3_page1_chunk3",
+    "text": "1.6% box AP in COCO object detection, 1.4% mask AP in COCO instance segmentation, and 1.4% mIoU in ADE20K semantic segmentation. Paired with new frame- works, our large variant is the new state of the art panop- tic segmentation model on COCO (58.5 PQ) and ADE20K (49.4 PQ), and instance segmentation model on Cityscapes (45.1 AP) and ADE20K (35.4 AP) (no extra data). It also matches the state of the art specialized semantic segmen- tation models on ADE20K (58.1 mIoU), and ranks second on Cityscapes (84.5 mIoU) (no extra data). To support and encourage research in this direction, in vision and beyond, we open-source our project at: https:// github.com/ SHI- Labs/Neighborhood-Attention-Transformer. 1. Introduction Transformers [42] have made a signiﬁcant contribution to AI research, starting with natural language understand- ing [12,34] before being applied to other modalities such as speech [14] and vision [13,32], thanks to their universal ar- chitecture built upon self attention. This success inspired ef- forts into attention-based models in vision, from backbone networks [35, 41], to more speciﬁc applications including arXiv:2209.15001v3 [cs.CV] 16 Jan 2023"
+  },
+  {
+    "paper_id": "2209.15001v3",
+    "title": "Dilated Neighborhood Attention Transformer",
+    "page_num": 2,
+    "chunk_id": "2209.15001v3_page2_chunk1",
+    "text": "55.3 87.5 47.8 54.9 54.5 87.4 47.1 54.2 53.7 87.3 46.4 53.5 Bald Eagle Object detection MS-COCO Image classification ImageNet-1K @ 384×384 Instance segmentation MS-COCO Semantic segmentation ADE20K Swin ConvNeXt DiNAT Figure 2. Radar chart comparing Swin-L, ConvNeXt-L, and our DiNAT-L across various visual recognition tasks. Both ConvNeXt and our DiNAT surpass Swin on all tasks. DiNAT further exhibits noticeable improvements over downstream dense recognition tasks compared to ConvNeXt. image generation and density modeling [6, 32], object de- tection [3], image segmentation [20,43], and more. Vision Transformer (ViT) [13] was one of the ﬁrst ma- jor demonstrations of transformers as direct alternatives to Convolutional Neural Networks (CNNs) [19,22,23], the de facto standard in vision. ViT treats an image as a sequence of patches and uses a plain transformer encoder to encode and classify images. It demonstrated competitive perfor- mance to CNNs on large scale image classiﬁcation, and re- sulted in a surge in vision research focused on transformer- based architectures as competitors to CNNs [38,39]. Vision transformers and CNNs are different not only in terms of architecture and building blocks, but also in how they treat data. CNNs typically downsample inputs grad- ually as they pass through the model and"
+  },
+  {
+    "paper_id": "2209.15001v3",
+    "title": "Dilated Neighborhood Attention Transformer",
+    "page_num": 2,
+    "chunk_id": "2209.15001v3_page2_chunk2",
+    "text": "a surge in vision research focused on transformer- based architectures as competitors to CNNs [38,39]. Vision transformers and CNNs are different not only in terms of architecture and building blocks, but also in how they treat data. CNNs typically downsample inputs grad- ually as they pass through the model and construct hierar- chical feature maps. This hierarchical design is crucial for vision, as objects vary in scale, and high-resolution feature maps are important to dense tasks, such as segmentation. On the other hand, transformers are known for their ﬁxed dimensionality throughout the model, and as a result, plain ViTs downsample inputs aggressively from the very begin- ning to alleviate the quadratic cost of self attention, which in turn hinders the application of plain ViTs as backbones to dense vision tasks. While research in applying plain ViTs to dense vision tasks continues [17, 24], research into hierarchical vision transformers quickly became dominant [29,44] and contin- ues to grow [15,28]. A key advantage of these hierarchical transformer models is their ease of integration with existing hierarchical vision frameworks. Inspired by existing CNNs, hierarchical vision transformers are comprised of multiple (typically 4) levels of transformer encoders, with down- sampling modules in between, and"
+  },
+  {
+    "paper_id": "2209.15001v3",
+    "title": "Dilated Neighborhood Attention Transformer",
+    "page_num": 2,
+    "chunk_id": "2209.15001v3_page2_chunk3",
+    "text": "dominant [29,44] and contin- ues to grow [15,28]. A key advantage of these hierarchical transformer models is their ease of integration with existing hierarchical vision frameworks. Inspired by existing CNNs, hierarchical vision transformers are comprised of multiple (typically 4) levels of transformer encoders, with down- sampling modules in between, and a less aggressive initial downsampling (i.e. 1/4 instead of 1/16). Earlier layers in hierarchical transformers, if using unrestricted self atten- tion, would bear the same quadratically growing complexity and memory usage with respect to input resolution, making them intractable for higher resolution images. Therefore, hierarchical transformers typically employ certain local at- tention mechanisms. Swin Transformer [29], one of the earliest hierarchi- cal vision transformers, utilizes a Window Self Attention (WSA) module, followed by a pixel-shifted Window Self Attention (SWSA), both of which localize self attention to non-overlapping sub-windows. This reduces the cost of self attention, making its time and space complexity linear with respect to resolution. SWSA is identical to WSA, but with a shift in feature map pixels preceding it, and followed by a reverse shift. This is essential to its performance, as it al- lows out-of-window interactions, and therefore the expan- sion of its receptive ﬁeld. One of"
+  },
+  {
+    "paper_id": "2209.15001v3",
+    "title": "Dilated Neighborhood Attention Transformer",
+    "page_num": 2,
+    "chunk_id": "2209.15001v3_page2_chunk4",
+    "text": "complexity linear with respect to resolution. SWSA is identical to WSA, but with a shift in feature map pixels preceding it, and followed by a reverse shift. This is essential to its performance, as it al- lows out-of-window interactions, and therefore the expan- sion of its receptive ﬁeld. One of the major advantages of Swin is efﬁciency, as pixel shifts and window partition- ing are relatively cheap and easily parallelizable operations. Additionally, it involves little to no changes to the self atten- tion module, making implementation easier. Swin became the state of the art across multiple vision tasks, and followed by Swin-V2 [28] to accommodate large scale pre-training. Neighborhood Attention Transformer (NAT) [15] was introduced later, with a simple sliding-window based atten- tion, Neighborhood Attention (NA). Unlike Stand Alone Self Attention (SASA) [35], which applies attention in the style of convolutions, NA localizes self attention to the near- est neighbors around each token, which allows it by deﬁ- nition to approach self attention and enjoy a ﬁxed attention span. Such pixel-wise attention operations were assumed to be inefﬁcient and challenging to parallelize [29,35,41], until the release of Neighborhood Attention Extension [15]. With this extension, NA can run even faster than"
+  },
+  {
+    "paper_id": "2209.15001v3",
+    "title": "Dilated Neighborhood Attention Transformer",
+    "page_num": 2,
+    "chunk_id": "2209.15001v3_page2_chunk5",
+    "text": "around each token, which allows it by deﬁ- nition to approach self attention and enjoy a ﬁxed attention span. Such pixel-wise attention operations were assumed to be inefﬁcient and challenging to parallelize [29,35,41], until the release of Neighborhood Attention Extension [15]. With this extension, NA can run even faster than Swin’s SWSA in practice. NAT was able to signiﬁcantly outperform Swin on image classiﬁcation, and achieved competitive performance on downstream tasks, while also scaling up to be even faster than Swin despite the slightly different architecture. Despite the efforts into hierarchical vision transformers with local attention, some of self attention’s most important properties, including global receptive ﬁeld, and the ability to model long-range inter-dependencies, are weakened as a result of this localization. This leads to a simple question: How does one maintain the tractability that local attention provides in hierarchi- cal vision transformers, while avoiding its shortcomings? 2"
+  },
+  {
+    "paper_id": "2209.15001v3",
+    "title": "Dilated Neighborhood Attention Transformer",
+    "page_num": 3,
+    "chunk_id": "2209.15001v3_page3_chunk1",
+    "text": "In other words, the optimal scenario is maintaining the lin- ear complexity, while preserving the global receptive ﬁeld and the ability to model long-range inter-dependencies of self attention. In this paper, we aim to answer this ques- tion and improve hierarchical transformers by extending a simple local attention mechanism, Neighborhood Attention, to Dilated Neighborhood Attention (DiNA): a ﬂexible and powerful sparse global attention. Dilating neighborhoods in NA into larger sparse regions has multiple advantages: 1. it captures more global context, 2. allows the recep- tive ﬁeld to grow exponentially, as opposed to linearly [50], and 3. comes at no additional computational cost. To demonstrate the effectiveness of DiNA, we propose Dilated Neighborhood Attention Transformer (DiNAT), which not only improves the existing NAT model in terms of down- stream performance, it manages to outperform strong mod- ern CNN baselines, such as ConvNeXt [30], in downstream tasks with a noticeable margin. Our main contributions can be summarized as follows: • Introducing DiNA, a simple and powerful sparse global attention pattern, which allows receptive ﬁeld to grow exponentially and captures longer-range context without any additional computational burden. DiNA does so while maintaining the symmetry in neighbor- hoods introduced in NA. It can also"
+  },
+  {
+    "paper_id": "2209.15001v3",
+    "title": "Dilated Neighborhood Attention Transformer",
+    "page_num": 3,
+    "chunk_id": "2209.15001v3_page3_chunk2",
+    "text": "main contributions can be summarized as follows: • Introducing DiNA, a simple and powerful sparse global attention pattern, which allows receptive ﬁeld to grow exponentially and captures longer-range context without any additional computational burden. DiNA does so while maintaining the symmetry in neighbor- hoods introduced in NA. It can also adapt to larger res- olutions without expanding to larger window sizes. • Analyzing theoretical receptive ﬁeld sizes in mod- els based on convolutions, localized attention, and a DiNA-based model. • Introducing DiNAT, a new hierarchical vision trans- former made of both dilated and non-dilated variants of NA. DiNAT utilizes a gradual dilation change through the model, which extends receptive ﬁelds more opti- mally and helps ﬁne-to-coarse feature learning. • Conducting extensive experiments on image classiﬁ- cation, object detection, and segmentation with Di- NAT, and ﬁnding that it exhibits a noticeable improve- ment in downstream tasks over both attention-based and convolutional baselines. Additionally, we inves- tigate isotropic and hybrid attention variants, scaling experiments with ImageNet-22K pre-training, and the effects of different dilation values. We also achieve state of the art image segmentation performance with advanced segmentation frameworks. • Extending NATTEN, NA’s CUDA extension for Py- Torch, by adding dilation support, and"
+  },
+  {
+    "paper_id": "2209.15001v3",
+    "title": "Dilated Neighborhood Attention Transformer",
+    "page_num": 3,
+    "chunk_id": "2209.15001v3_page3_chunk3",
+    "text": "baselines. Additionally, we inves- tigate isotropic and hybrid attention variants, scaling experiments with ImageNet-22K pre-training, and the effects of different dilation values. We also achieve state of the art image segmentation performance with advanced segmentation frameworks. • Extending NATTEN, NA’s CUDA extension for Py- Torch, by adding dilation support, and bﬂoat16 utiliza- tion, allowing the research in this direction to be ex- tended to other tasks and applications. While the initial experiments with DiNAT already ex- hibit signiﬁcant improvements in downstream vision tasks, neither its performance nor applications stop here. NA’s local attention and DiNA’s sparse global attention comple- ment each other: they can preserve locality, model longer- range inter-dependencies, expand the receptive ﬁeld expo- nentially, and maintain a linear complexity. Their restric- tion of self attention can potentially improve convergence by avoiding self attention’s possible redundant interactions, such as those with repetitive, background, or distracting to- kens [26, 36]. Combinations of local attention and sparse global attention can potentially empower various vision tasks and beyond. To support research in this direction, we open source our entire project, including our modiﬁed NATTEN, which can reduce runtime by orders of magni- tude compared to naive implementations [15]. 2. Related Work We"
+  },
+  {
+    "paper_id": "2209.15001v3",
+    "title": "Dilated Neighborhood Attention Transformer",
+    "page_num": 3,
+    "chunk_id": "2209.15001v3_page3_chunk4",
+    "text": "Combinations of local attention and sparse global attention can potentially empower various vision tasks and beyond. To support research in this direction, we open source our entire project, including our modiﬁed NATTEN, which can reduce runtime by orders of magni- tude compared to naive implementations [15]. 2. Related Work We brieﬂy review dot product self attention (DPSA), the Transformer [42], and Vision Transformer [13]. We then move on to localized self attention modules such as SASA [35], SWSA in Swin Transformer [29], and NA in Neighborhood Attention Transformer [15], and discuss their limitations, which are our motivation behind this work. Finally, we discuss previous uses of sparse attention mech- anisms in language processing [1,37] and vision [6,20]. 2.1. Self Attention Vaswani et al. [42] deﬁne dot product attention as an op- eration between a query, and a set of key-value pairs. The dot product of the query and keys is scaled and sent through a softmax activation to produce attention weights. Said at- tention weights are then applied to the values: Attention(Q, K, V ) = softmax \u0012QKT √ d \u0013 V, (1) where √ d is the scaling parameter, and d is the key dimen- sion. Dot product self"
+  },
+  {
+    "paper_id": "2209.15001v3",
+    "title": "Dilated Neighborhood Attention Transformer",
+    "page_num": 3,
+    "chunk_id": "2209.15001v3_page3_chunk5",
+    "text": "scaled and sent through a softmax activation to produce attention weights. Said at- tention weights are then applied to the values: Attention(Q, K, V ) = softmax \u0012QKT √ d \u0013 V, (1) where √ d is the scaling parameter, and d is the key dimen- sion. Dot product self attention is simply a case of this op- eration where the queries, keys, and values are all linear projections of the same input. Given an input X ∈Rn×d, where n is the number of tokens and d is the embed- ding dimension, this operation has a complexity of O(n2d) and a space complexity of O(n2) for the attention weights (space depends on implementation [10]). Vision Trans- former (ViT) [13] one of the earliest works applying a pure transformer encoder to vision, showed the power that a large scale self attention based model bears. Follow up works extended the study with minimal changes to training tech- niques [38], architectural changes [39], and applications to small data regimes [16]. Due to their quadratic time com- plexity, many works attempt to restrict the attention span in order to reduce compute, speciﬁcally when scaling to larger inputs, such as long documents in NLP [1],"
+  },
+  {
+    "paper_id": "2209.15001v3",
+    "title": "Dilated Neighborhood Attention Transformer",
+    "page_num": 4,
+    "chunk_id": "2209.15001v3_page4_chunk1",
+    "text": "2.2. Local Attention Stand-Alone Self Attention (SASA). SASA [35] is one of the earliest local attention mechanisms that was speciﬁcally designed to be used in vision models, years before ViT [13]. It sets the key-value pair to sliding windows over the feature map, therefore localizing attention for each query (pixel) to a window centered around it. Such an operation could eas- ily replace convolutions in existing CNNs, such as ResNets, and theoretically even reduce computational complexity. Despite the promise it showed, the authors found that the re- sulting model runs slow, due to the inefﬁcient implementa- tion of this module. Works succeeding it therefore switched to alternative methods that could run more efﬁciently, such as blocked self attention in HaloNet [41], and Window Self Attention in Swin [29]. Shifted Window Self Attention (SWSA). Liu et al. [29] proposed Window Self Attention (WSA) and its shifted variant SWSA, and used them in their hierarchical model for vision, Swin Transformer. They pointed out the inef- ﬁciency of sliding-window methods such as SASA as one of their motivations behind developing Window Self Atten- tion. The shifted variant (SWSA), as the name suggests, shifts pixels before the attention operation, and reverses the shift afterwards,"
+  },
+  {
+    "paper_id": "2209.15001v3",
+    "title": "Dilated Neighborhood Attention Transformer",
+    "page_num": 4,
+    "chunk_id": "2209.15001v3_page4_chunk2",
+    "text": "in their hierarchical model for vision, Swin Transformer. They pointed out the inef- ﬁciency of sliding-window methods such as SASA as one of their motivations behind developing Window Self Atten- tion. The shifted variant (SWSA), as the name suggests, shifts pixels before the attention operation, and reverses the shift afterwards, to create a different window partitioning compared to the previous layer, which allows for out-of- window interactions that are crucial to a growing receptive ﬁeld (see Fig. 3). Swin initially became the state of the art in object detection and semantic segmentation. It also inspired other works that extended it to different tasks beyond the ones explored in the paper, such as generation [52], restora- tion [25], masked image modeling [49], video action recog- nition [31], and more. Additionally, the followup model, Swin-V2 [28], became the new state of the art with their largest model. It is noteworthy that Swin-V2 utilizes much larger window sizes to achieve such performance, which in turn increase time complexity and memory usage. Neighborhood Attention (NA). NA [15] was proposed as a simple sliding-window attention, which localizes self attention for each pixel to its nearest neighbors. NA shares the same time and space complexity and"
+  },
+  {
+    "paper_id": "2209.15001v3",
+    "title": "Dilated Neighborhood Attention Transformer",
+    "page_num": 4,
+    "chunk_id": "2209.15001v3_page4_chunk3",
+    "text": "utilizes much larger window sizes to achieve such performance, which in turn increase time complexity and memory usage. Neighborhood Attention (NA). NA [15] was proposed as a simple sliding-window attention, which localizes self attention for each pixel to its nearest neighbors. NA shares the same time and space complexity and number of parameters to those of Swin’s WSA and SWSA, but instead operates in overlapping sliding windows, and therefore preserves translation equivariance. While NA’s sliding- window pattern is similar to SASA, its formulation of nearest neighbors makes it a direct restriction of self atten- tion, and therefore NA, unlike SASA, approaches SA as its window size grows. A major challenge of sliding-window attention was the lack of efﬁcient implementations, as no existing deep learning or CUDA libraries support such operations directly. Therefore, NA was introduced along with NATTEN, an extension with efﬁcient CPU and GPU kernels that allow NA to outperform modules such Window Self Attention + Shifted Window Self Attention Swin Transformer Neighborhood Attention + Dilated Neighborhood Attention DiNAT Figure 3. Illustration of attention layers in Swin Transformer and DiNAT. Swin divides inputs into non-overlapping windows and applies self attention to each window separately, and applies a pixel shift"
+  },
+  {
+    "paper_id": "2209.15001v3",
+    "title": "Dilated Neighborhood Attention Transformer",
+    "page_num": 4,
+    "chunk_id": "2209.15001v3_page4_chunk4",
+    "text": "outperform modules such Window Self Attention + Shifted Window Self Attention Swin Transformer Neighborhood Attention + Dilated Neighborhood Attention DiNAT Figure 3. Illustration of attention layers in Swin Transformer and DiNAT. Swin divides inputs into non-overlapping windows and applies self attention to each window separately, and applies a pixel shift every other layer. Pixel-shifted layers mask attention weights between out-of-order regions, which restricts self atten- tion to shifted subwindows. DiNAT applies Neighborhood Atten- tion, a sliding window attention, and dilates it at every other layer. as WSA/SWSA in terms of both speed and memory usage. The model Neighborhood Attention Transformer (NAT) is similar in its hierarchical design to Swin Transformer. The key differences, other than the attention modules, is that NAT utilizes overlapping convolutions in downsampling layers, as opposed to the patched ones used in Swin. As a result, to keep variants similar to Swin variants in terms of number of parameters and FLOPs, the models were made slightly deeper, with smaller inverted bottlenecks. NAT achieves superior results in image classiﬁcation compared to Swin, and performs competitively on downstream tasks. While local attention based models are able to perform well across different vision tasks due to its preservation of locality"
+  },
+  {
+    "paper_id": "2209.15001v3",
+    "title": "Dilated Neighborhood Attention Transformer",
+    "page_num": 4,
+    "chunk_id": "2209.15001v3_page4_chunk5",
+    "text": "of parameters and FLOPs, the models were made slightly deeper, with smaller inverted bottlenecks. NAT achieves superior results in image classiﬁcation compared to Swin, and performs competitively on downstream tasks. While local attention based models are able to perform well across different vision tasks due to its preservation of locality and efﬁciency, they fall short of capturing global context like self attention, which is also crucial to vi- sion. Additionally, localized attention mechanisms utilize a smaller and slowly growing receptive ﬁeld, similar to that of convolutions, compared to the full-sized receptive ﬁeld in self attention. Besides self attention, several works also explored global receptive ﬁelds in vision, including but not limited to Non-local Neural Networks [45]. However, op- erations with unrestricted global receptive ﬁeld usually suf- fer from high computational complexities compared to re- stricted ones, which can be local, or sparse. 4"
+  },
+  {
+    "paper_id": "2209.15001v3",
+    "title": "Dilated Neighborhood Attention Transformer",
+    "page_num": 5,
+    "chunk_id": "2209.15001v3_page5_chunk1",
+    "text": "2.3. Sparse Attention Child et al. [6] proposed Sparse Transformers, which in addition to scaling to much deeper variants, utilized a sparse-kernel attention mechanism. Through this, the model was able to train much more efﬁciently on longer sequences of data. There have been other works in sparse attention, such as Longformer [1], Routing Transform- ers [37], and CCNet [20], all of which share a common feature: reducing the cost of self attention in cases where longer sequences of tokens are inevitable, but a global con- text is still necessary. Longformer [1] speciﬁcally inves- tigates using a combination of 1-D sliding window atten- tion with and without dilation, along with global attention for speciﬁc tokens. This results in a model that is able to process long documents while maintaining the global con- text. CCNet [20] uses axial attention to improve semantic segmentation heads by introducing global context without the quadratic cost of unrestricted self attention. More re- cently, MaxViT [40] explored a hybrid model, which uses a combination of MBConv, Window Attention [29], and sparse grid attention, obtaining high ImageNet accuracy. However, the resulting model yields higher complexity and lower throughput compared to Swin [29]. Even though such non-local and sparse"
+  },
+  {
+    "paper_id": "2209.15001v3",
+    "title": "Dilated Neighborhood Attention Transformer",
+    "page_num": 5,
+    "chunk_id": "2209.15001v3_page5_chunk2",
+    "text": "of unrestricted self attention. More re- cently, MaxViT [40] explored a hybrid model, which uses a combination of MBConv, Window Attention [29], and sparse grid attention, obtaining high ImageNet accuracy. However, the resulting model yields higher complexity and lower throughput compared to Swin [29]. Even though such non-local and sparse restrictions of self attention have shown to be promising, they are not well-studied in the scope of hierarchical vision transform- ers. To expand the local receptive ﬁelds, and re-introduce global context into hierarchical vision transformers, we in- troduce Dilated Neighborhood Attention (DiNA), an exten- sion of NA that spans neighborhoods over longer ranges by increasing the step size, while maintaining the overall atten- tion span. DiNA can serve as a sparse and global operation and works most effectively when used in conjunction with NA as a local-only operation. We present an illustration of receptive ﬁelds in Fig. 4, where we compare fully con- nected layers to convolutions and dilated convolutions, and similarly self attention, to NA and DiNA. We provide em- pirical evidence for this claim with our hierarchical vision transformer, Dilated Neighborhood Attention Transformer (DiNAT). 3. Method In this section, we deﬁne DiNA as an extension to NA, analyze"
+  },
+  {
+    "paper_id": "2209.15001v3",
+    "title": "Dilated Neighborhood Attention Transformer",
+    "page_num": 5,
+    "chunk_id": "2209.15001v3_page5_chunk3",
+    "text": "compare fully con- nected layers to convolutions and dilated convolutions, and similarly self attention, to NA and DiNA. We provide em- pirical evidence for this claim with our hierarchical vision transformer, Dilated Neighborhood Attention Transformer (DiNAT). 3. Method In this section, we deﬁne DiNA as an extension to NA, analyze its effect on the receptive ﬁeld, and move on to our model, DiNAT. We also provide brief details on implemen- tation, and integration with the existing NATTEN pack- age. 3.1. Dilated Neighborhood Attention For simplicity, we keep notations limited to single- dimensional NA and DiNA. Given input X ∈Rn×d, whose rows are d-dimensional token vectors, and query and key Fully connected Convolution Dilated Convolution Self Attention (SA) Neighborhood Attention (NA) Dilated Neighborhood Attention (DiNA) Figure 4. A single-dimensional illustration of receptive ﬁelds in fully connected layers, convolutional layers, and different at- tention mechanisms. NA and DiNA restrict self attention through sliding windows, similar to how convolutions and dilated convo- lutions restrict fully connected layers. These restrictions reduce computational burden, introduce useful inductive biases, and in some cases increase ﬂexibility w.r.t. varying input sizes. linear projections of X, Q and K, and relative positional biases between any two tokens i and"
+  },
+  {
+    "paper_id": "2209.15001v3",
+    "title": "Dilated Neighborhood Attention Transformer",
+    "page_num": 5,
+    "chunk_id": "2209.15001v3_page5_chunk4",
+    "text": "sliding windows, similar to how convolutions and dilated convo- lutions restrict fully connected layers. These restrictions reduce computational burden, introduce useful inductive biases, and in some cases increase ﬂexibility w.r.t. varying input sizes. linear projections of X, Q and K, and relative positional biases between any two tokens i and j, B(i, j), we de- ﬁne neighborhood attention weights for the i-th token with neighborhood size k, Ak i , as the matrix multiplication of the i-th token’s query projection, and its k nearest neighboring tokens’ key projections: Ak i =   QiKT ρ1(i) + B(i,ρ1(i)) QiKT ρ2(i) + B(i,ρ2(i)) ... QiKT ρk(i) + B(i,ρk(i))  , (2) where ρj(i) denotes i’s j-th nearest neighbor. We similarly deﬁne neighboring values, Vk i , as a matrix whose rows are the i-th token’s k nearest neighboring value projections: Vk i = h V T ρ1(i) V T ρ2(i) . . . V T ρk(i) iT , (3) where V is a linear projection of X. Neighborhood Atten- tion output for the i-th token with neighborhood size k is then deﬁned as: NAk(i) = softmax \u0012Ak i √ d \u0013 Vk i , (4) 5"
+  },
+  {
+    "paper_id": "2209.15001v3",
+    "title": "Dilated Neighborhood Attention Transformer",
+    "page_num": 5,
+    "chunk_id": "2209.15001v3_page5_chunk5",
+    "text": ". V T ρk(i) iT , (3) where V is a linear projection of X. Neighborhood Atten- tion output for the i-th token with neighborhood size k is then deﬁned as: NAk(i) = softmax \u0012Ak i √ d \u0013 Vk i , (4) 5"
+  },
+  {
+    "paper_id": "2209.15001v3",
+    "title": "Dilated Neighborhood Attention Transformer",
+    "page_num": 6,
+    "chunk_id": "2209.15001v3_page6_chunk1",
+    "text": "SA SA SA SA ViT. Complexity: O \u0000n2d \u0001 , RF = n. WSA SWSA WSA SWSA Swin. Complexity: O \u0000ndk \u0001 , RF = ℓk. DW Conv DW Conv DW Conv DW Conv ConvNeXt. Complexity: O \u0000ndk \u0001 , RF = ℓ(k −1) + 1. NA NA NA NA NAT. Complexity: O \u0000ndk \u0001 , RF = ℓ(k −1) + 1. Dilation=1 Dilation=3 Dilation=1 Dilation=9 DiNAT. Complexity: O \u0000ndk \u0001 , RF ∈[ℓ(k −1) + 1, kℓ]. Figure 5. Receptive ﬁelds in ViT, Swin, ConvNeXt, NAT, and our DiNAT. We also provide the complexity of each method’s primary operation. n denotes the number of tokens, d denotes the embedding dimension, and k denotes kernel/window size. All receptive ﬁelds are bounded by input size, n. DiNAT’s receptive ﬁeld is ﬂexible and ranges from linear, ℓ(k −1) + 1, to exponential growth, kℓ. where √ d is the scaling parameter, and d is the embedding dimension. To extend this deﬁnition to DiNA, given a dila- tion value δ, we simply deﬁne ρδ j(i) as token i’s j-th nearest neighbor that satisﬁes: j mod δ = i mod δ. We can then deﬁne δ-dilated neighborhood attention weights for the i-th token with"
+  },
+  {
+    "paper_id": "2209.15001v3",
+    "title": "Dilated Neighborhood Attention Transformer",
+    "page_num": 6,
+    "chunk_id": "2209.15001v3_page6_chunk2",
+    "text": "d is the embedding dimension. To extend this deﬁnition to DiNA, given a dila- tion value δ, we simply deﬁne ρδ j(i) as token i’s j-th nearest neighbor that satisﬁes: j mod δ = i mod δ. We can then deﬁne δ-dilated neighborhood attention weights for the i-th token with neighborhood size k, A(k,δ) i , as follows: A(k,δ) i =   QiKT ρδ 1(i) + B(i,ρδ 1(i)) QiKT ρδ 2(i) + B(i,ρδ 2(i)) ... QiKT ρδ k(i) + B(i,ρδ k(i))   . (5) We similarly deﬁne δ-dilated neighboring values for the i-th token with neighborhood size k, V(k,δ) i : V(k,δ) i = h V T ρδ 1(i) V T ρδ 2(i) . . . V T ρδ k(i) iT . (6) DiNA output for the i-th token neighborhood size k is then deﬁned as: DiNAδ k(i) = softmax A(k,δ) i√dk ! V(k,δ) i . (7) 3.2. Choice of Dilation DiNA introduces a key new architectural hyperparame- ter: per layer dilation values. We deﬁne the upper bound for dilation value to be ⌊n k ⌋, where n is the number of tokens, and k is kernel/neighborhood size. This is simply to ensure exactly k dilated neighbors exist"
+  },
+  {
+    "paper_id": "2209.15001v3",
+    "title": "Dilated Neighborhood Attention Transformer",
+    "page_num": 6,
+    "chunk_id": "2209.15001v3_page6_chunk3",
+    "text": "Choice of Dilation DiNA introduces a key new architectural hyperparame- ter: per layer dilation values. We deﬁne the upper bound for dilation value to be ⌊n k ⌋, where n is the number of tokens, and k is kernel/neighborhood size. This is simply to ensure exactly k dilated neighbors exist for each token. The lower bound is always 1, which would be equivalent to vanilla NA. Therefore, dilation value in each layer of the model will be an input-dependent hyperparameter, which can take any Layer structure Memory usage FLOPs Receptive Field • • DWSConv-DWSConv d2 + dk nd2 + ndk ℓ(k −1) + 1 ◦◦WSA-WSA 3d2 + nk 3nd2 + 2ndk k ◦◦WSA-SWSA 3d2 + nk 3nd2 + 2ndk ℓk ◦◦NA-NA 3d2 + nk 3nd2 + 2ndk ℓ(k −1) + 1 ◦• NA-DiNA 3d2 + nk 3nd2 + 2ndk ∈[ℓ(k −1) + 1, kℓ] • • SA-SA 3d2 + n2 3nd2 + 2n2d n Table 1. Memory usage (weights), FLOPs, and receptive ﬁeld sizes in different models. Convolutions and NA expand recep- tive ﬁeld linearly with model depth. Window Self Attention alone would suffer from a ﬁxed-value receptive ﬁeld, but the pixel shift in SWSA expands the receptive ﬁeld linearly."
+  },
+  {
+    "paper_id": "2209.15001v3",
+    "title": "Dilated Neighborhood Attention Transformer",
+    "page_num": 6,
+    "chunk_id": "2209.15001v3_page6_chunk4",
+    "text": "3nd2 + 2n2d n Table 1. Memory usage (weights), FLOPs, and receptive ﬁeld sizes in different models. Convolutions and NA expand recep- tive ﬁeld linearly with model depth. Window Self Attention alone would suffer from a ﬁxed-value receptive ﬁeld, but the pixel shift in SWSA expands the receptive ﬁeld linearly. NA and DiNA to- gether can expand receptive ﬁelds exponentially. Self attention has the maximum receptive ﬁeld, which comes at the expense of a quadratic computational cost. Note that the denoted receptive ﬁelds have an upper bound of n. integer δ ∈[1, ⌊n k ⌋]. Because dilation values are change- able, they provide a ﬂexible receptive ﬁeld (discussed in Sec. 3.3). It is not feasible to try out all possible combi- nations, therefore we explored a limited number of choices, which are discussed in Sec. 4.4. 3.3. Receptive Fields We analyze DiNA’s receptive ﬁeld, as it is important to understanding the power of DiNA, especially in compari- son to other models. We present a comparison of receptive ﬁeld sizes in different attention patterns in Tab. 1, along with FLOPs and memory usage. We also include depth-wise sep- arable convolution (DWSConv), the key component in Con- vNeXt [30], for completeness. We"
+  },
+  {
+    "paper_id": "2209.15001v3",
+    "title": "Dilated Neighborhood Attention Transformer",
+    "page_num": 7,
+    "chunk_id": "2209.15001v3_page7_chunk1",
+    "text": "H × W Initial Downsampler DiNAT Block Level Downsampler H 4 × W 4 ×N1 DiNAT Block Level Downsampler H 8 × W 8 ×N2 DiNAT Block Level Downsampler H 16 × W 16 ×N3 DiNAT Block H 32 × W 32 ×N4 Fully Connected Flamingo Layer Norm NA Layer Norm MLP ⊕ ⊕ Layer Norm Dilated NA Layer Norm MLP ⊕ ⊕ DiNAT Block Dilated Neighborhood Attention Transformer Architecture Figure 6. An illustration of DiNAT’s architecture. It downsamples inputs to a quarter of their original spatial resolution initially, and sends them through 4 levels of DiNA Transformer encoders. Feature maps are downsampled to half their spatial size and doubled in channels between levels. DiNAT layers are similar to most Transformers: Attention followed by an MLP with normalization and skip connections in between. It also switches between local NA and sparse global DiNA at every other layer (right). Both convolutions and NA start out with a receptive ﬁeld of size k, and expand by k −1 per layer (center pixel remains ﬁxed). Swin Transformer’s Window Self Attention [29] on its own maintains a constant receptive ﬁeld size, as the win- dow partitioning prevents cross-window interactions, hence preventing receptive ﬁeld expansion."
+  },
+  {
+    "paper_id": "2209.15001v3",
+    "title": "Dilated Neighborhood Attention Transformer",
+    "page_num": 7,
+    "chunk_id": "2209.15001v3_page7_chunk2",
+    "text": "and NA start out with a receptive ﬁeld of size k, and expand by k −1 per layer (center pixel remains ﬁxed). Swin Transformer’s Window Self Attention [29] on its own maintains a constant receptive ﬁeld size, as the win- dow partitioning prevents cross-window interactions, hence preventing receptive ﬁeld expansion. Pixel shifted WSA re- solves this issue, and expands receptive ﬁelds by exactly one window per layer, which is an expansion of k per layer. It is worth noting that while Swin enjoys a slightly larger receptive ﬁeld compared to NAT and ConvNeXt thanks to its special shifted window design, it breaks an important property: symmetry. Since Swin’s feature maps are par- titioned into non-overlapping windows, pixels within the same window only attend to each other, regardless of their position (whether at center or corner), leading to some pix- els seeing asymmetric context around them. Unlike the ﬁxed receptive ﬁeld growth in NAT, Swin, and ConvNeXt, DiNA’s receptive ﬁeld is ﬂexible and changes with dilation. It can range anywhere from NAT’s original ℓ(k −1) + 1 (all dilation values set to 1), to and expo- nentially growing receptive ﬁeld of kℓ(gradual dilation in- crease), which is one of the main"
+  },
+  {
+    "paper_id": "2209.15001v3",
+    "title": "Dilated Neighborhood Attention Transformer",
+    "page_num": 7,
+    "chunk_id": "2209.15001v3_page7_chunk3",
+    "text": "growth in NAT, Swin, and ConvNeXt, DiNA’s receptive ﬁeld is ﬂexible and changes with dilation. It can range anywhere from NAT’s original ℓ(k −1) + 1 (all dilation values set to 1), to and expo- nentially growing receptive ﬁeld of kℓ(gradual dilation in- crease), which is one of the main reasons behind its power. Regardless of dilation, the ﬁrst layer always yields a recep- tive ﬁeld of size k. Given large enough dilation values, the preceding DiNA layer will yield a k-sized receptive ﬁeld for each of the k in the DiNA layer, yielding a receptive ﬁeld of size k2. As a result, DiNA and NA combinations with optimal dilation values can potentially increase recep- tive ﬁeld exponentially to kℓ. This comes with no surprise, Variant Layers Dim × MLP # of FLOPs per level Heads ratio Params • DiNAT-Mini 3, 4, 6, 5 32 × 2 3 20 M 2.7 G • DiNAT-Tiny 3, 4, 18, 5 32 × 2 3 28 M 4.3 G • DiNAT-Small 3, 4, 18, 5 32 × 3 2 51 M 7.8 G • DiNAT-Base 3, 4, 18, 5 32 × 4 2 90 M 13.7 G • DiNAT-Large 3, 4, 18, 5"
+  },
+  {
+    "paper_id": "2209.15001v3",
+    "title": "Dilated Neighborhood Attention Transformer",
+    "page_num": 7,
+    "chunk_id": "2209.15001v3_page7_chunk4",
+    "text": "2.7 G • DiNAT-Tiny 3, 4, 18, 5 32 × 2 3 28 M 4.3 G • DiNAT-Small 3, 4, 18, 5 32 × 3 2 51 M 7.8 G • DiNAT-Base 3, 4, 18, 5 32 × 4 2 90 M 13.7 G • DiNAT-Large 3, 4, 18, 5 32 × 6 2 200 M 30.6 G Table 2. DiNAT variants. In terms of architecture, DiNAT is identical to NAT, which follows Swin closely in overall design. Channels (heads and dim) double after every level. Kernel size is 72in all variants. as dilated convolutions have also been known for having an exponentially-growing receptive ﬁeld size when using ex- ponentially growing dilation values [50]. An illustration of the increased receptive ﬁeld size is also presented in Fig. 5. 3.4. DiNAT For a fair evaluation of DiNA’s performance, we design DiNAT to be identical to the original NAT model in terms of architecture and conﬁguration. It uses two 3×3 convolu- tional layers with 2×2 strides initially, resulting in feature maps that are a quarter of the input resolution. It also uses a single 3×3 convolution with 2×2 strides to downsample be- tween levels, which cut spatial resolution in half and double"
+  },
+  {
+    "paper_id": "2209.15001v3",
+    "title": "Dilated Neighborhood Attention Transformer",
+    "page_num": 7,
+    "chunk_id": "2209.15001v3_page7_chunk5",
+    "text": "of architecture and conﬁguration. It uses two 3×3 convolu- tional layers with 2×2 strides initially, resulting in feature maps that are a quarter of the input resolution. It also uses a single 3×3 convolution with 2×2 strides to downsample be- tween levels, which cut spatial resolution in half and double channels. Details are presented in Tab. 2. The key differ- ence in DiNAT is that every other layer uses DiNA instead of NA. Dilation values for DiNA layers are set based on the 7"
+  },
+  {
+    "paper_id": "2209.15001v3",
+    "title": "Dilated Neighborhood Attention Transformer",
+    "page_num": 8,
+    "chunk_id": "2209.15001v3_page8_chunk1",
+    "text": "task and input resolution. For ImageNet-1k at 2242 resolu- tion, we set dilation values to 8, 4, 2, and 1 in levels one through four respectively. In downstream tasks, because of their larger resolution, we increase dilation values to beyond that. All dilation values and other relevant architecture de- tails are presented in Tab. II. 3.5. Implementation We implemented DiNA on top of the existing Neighbor- hood Attention Extension (NATTEN), allowing ease of use and identical memory usage to NA. The latest public version of the extension includes a more efﬁcient “tiled” implementation of Neighborhood Attention, which is what allows it to compete with methods such as Swin in terms of speed. By adding a dilation element to all the existing CUDA kernels, and re-implementing the “tiled” kernel to support dilated memory format, we managed to implement DiNA without affecting the speed of the existing NA ker- nels. However, it should be noted that DiNA’s throughput will depend on dilation value, and is expected to be slightly slower than NA in practice. This is simply due to the break in memory access pattern, which would affect throughput overall (see Fig. Ia). We also note that these implementa- tions are still"
+  },
+  {
+    "paper_id": "2209.15001v3",
+    "title": "Dilated Neighborhood Attention Transformer",
+    "page_num": 8,
+    "chunk_id": "2209.15001v3_page8_chunk2",
+    "text": "should be noted that DiNA’s throughput will depend on dilation value, and is expected to be slightly slower than NA in practice. This is simply due to the break in memory access pattern, which would affect throughput overall (see Fig. Ia). We also note that these implementa- tions are still fairly naive and don’t fully utilize newer archi- tecture standards in CUDA, such as Tensor Cores, and are therefore only working as a proof of concept. Despite this limitation, models using NA and DiNA can achieve com- petitive throughput levels compared to other methods that mostly utilize convolutions, linear projections, and self at- tention, all of which run through NVIDIA libraries that fully utilize the aforementioned standards. More information on implementation is provided in Appendix A. 4. Experiments We conducted extensive experiments to study the ef- fects of our proposed DiNAT model over existing baselines. Similar to existing methods, we pre-train models on im- age classiﬁcation (ImageNet-1K and ImageNet-22K [11]), and then transfer the learned weights to downstream vision tasks. We compare DiNAT to the original NAT model [15], Swin [29], and ConvNeXt [30]. We also pair our model with Mask2Former [5] and perform instance, semantic, and panoptic segmentation experiments."
+  },
+  {
+    "paper_id": "2209.15001v3",
+    "title": "Dilated Neighborhood Attention Transformer",
+    "page_num": 8,
+    "chunk_id": "2209.15001v3_page8_chunk3",
+    "text": "pre-train models on im- age classiﬁcation (ImageNet-1K and ImageNet-22K [11]), and then transfer the learned weights to downstream vision tasks. We compare DiNAT to the original NAT model [15], Swin [29], and ConvNeXt [30]. We also pair our model with Mask2Former [5] and perform instance, semantic, and panoptic segmentation experiments. 4.1. Image Classiﬁcation We used the community standard for ImageNet training in PyTorch, timm [46] (Apache License v2), which now serves as the community standard for ImageNet training in PyTorch [33], to train our model on ImageNet-1k [11]. We use the same training conﬁgurations, regularization tech- niques, and augmentations (CutMix [51], Mixup [53], Ran- dAugment [9], and Random Erasing [54]) and training tech- niques used in NAT [15] and Swin [29]. Models trained Model # of FLOPs Thru. Memory Top-1 Params (imgs/sec) (GB) (%) ImageNet-1K trained models ◦NAT-M 20 M 2.7 G 2132 2.4 81.8 • DiNAT-M 20 M 2.7 G 2080 2.4 81.8 ◦Swin-T 28 M 4.5 G 1724 4.8 81.3 • ConvNeXt-T 28 M 4.5 G 2491 3.4 82.1 ◦NAT-T 28 M 4.3 G 1537 2.5 83.2 • DiNAT-T 28 M 4.3 G 1500 2.5 82.7 ◦Swin-S 50 M 8.7 G 1056 5.0 83.0 • ConvNeXt-S 50 M"
+  },
+  {
+    "paper_id": "2209.15001v3",
+    "title": "Dilated Neighborhood Attention Transformer",
+    "page_num": 8,
+    "chunk_id": "2209.15001v3_page8_chunk5",
+    "text": "mea- sured from forward passes with a batch size of 256 on a single NVIDIA A100 GPU. Model Win. # of FLOPs Thru. Memory Top-1 Size Params (imgs/sec) (GB) (%) ◦Swin-L 122 197 M 104.0 G 169 32.7 87.3 • ConvNeXt-L 72 198 M 101.1 G 221 19.2 87.5 • DiNAT-L 72 200 M 89.7 G 161 20.1 87.4 • DiNAT-L 112 200 M 92.4 G 110 26.9 87.5 Table 4. ImageNet-1K image classiﬁcation performance at 3842 resolution. Throughput and peak memory usage are mea- sured from forward passes with a batch size of 256 on a single NVIDIA A100 GPU. on ImageNet-1K directly are trained for 300 epochs with a batch size of 1024, and use an iteration-wise cosine learning rate schedule and a 20 epoch warmup, with a base learning rate of 1e-3, and weight decay rate of 0.05, cooled down for an additional 10 epochs. Larger variants are pre-trained on ImageNet-22K [11] for 90 epochs with a batch size of 4096, but use a linear learning rate schedule and a 5 epoch warmup, with a base learning rate of 1e-3, and weight de- cay rate of 0.01, again following Swin [29]. We ﬁne-tune models pre-trained on ImageNet-22K"
+  },
+  {
+    "paper_id": "2209.15001v3",
+    "title": "Dilated Neighborhood Attention Transformer",
+    "page_num": 8,
+    "chunk_id": "2209.15001v3_page8_chunk6",
+    "text": "are pre-trained on ImageNet-22K [11] for 90 epochs with a batch size of 4096, but use a linear learning rate schedule and a 5 epoch warmup, with a base learning rate of 1e-3, and weight de- cay rate of 0.01, again following Swin [29]. We ﬁne-tune models pre-trained on ImageNet-22K to ImageNet-1K for 30 epochs, with a batch size of 512, and a linear learning rate schedule with no warmup, and a base learning rate of 5e-5, and weight decay rate of 1e-4. Final ImageNet-1K validation set accuracy levels, along with number of learn- able parameters, FLOPs, throughput, and memory usage are provided in Tabs. 3 and 4. The reason for providing both FLOPs and throughput is to point out the necessity in distin- guishing theoretical computational requirements, versus ef- 8"
+  },
+  {
+    "paper_id": "2209.15001v3",
+    "title": "Dilated Neighborhood Attention Transformer",
+    "page_num": 9,
+    "chunk_id": "2209.15001v3_page9_chunk1",
+    "text": "ﬁciency in practice with each method’s available implemen- tation. This is especially important in this case because NA and DiNA are based on from scratch implementations of the algorithms (NATTEN), and are not as well-optimized as ConvNeXt or Swin, which mostly run on native NVIDIA libraries designed for optimal throughput. ImageNet-1K. DiNAT doesn’t show improvement over NAT in smaller variants. Improvement over NAT-Mini is less than 0.1%, and we found that while the Tiny variant converges faster than NAT-Tiny at ﬁrst, it converges to a lower accuracy of 82.7%. We noticed that despite this, Di- NAT consistently outperforms NAT across all four variants on downstream tasks. DiNAT shows a slight improvement of at least 0.1% over NAT on Small and Base variants. ImageNet-22K. We pre-trained our Large variant on ImageNet-22K, and ﬁne-tuned it to ImageNet-1K at both 2242 and 3842 resolutions. We found that our large vari- ant can successfully outperform Swin-Large and match ConvNeXt-Large’s accuracy at 2242 resolution. At 3842, our large variant exceeds its Swin counterpart’s reported accuracy without increasing its kernel size from 72 to 122. Upon increasing the large variant’s kernel size to 112 and in- terpolating positional biases (similar to Swin), we see that our"
+  },
+  {
+    "paper_id": "2209.15001v3",
+    "title": "Dilated Neighborhood Attention Transformer",
+    "page_num": 9,
+    "chunk_id": "2209.15001v3_page9_chunk2",
+    "text": "outperform Swin-Large and match ConvNeXt-Large’s accuracy at 2242 resolution. At 3842, our large variant exceeds its Swin counterpart’s reported accuracy without increasing its kernel size from 72 to 122. Upon increasing the large variant’s kernel size to 112 and in- terpolating positional biases (similar to Swin), we see that our large variant matches ConvNeXt-Large’s accuracy as well. We note that NA/DiNA are in theory limited to odd- sized kernels, which is the reason behind picking 112 in- stead of 122. Isotropic variants. To further compare NA/DiNA to plain self attention, we also explore isotropic variants of NAT and DiNAT, similar to isotropic ConvNeXt [30] variants. These models simply follow ViT in design: a single Transformer encoder operating on feature maps with a ﬁxed spatial size (142), preceded by a single patch-and-embedding layer; they are not hierarchical transformers. To maintain fair- ness in comparison to self attention, we trained ViT models with relative positional biases (ViT+) to ensure the models are only different in attention patterns. Note that ViT vari- ants with relative positional biases have previously been ex- plored in timm [46], but we run our own to ensure similar training settings. We present a comparison of these mod- els"
+  },
+  {
+    "paper_id": "2209.15001v3",
+    "title": "Dilated Neighborhood Attention Transformer",
+    "page_num": 9,
+    "chunk_id": "2209.15001v3_page9_chunk3",
+    "text": "with relative positional biases (ViT+) to ensure the models are only different in attention patterns. Note that ViT vari- ants with relative positional biases have previously been ex- plored in timm [46], but we run our own to ensure similar training settings. We present a comparison of these mod- els and their performance on ImageNet-1k in Tab. 5. We ﬁnd that isotropic variants of both NAT and DiNAT exhibit only minor throughput improvements over ViT+, which can again be attributed to the lack of fully optimized implemen- tations. Note that these variants reduce FLOPs to almost the same number as isotropic ConvNeXt variants. They also reduce memory usage compared to ViT+noticeably. As for performance, we observe that isotropic NAT variants result in a drop in performance compared to ViT+, which is to be expected since NAT has half the attention span as ViT+. However, we ﬁnd that isotropic DiNAT variants sig- niﬁcantly improve upon NAT’s isotropic variants, without Model # of FLOPs Thru. Memory Top-1 Params (imgs/sec) (GB) (%) • ConvNeXt-S (iso.) 22 M 4.3 G 4327 1.2 79.7 ◦NAT-S (iso.) 22 M 4.3 G 3255 1.3 80.0 • DiNAT-S (iso.) 22 M 4.3 G 3160 1.3 80.8 • ViT+-S"
+  },
+  {
+    "paper_id": "2209.15001v3",
+    "title": "Dilated Neighborhood Attention Transformer",
+    "page_num": 9,
+    "chunk_id": "2209.15001v3_page9_chunk4",
+    "text": "sig- niﬁcantly improve upon NAT’s isotropic variants, without Model # of FLOPs Thru. Memory Top-1 Params (imgs/sec) (GB) (%) • ConvNeXt-S (iso.) 22 M 4.3 G 4327 1.2 79.7 ◦NAT-S (iso.) 22 M 4.3 G 3255 1.3 80.0 • DiNAT-S (iso.) 22 M 4.3 G 3160 1.3 80.8 • ViT+-S 22 M 4.6 G 3086 1.9 81.2 • ConvNeXt-B (iso.) 87 M 16.9 G 1661 2.4 82.0 ◦NAT-B (iso.) 86 M 16.9 G 1350 2.7 81.6 • DiNAT-B (iso.) 86 M 16.9 G 1316 2.7 82.1 • ViT+-B 86 M 17.5 G 1284 3.7 82.5 Table 5. ImageNet-1K Top-1 validation accuracy compar- ison of ConvNeXt, NAT, and DiNAT’s isotropic variants to ViT. To compare self attention and NA/DiNA fairly, we ran ViT+, which uses relative positional biases in attention layers, instead of the one-time absolute positional encoding in the original ViT. Throughput and peak memory usage are measured from forward passes with a batch size of 256 on a single NVIDIA A100 GPU. Model Layer structure FLOPs Top-1 (%) ◦◦NAT-S (iso.) NA-NA 4.32 G 80.0 • • DiNA-DiNA 4.32 G 77.9 • ◦ DiNA-NA 4.32 G 80.6 ◦• DiNAT-S (iso.) NA-DiNA 4.32 G 80.8 • ◦ SA-NA 4.45 G 81.0"
+  },
+  {
+    "paper_id": "2209.15001v3",
+    "title": "Dilated Neighborhood Attention Transformer",
+    "page_num": 9,
+    "chunk_id": "2209.15001v3_page9_chunk5",
+    "text": "passes with a batch size of 256 on a single NVIDIA A100 GPU. Model Layer structure FLOPs Top-1 (%) ◦◦NAT-S (iso.) NA-NA 4.32 G 80.0 • • DiNA-DiNA 4.32 G 77.9 • ◦ DiNA-NA 4.32 G 80.6 ◦• DiNAT-S (iso.) NA-DiNA 4.32 G 80.8 • ◦ SA-NA 4.45 G 81.0 • • SA-DiNA 4.45 G 81.1 ◦• NA-SA 4.45 G 81.2 • • DiNA-SA 4.45 G 80.9 • • ViT+-S SA-SA 4.58 G 81.2 Table 6. Comparison of different layer structures in the isotropic variant. We compare different attention mechanisms in detail by creating hybrid models with both SA and NA/DiNA. increasing kernel size. This further supports our claim that a combination of NA and DiNA is more effective at pro- ducing an alternative to self attention than simply using NA throughout the model. To further study the effects of dif- ferent attention mechanisms, and investigate whether or not a model fully based on self-attention always yields the best result, we experiment with hybrid isotropic models utilizing both NA/DiNA layers as well as self attention. We present those results in Tab. 6. We found that a small-scale (22M pa- rameter) model with only half the layers performing self at- tention"
+  },
+  {
+    "paper_id": "2209.15001v3",
+    "title": "Dilated Neighborhood Attention Transformer",
+    "page_num": 9,
+    "chunk_id": "2209.15001v3_page9_chunk6",
+    "text": "model fully based on self-attention always yields the best result, we experiment with hybrid isotropic models utilizing both NA/DiNA layers as well as self attention. We present those results in Tab. 6. We found that a small-scale (22M pa- rameter) model with only half the layers performing self at- tention and the other half neighborhood attention can reach a similar accuracy as a similar model with all 12 layers uti- lizing self attention. We also found that changing the order of different attention layers can result in an approximately 0.2% change in accuracy. 4.2. Object Detection and Instance Segmentation To explore DiNAT’s effectiveness in object detection and instance segmentation, we used its pre-trained weights as backbones for Mask R-CNN [18] and Cascade Mask R- CNN [2], and trained those models on MS-COCO [27]. 9"
+  },
+  {
+    "paper_id": "2209.15001v3",
+    "title": "Dilated Neighborhood Attention Transformer",
+    "page_num": 10,
+    "chunk_id": "2209.15001v3_page10_chunk3",
+    "text": "147 M 931 G 18.5 53.4 72.1 58.2 46.2 69.7 50.2 ◦Swin-L⋆‡ 253 M 1393 G 12.9 53.7 72.2 58.7 46.4 69.9 50.7 • ConvNeXt-L‡ 253 M 1354 G 14.8 54.8 73.8 59.8 47.6 71.3 51.7 • DiNAT-L‡ 258 M 1276 G 14.0 55.3 74.3 60.2 47.8 71.8 52.0 Table 7. COCO object detection and instance segmenta- tion performance. ‡indicates that the model was pre-trained on ImageNet-22K. ⋆Swin-L was not reported with Cascade Mask R-CNN, therefore we trained it with their ofﬁcial checkpoint. Throughput is measured on a single NVIDIA A100 GPU. We followed NAT [15] and Swin [29]’s training settings in mmdetection [4] (Apache License v2), and trained with the same accelerated 3× LR schedule. The results are pre- sented in Tab. 7. We observe that DiNAT consistently shows noticeable improvement over NAT, with little-to-no drop in throughput. There are even instances where DiNAT even surpasses NAT’s throughput, but within the margin of error. Additionally, we observe that this improvement over NAT pushes DiNAT ahead of ConvNeXt [30]. At scale, we see DiNAT continues to outperform both Swin and ConvNeXt with ImageNet-22K pre-training. 4.3. Semantic Segmentation We also trained UPerNet [48] with our DiNAT as the backbone on ADE20K"
+  },
+  {
+    "paper_id": "2209.15001v3",
+    "title": "Dilated Neighborhood Attention Transformer",
+    "page_num": 10,
+    "chunk_id": "2209.15001v3_page10_chunk4",
+    "text": "within the margin of error. Additionally, we observe that this improvement over NAT pushes DiNAT ahead of ConvNeXt [30]. At scale, we see DiNAT continues to outperform both Swin and ConvNeXt with ImageNet-22K pre-training. 4.3. Semantic Segmentation We also trained UPerNet [48] with our DiNAT as the backbone on ADE20K [55], with ImageNet-pre-trained backbones. We followed NAT’s mmsegmentation [7] (Apache License v2) conﬁgurations, itself following Swin’s conﬁguration for training ADE20K. The results are pre- sented in Tab. 8. We ﬁnd that DiNAT exhibits a notice- able improvement over the original NAT model. DiNAT also maintains its place ahead of both models at scale with ImageNet-22K pre-training. Backbone Res. # of FLOPs Thru. mIoU Params (FPS) ◦NAT-M 2048 × 512 50 M 900 G 24.5 46.4 • DiNAT-M 2048 × 512 50 M 900 G 24.2 47.2 ◦Swin-T 2048 × 512 60 M 946 G 21.3 45.8 • ConvNeXt-T 2048 × 512 60 M 939 G 23.3 46.7 ◦NAT-T 2048 × 512 58 M 934 G 21.4 48.4 • DiNAT-T 2048 × 512 58 M 934 G 21.3 48.8 ◦Swin-S 2048 × 512 81 M 1040 G 17.0 49.5 • ConvNeXt-S 2048 × 512 82 M 1027 G 19.1 49.6 ◦NAT-S"
+  },
+  {
+    "paper_id": "2209.15001v3",
+    "title": "Dilated Neighborhood Attention Transformer",
+    "page_num": 10,
+    "chunk_id": "2209.15001v3_page10_chunk6",
+    "text": "‡indicates that the model was pre-trained on ImageNet-22K. †indicates increased window size from the default 72 to 122. Throughput is measured on a single NVIDIA A100 GPU. 4.4. Ablation study In this section, we aim to study DiNAT in more depth by analyzing the effects of: dilation values, NA-DiNA order, kernel sizes, and test-time changes in dilation. Dilation values. In Tab. 9, we present models with dif- ferent dilation values, and their effect on classiﬁcation, de- tection, instance segmentation and semantic segmentation performance levels. Note that the increased dilation (16, 8, 4, 2) is applicable to downstream tasks only, because in theory input feature maps should be larger than or equal to the product of kernel size and dilation. As a result, “8, 4, 2, 1” is the maximum applicable dilation to ImageNet at 224 × 224 resolution. Depending on image resolution, even higher dilation values are possible. We explored a “dynamic” dila- tion value, where DiNA layers apply the maximum possible dilation, which is the ﬂoor of resolution divided by kernel size (“Maximum” in Tab. 9). We ﬁnally choose settle on “gradual” dilation (see illustration in Fig. 4), in which we gradually increase dilation to the maximum level deﬁned."
+  },
+  {
+    "paper_id": "2209.15001v3",
+    "title": "Dilated Neighborhood Attention Transformer",
+    "page_num": 10,
+    "chunk_id": "2209.15001v3_page10_chunk7",
+    "text": "a “dynamic” dila- tion value, where DiNA layers apply the maximum possible dilation, which is the ﬂoor of resolution divided by kernel size (“Maximum” in Tab. 9). We ﬁnally choose settle on “gradual” dilation (see illustration in Fig. 4), in which we gradually increase dilation to the maximum level deﬁned. For instance, if maximum dilation for a speciﬁc level to 8, its layers will have dilation values 1, 2, 1, 4, 1, 6, 1, 8 (refer to Appendix B for details). NA-DiNA vs. DiNA-NA. We also experimented with models with DiNA layers before NA layers, as opposed to our ﬁnal NA before DiNA choice. While the local-global order (NA-DiNA) was our initial choice, we’ve also found it to be the more effective choice. We also tried a model with only DiNA modules, and found that it performs sig- 10"
+  },
+  {
+    "paper_id": "2209.15001v3",
+    "title": "Dilated Neighborhood Attention Transformer",
+    "page_num": 11,
+    "chunk_id": "2209.15001v3_page11_chunk1",
+    "text": "Model Dilation ImageNet MSCOCO ADE20K per level Top-1 (%) APb APm mIoU ◦NAT-Tiny 1, 1, 1, 1 83.2 47.7 42.6 48.4 • DiNAT-Tiny 8, 4, 2, 1 82.7 48.0 42.9 48.5 • DiNAT-Tiny 16, 8, 4, 2 - 48.3 43.4 48.5 • DiNAT-Tiny Maximum 82.7 48.6 43.5 48.7 • DiNAT-Tiny Gradual - 48.6 43.5 48.8 Table 9. Dilation impact on performance. Dilation values be- yond ”8, 4, 2, 1” are only applicable to downstream tasks, as their larger resolution allows for it. Maximum dilation indicates it is set to the maximum possible value based on input size. It would be the same as ”8, 4, 2, 1” for ImageNet. Gradual dilation indicates that dilation values in DiNA layers increase gradually. Variant Layer ImageNet MSCOCO ADE20K structure Top-1 (%) APb APm mIoU ◦◦NAT-Tiny NA-NA 83.2 47.7 42.6 48.4 ◦• DiNAT-Tiny NA-DiNA 82.7 48.3 43.4 48.5 • ◦ DiNA-NA 82.6 48.5 43.5 47.9 • • DiNA-DiNA 82.2 44.9 40.5 45.8 Table 10. Layer structure impact on performance. Our ﬁnal model has the local-global (NA-DiNA) order. Model Win. ImageNet MSCOCO ADE20K size Top-1 Thru. APb APm Thru. mIoU Thru. ◦NAT-T 52 81.6 1810 imgs/sec 46.8 42.0 45.5 fps 46.3 22.9 fps • DiNAT-T"
+  },
+  {
+    "paper_id": "2209.15001v3",
+    "title": "Dilated Neighborhood Attention Transformer",
+    "page_num": 11,
+    "chunk_id": "2209.15001v3_page11_chunk2",
+    "text": "47.9 • • DiNA-DiNA 82.2 44.9 40.5 45.8 Table 10. Layer structure impact on performance. Our ﬁnal model has the local-global (NA-DiNA) order. Model Win. ImageNet MSCOCO ADE20K size Top-1 Thru. APb APm Thru. mIoU Thru. ◦NAT-T 52 81.6 1810 imgs/sec 46.8 42.0 45.5 fps 46.3 22.9 fps • DiNAT-T 52 81.3 1777 imgs/sec 47.6 42.7 45.6 fps 46.4 22.7 fps ◦NAT-T 72 83.2 1537 imgs/sec 47.7 42.6 44.5 fps 48.4 21.4 fps • DiNAT-T 72 82.7 1500 imgs/sec 48.3 43.4 43.3 fps 48.5 21.3 fps ◦NAT-T 92 83.1 1253 imgs/sec 48.5 43.3 39.4 fps 48.1 20.2 fps • DiNAT-T 92 83.1 1235 imgs/sec 48.8 43.5 39.2 fps 48.4 20.0 fps Table 11. Kernel size impact on performance. Note that we set dilation to the maximum values possible in each block based on the default resolutions. Therefore, the variant with kernel size 5 has larger dilation values compared to the one with kernel size 7. niﬁcantly worse than other combinations. This highlights the importance of having a combination of both local and sparse global attention patterns in the model. The results are summarized in Tab. 10. Kernel size. We study the effect of kernel size on model performance in Tab."
+  },
+  {
+    "paper_id": "2209.15001v3",
+    "title": "Dilated Neighborhood Attention Transformer",
+    "page_num": 11,
+    "chunk_id": "2209.15001v3_page11_chunk3",
+    "text": "one with kernel size 7. niﬁcantly worse than other combinations. This highlights the importance of having a combination of both local and sparse global attention patterns in the model. The results are summarized in Tab. 10. Kernel size. We study the effect of kernel size on model performance in Tab. 11. We observed that a DiNAT-Tiny sees a signiﬁcant decay in performance with a smaller ker- nel size across all three tasks. However, we ﬁnd increasing kernel size beyond the default 7×7 does not result in a sig- niﬁcant increase in return. Test-time dilation changes. We present an analysis of sensitivity to dilation values, in which we attempt differ- ent dilation values on already trained models, and evalu- ate their performance. This can be particularly important to cases with varying resolutions, i.e. multi-scale testing. For DiNAT to be at its best, dilation level needs to be a near- Model Dilation ImageNet MSCOCO ADE20K Train Test Top-1 (%) APb APm mIoU ◦NAT-T 1, 1, 1, 1 1, 1, 1, 1 83.2 47.7 42.6 48.4 1, 1, 1, 1 8, 4, 2, 1 81.0 42.6 39.5 46.3 1, 1, 1, 1 16, 8, 4, 2 - 36.0 34.4 40.2 1, 1, 1,"
+  },
+  {
+    "paper_id": "2209.15001v3",
+    "title": "Dilated Neighborhood Attention Transformer",
+    "page_num": 11,
+    "chunk_id": "2209.15001v3_page11_chunk6",
+    "text": "original repository. Following their reported environment, we used PyTorch 1.9 with Detectron2 [47]. We present in- stance segmentation results in Tab. 13, semantic segmenta- tion results in Tab. 14, and panoptic segmentation results in Tab. 15. We note that DiNAT-L is using an 112 kernel size, instead of Swin-L’s 122, since even-sized windows break the symmetry in NA and are therefore not deﬁned. DiNAT-L outperforms Swin-L on all three tasks and datasets. It also sets new state of the art records for image segmentation without using extra data. According to Pa- persWithCode leaderboards, DiNAT-L with Mask2Former is the SOTA panoptic segmentation on ADE20K and MS-COCO, and instance segmentation on ADE20K and Cityscapes. It also ties with the current SOTA on ADE20K, and ranks second on Cityscapes semantic segmentation (previous SOTA on both is SeMask [21]). 11"
+  },
+  {
+    "paper_id": "2209.15001v3",
+    "title": "Dilated Neighborhood Attention Transformer",
+    "page_num": 12,
+    "chunk_id": "2209.15001v3_page12_chunk2",
+    "text": "58.1 Cityscapes ◦Swin-L 12 × 12 215 M 627 G 83.3 84.3 • DiNAT-L 11 × 11 220 M 509 G 83.9 84.5 Table 14. Semantic segmentation performance with Mask2Former. All backbones were pre-trained on ImageNet- 22K. FLOPs are reported with respect to resolution 8002. Backbone Win. # of FLOPs PQ PQTh PQSt APTh pan mIoUpan Size Params MS-COCO ◦Swin-L 12 × 12 216 M 658 G 57.8 64.2 48.1 48.6 67.4 • DiNAT-L 11 × 11 220 M 540 G 58.5 64.9 48.8 49.2 68.3 ADE20K ◦Swin-L 12 × 12 216 M 660 G 48.1 - - 34.2 54.5 • DiNAT-L 11 × 11 220 M 542 G 49.4 - - 35.0 56.3 Cityscapes ◦Swin-L 12 × 12 216 M 643 G 66.6 - - 43.6 82.9 • DiNAT-L 11 × 11 220 M 525 G 67.2 - - 44.5 83.4 Table 15. Panoptic segmentation performance with Mask2Former. All backbones were pre-trained on ImageNet- 22K. FLOPs are reported with respect to resolution 8002. 5. Conclusion Local attention modules are effective at reducing com- plexity, and are crucial when working with a hierarchi- cal model that gradually downsamples inputs. Neverthe- less, they cannot capture longer range inter-dependencies as well as"
+  },
+  {
+    "paper_id": "2209.15001v3",
+    "title": "Dilated Neighborhood Attention Transformer",
+    "page_num": 12,
+    "chunk_id": "2209.15001v3_page12_chunk3",
+    "text": "backbones were pre-trained on ImageNet- 22K. FLOPs are reported with respect to resolution 8002. 5. Conclusion Local attention modules are effective at reducing com- plexity, and are crucial when working with a hierarchi- cal model that gradually downsamples inputs. Neverthe- less, they cannot capture longer range inter-dependencies as well as global self attention, unless their receptive ﬁeld size is increased, which defeats their initial purpose of ef- ﬁciency and tractability. In this paper, we propose DiNA, a natural extension to NA that expands its local attention to sparse global attention at no additional cost. We build DiNAT with combinations of NA and DiNA, and show that it can improve performance signiﬁcantly, especially in downstream tasks, without introducing any additional com- putational burden. Paired with new segmentation frame- works, our model achieves state-of-the-art image seman- tic, instance, and panoptic segmentation performance While our experiments give insight into the power behind such ﬂexible attention modules, neither their performance nor ef- ﬁciency stop here. We believe that combinations of NA and DiNA will be able to empower various models in vision and beyond, wherever locality and global context matter. We open source our entire project, including our extension to NATTEN, and will continue"
+  },
+  {
+    "paper_id": "2209.15001v3",
+    "title": "Dilated Neighborhood Attention Transformer",
+    "page_num": 12,
+    "chunk_id": "2209.15001v3_page12_chunk4",
+    "text": "ﬂexible attention modules, neither their performance nor ef- ﬁciency stop here. We believe that combinations of NA and DiNA will be able to empower various models in vision and beyond, wherever locality and global context matter. We open source our entire project, including our extension to NATTEN, and will continue to support it as a toolkit for the community to allow easy experimentation with sparse sliding-window attention. Acknowledgments. We thank Picsart AI Research (PAIR), Meta/Facebook AI, and Intelligence Advanced Research Projects Activity (IARPA) for their generous support that made this work possible. References [1] Iz Beltagy, Matthew E Peters, and Arman Cohan. Long- former: The long-document transformer. arXiv:2004.05150, 2020. 3, 5 [2] Zhaowei Cai and Nuno Vasconcelos. Cascade r-cnn: Delving into high quality object detection. In IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR), 2018. 9 [3] Nicolas Carion, Francisco Massa, Gabriel Synnaeve, Nicolas Usunier, Alexander Kirillov, and Sergey Zagoruyko. End-to- end object detection with transformers. In European Confer- ence on Computer Vision (ECCV), 2020. 2 [4] Kai Chen, Jiaqi Wang, Jiangmiao Pang, Yuhang Cao, Yu Xiong, Xiaoxiao Li, Shuyang Sun, et al. Mmde- tection: Open mmlab detection toolbox and benchmark. arXiv:1906.07155, 2019. 10 [5] Bowen Cheng, Ishan Misra,"
+  },
+  {
+    "paper_id": "2209.15001v3",
+    "title": "Dilated Neighborhood Attention Transformer",
+    "page_num": 12,
+    "chunk_id": "2209.15001v3_page12_chunk5",
+    "text": "Zagoruyko. End-to- end object detection with transformers. In European Confer- ence on Computer Vision (ECCV), 2020. 2 [4] Kai Chen, Jiaqi Wang, Jiangmiao Pang, Yuhang Cao, Yu Xiong, Xiaoxiao Li, Shuyang Sun, et al. Mmde- tection: Open mmlab detection toolbox and benchmark. arXiv:1906.07155, 2019. 10 [5] Bowen Cheng, Ishan Misra, Alexander G Schwing, Alexan- der Kirillov, and Rohit Girdhar. Masked-attention mask transformer for universal image segmentation. In IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR), 2022. 8, 11 [6] Rewon Child, Scott Gray, Alec Radford, and Ilya Sutskever. Generating long sequences with sparse transform- ers. arXiv:1904.10509, 2019. 2, 3, 5 [7] MMSegmentation Contributors. MMSegmentation: Open- mmlab semantic segmentation toolbox and benchmark. https://github.com/open-mmlab/mmsegmentation, 2020. 10 [8] Marius Cordts, Mohamed Omran, Sebastian Ramos, Timo Rehfeld, Markus Enzweiler, Rodrigo Benenson, Uwe Franke, Stefan Roth, and Bernt Schiele. The cityscapes dataset for semantic urban scene understanding. In 12"
+  },
+  {
+    "paper_id": "2209.15001v3",
+    "title": "Dilated Neighborhood Attention Transformer",
+    "page_num": 13,
+    "chunk_id": "2209.15001v3_page13_chunk1",
+    "text": "IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR), 2016. 11 [9] Ekin D Cubuk, Barret Zoph, Jonathon Shlens, and Quoc V Le. Randaugment: Practical automated data augmentation with a reduced search space. In IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR) Work- shops, 2020. 8 [10] Tri Dao, Daniel Y Fu, Stefano Ermon, Atri Rudra, and Christopher R´e. Flashattention: Fast and memory-efﬁcient exact attention with io-awareness. In Advances in Neural Information Processing Systems (NeurIPS), 2022. 3 [11] Jia Deng, Wei Dong, Richard Socher, Li-Jia Li, Kai Li, and Li Fei-Fei. Imagenet: A large-scale hierarchical image database. In IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR), 2009. 8 [12] Jacob Devlin, Ming-Wei Chang, Kenton Lee, and Kristina Toutanova. BERT: Pre-training of deep bidirectional trans- formers for language understanding. In Proceedings of the Conference of the North American Chapter of the Associa- tion for Computational Linguistics (NAACL), 2019. 1 [13] Alexey Dosovitskiy, Lucas Beyer, Alexander Kolesnikov, Dirk Weissenborn, Xiaohua Zhai, Thomas Unterthiner, Mostafa Dehghani, et al. An image is worth 16x16 words: Transformers for image recognition at scale. In International Conference on Learning Representations (ICLR), 2020. 1, 2, 3, 4 [14] Anmol Gulati, James Qin, Chung-Cheng Chiu, Niki Par-"
+  },
+  {
+    "paper_id": "2209.15001v3",
+    "title": "Dilated Neighborhood Attention Transformer",
+    "page_num": 13,
+    "chunk_id": "2209.15001v3_page13_chunk2",
+    "text": "[13] Alexey Dosovitskiy, Lucas Beyer, Alexander Kolesnikov, Dirk Weissenborn, Xiaohua Zhai, Thomas Unterthiner, Mostafa Dehghani, et al. An image is worth 16x16 words: Transformers for image recognition at scale. In International Conference on Learning Representations (ICLR), 2020. 1, 2, 3, 4 [14] Anmol Gulati, James Qin, Chung-Cheng Chiu, Niki Par- mar, Yu Zhang, Jiahui Yu, Wei Han, et al. Conformer: Convolution-augmented transformer for speech recognition. Interspeech, 2020. 1 [15] Ali Hassani, Steven Walton, Jiachen Li, Shen Li, and Humphrey Shi. Neighborhood attention transformer. arXiv:2204.07143, 2022. 2, 3, 4, 8, 10, 15 [16] Ali Hassani, Steven Walton, Nikhil Shah, Abulikemu Abuduweili, Jiachen Li, and Humphrey Shi. Escap- ing the big data paradigm with compact transformers. arXiv:2104.05704, 2021. 3 [17] Kaiming He, Xinlei Chen, Saining Xie, Yanghao Li, Piotr Doll´ar, and Ross Girshick. Masked autoencoders are scal- able vision learners. In IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR), 2022. 2 [18] Kaiming He, Georgia Gkioxari, Piotr Doll´ar, and Ross Gir- shick. Mask r-cnn. In IEEE/CVF International Conference on Computer Vision (ICCV), 2017. 9 [19] Kaiming He, Xiangyu Zhang, Shaoqing Ren, and Jian Sun. Deep residual learning for image recognition. In IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR), 2016."
+  },
+  {
+    "paper_id": "2209.15001v3",
+    "title": "Dilated Neighborhood Attention Transformer",
+    "page_num": 13,
+    "chunk_id": "2209.15001v3_page13_chunk3",
+    "text": "[18] Kaiming He, Georgia Gkioxari, Piotr Doll´ar, and Ross Gir- shick. Mask r-cnn. In IEEE/CVF International Conference on Computer Vision (ICCV), 2017. 9 [19] Kaiming He, Xiangyu Zhang, Shaoqing Ren, and Jian Sun. Deep residual learning for image recognition. In IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR), 2016. 2 [20] Zilong Huang, Xinggang Wang, Yunchao Wei, Lichao Huang, Humphrey Shi, Wenyu Liu, and Thomas S. Huang. Ccnet: Criss-cross attention for semantic segmentation. In IEEE Transactions on Pattern Analysis and Machine Intelli- gence (TPAMI), 2020. 2, 3, 5 [21] Jitesh Jain, Anukriti Singh, Nikita Orlov, Zilong Huang, Ji- achen Li, Steven Walton, and Humphrey Shi. Semask: Se- mantically masking transformer backbones for effective se- mantic segmentation. arXiv:2112.12782, 2021. 11 [22] Alex Krizhevsky, Ilya Sutskever, and Geoffrey E. Hinton. Imagenet classiﬁcation with deep convolutional neural net- works. In Advances in Neural Information Processing Sys- tems (NeurIPS), 2012. 2 [23] Yann LeCun, Bernhard Boser, John S Denker, Donnie Henderson, Richard E Howard, Wayne Hubbard, and Lawrence D Jackel. Backpropagation applied to handwrit- ten zip code recognition. Neural computation, 1989. 2 [24] Yanghao Li, Hanzi Mao, Ross Girshick, and Kaiming He. Exploring plain vision transformer backbones for object detection. In European Conference"
+  },
+  {
+    "paper_id": "2209.15001v3",
+    "title": "Dilated Neighborhood Attention Transformer",
+    "page_num": 13,
+    "chunk_id": "2209.15001v3_page13_chunk4",
+    "text": "LeCun, Bernhard Boser, John S Denker, Donnie Henderson, Richard E Howard, Wayne Hubbard, and Lawrence D Jackel. Backpropagation applied to handwrit- ten zip code recognition. Neural computation, 1989. 2 [24] Yanghao Li, Hanzi Mao, Ross Girshick, and Kaiming He. Exploring plain vision transformer backbones for object detection. In European Conference on Computer Vision (ECCV), 2022. 2 [25] Jingyun Liang, Jiezhang Cao, Guolei Sun, Kai Zhang, Luc Van Gool, and Radu Timofte. Swinir: Image restoration us- ing swin transformer. In IEEE/CVF International Confer- ence on Computer Vision (ICCV) Workshops, 2021. 4 [26] Youwei Liang, Chongjian Ge, Zhan Tong, Yibing Song, Jue Wang, and Pengtao Xie. Not all patches are what you need: Expediting vision transformers via token reorganiza- tions. In International Conference on Learning Representa- tions (ICLR), 2022. 3 [27] Tsung-Yi Lin, Michael Maire, Serge Belongie, James Hays, Pietro Perona, Deva Ramanan, Piotr Doll´ar, and C Lawrence Zitnick. Microsoft coco: Common objects in context. In European Conference on Computer Vision (ECCV), 2014. 9, 11 [28] Ze Liu, Han Hu, Yutong Lin, Zhuliang Yao, Zhenda Xie, Yixuan Wei, Jia Ning, Yue Cao, Zheng Zhang, Li Dong, et al. Swin transformer v2: Scaling up capacity and reso- lution. In IEEE/CVF Conference on Computer"
+  },
+  {
+    "paper_id": "2209.15001v3",
+    "title": "Dilated Neighborhood Attention Transformer",
+    "page_num": 13,
+    "chunk_id": "2209.15001v3_page13_chunk5",
+    "text": "objects in context. In European Conference on Computer Vision (ECCV), 2014. 9, 11 [28] Ze Liu, Han Hu, Yutong Lin, Zhuliang Yao, Zhenda Xie, Yixuan Wei, Jia Ning, Yue Cao, Zheng Zhang, Li Dong, et al. Swin transformer v2: Scaling up capacity and reso- lution. In IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR), 2022. 2, 4 [29] Ze Liu, Yutong Lin, Yue Cao, Han Hu, Yixuan Wei, Zheng Zhang, Stephen Lin, and Baining Guo. Swin transformer: Hierarchical vision transformer using shifted windows. In IEEE/CVF International Conference on Computer Vision (ICCV), 2021. 2, 3, 4, 5, 7, 8, 10, 15 [30] Zhuang Liu, Hanzi Mao, Chao-Yuan Wu, Christoph Feicht- enhofer, Trevor Darrell, and Saining Xie. A convnet for the 2020s. IEEE/CVF Conference on Computer Vision and Pat- tern Recognition (CVPR), 2022. 3, 6, 8, 9, 10, 15 [31] Ze Liu, Jia Ning, Yue Cao, Yixuan Wei, Zheng Zhang, Stephen Lin, and Han Hu. Video swin transformer. In IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR), 2022. 4 [32] Niki Parmar, Ashish Vaswani, Jakob Uszkoreit, Lukasz Kaiser, Noam Shazeer, Alexander Ku, and Dustin Tran. Im- age transformer. In International Conference on Machine Learning (ICML), 2018. 1, 2 [33] Adam"
+  },
+  {
+    "paper_id": "2209.15001v3",
+    "title": "Dilated Neighborhood Attention Transformer",
+    "page_num": 13,
+    "chunk_id": "2209.15001v3_page13_chunk6",
+    "text": "Lin, and Han Hu. Video swin transformer. In IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR), 2022. 4 [32] Niki Parmar, Ashish Vaswani, Jakob Uszkoreit, Lukasz Kaiser, Noam Shazeer, Alexander Ku, and Dustin Tran. Im- age transformer. In International Conference on Machine Learning (ICML), 2018. 1, 2 [33] Adam Paszke, Sam Gross, Francisco Massa, Adam Lerer, James Bradbury, Gregory Chanan, Trevor Killeen, et al. Py- torch: An imperative style, high-performance deep learning library. Advances in Neural Information Processing Systems (NeurIPS), 2019. 8 [34] Alec Radford, Karthik Narasimhan, Tim Salimans, Ilya Sutskever, et al. Improving language understanding by gen- erative pre-training, 2018. 1 13"
+  },
+  {
+    "paper_id": "2209.15001v3",
+    "title": "Dilated Neighborhood Attention Transformer",
+    "page_num": 14,
+    "chunk_id": "2209.15001v3_page14_chunk1",
+    "text": "[35] Prajit Ramachandran, Niki Parmar, Ashish Vaswani, Irwan Bello, Anselm Levskaya, and Jon Shlens. Stand-alone self- attention in vision models. Advances in Neural Information Processing Systems (NeurIPS), 2019. 1, 2, 3, 4 [36] Yongming Rao, Wenliang Zhao, Benlin Liu, Jiwen Lu, Jie Zhou, and Cho-Jui Hsieh. Dynamicvit: Efﬁcient vision transformers with dynamic token sparsiﬁcation. Advances in Neural Information Processing Systems (NeurIPS), 2021. 3 [37] Aurko Roy, Mohammad Saffar, Ashish Vaswani, and David Grangier. Efﬁcient content-based sparse attention with rout- ing transformers. Transactions of the Association for Com- putational Linguistics (TACL), 9, 2021. 3, 5 [38] Hugo Touvron, Matthieu Cord, Matthijs Douze, Francisco Massa, Alexandre Sablayrolles, and Herv´e J´egou. Training data-efﬁcient image transformers & distillation through at- tention. In International Conference on Machine Learning (ICML), 2020. 2, 3 [39] Hugo Touvron, Matthieu Cord, Alexandre Sablayrolles, Gabriel Synnaeve, and Herv´e J´egou. Going deeper with im- age transformers. In IEEE/CVF International Conference on Computer Vision (ICCV), 2021. 2, 3 [40] Zhengzhong Tu, Hossein Talebi, Han Zhang, Feng Yang, Peyman Milanfar, Alan Bovik, and Yinxiao Li. Maxvit: Multi-axis vision transformer. In European Conference on Computer Vision (ECCV), 2022. 5 [41] Ashish Vaswani, Prajit Ramachandran, Aravind Srinivas, Niki Parmar, Blake Hechtman, and Jonathon Shlens. Scaling"
+  },
+  {
+    "paper_id": "2209.15001v3",
+    "title": "Dilated Neighborhood Attention Transformer",
+    "page_num": 14,
+    "chunk_id": "2209.15001v3_page14_chunk2",
+    "text": "Computer Vision (ICCV), 2021. 2, 3 [40] Zhengzhong Tu, Hossein Talebi, Han Zhang, Feng Yang, Peyman Milanfar, Alan Bovik, and Yinxiao Li. Maxvit: Multi-axis vision transformer. In European Conference on Computer Vision (ECCV), 2022. 5 [41] Ashish Vaswani, Prajit Ramachandran, Aravind Srinivas, Niki Parmar, Blake Hechtman, and Jonathon Shlens. Scaling local self-attention for parameter efﬁcient visual backbones. In IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR), 2021. 1, 2, 4 [42] Ashish Vaswani, Noam Shazeer, Niki Parmar, Jakob Uszko- reit, Llion Jones, Aidan N Gomez, Łukasz Kaiser, and Illia Polosukhin. Attention is all you need. In Advances in Neural Information Processing Systems (NeurIPS), 2017. 1, 3 [43] Huiyu Wang, Yukun Zhu, Bradley Green, Hartwig Adam, Alan Yuille, and Liang-Chieh Chen. Axial-deeplab: Stand- alone axial-attention for panoptic segmentation. In European Conference on Computer Vision (ECCV), 2020. 2 [44] Wenhai Wang, Enze Xie, Xiang Li, Deng-Ping Fan, Kaitao Song, Ding Liang, Tong Lu, Ping Luo, and Ling Shao. Pyra- mid vision transformer: A versatile backbone for dense pre- diction without convolutions. In IEEE/CVF International Conference on Computer Vision (ICCV), 2021. 2 [45] Xiaolong Wang, Ross Girshick, Abhinav Gupta, and Kaim- ing He. Non-local neural networks. In IEEE/CVF Confer- ence on Computer"
+  },
+  {
+    "paper_id": "2209.15001v3",
+    "title": "Dilated Neighborhood Attention Transformer",
+    "page_num": 14,
+    "chunk_id": "2209.15001v3_page14_chunk3",
+    "text": "Tong Lu, Ping Luo, and Ling Shao. Pyra- mid vision transformer: A versatile backbone for dense pre- diction without convolutions. In IEEE/CVF International Conference on Computer Vision (ICCV), 2021. 2 [45] Xiaolong Wang, Ross Girshick, Abhinav Gupta, and Kaim- ing He. Non-local neural networks. In IEEE/CVF Confer- ence on Computer Vision and Pattern Recognition (CVPR), 2018. 4 [46] Ross Wightman. Pytorch image models. https://github.com/ rwightman/pytorch-image-models, 2019. 8, 9 [47] Yuxin Wu, Alexander Kirillov, Francisco Massa, Wan-Yen Lo, and Ross Girshick. Detectron2. https://github.com/ facebookresearch/detectron2, 2019. 11 [48] Tete Xiao, Yingcheng Liu, Bolei Zhou, Yuning Jiang, and Jian Sun. Uniﬁed perceptual parsing for scene understand- ing. In European Conference on Computer Vision (ECCV), 2018. 10 [49] Zhenda Xie, Zheng Zhang, Yue Cao, Yutong Lin, Jianmin Bao, Zhuliang Yao, Qi Dai, and Han Hu. Simmim: A sim- ple framework for masked image modeling. In IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR), 2022. 4 [50] Fisher Yu and Vladlen Koltun. Multi-scale context aggrega- tion by dilated convolutions. In International Conference on Learning Representations (ICLR), 2016. 3, 7 [51] Sangdoo Yun, Dongyoon Han, Seong Joon Oh, Sanghyuk Chun, Junsuk Choe, and Youngjoon Yoo. Cutmix: Regu- larization strategy to train strong classiﬁers with localizable"
+  },
+  {
+    "paper_id": "2209.15001v3",
+    "title": "Dilated Neighborhood Attention Transformer",
+    "page_num": 14,
+    "chunk_id": "2209.15001v3_page14_chunk4",
+    "text": "2022. 4 [50] Fisher Yu and Vladlen Koltun. Multi-scale context aggrega- tion by dilated convolutions. In International Conference on Learning Representations (ICLR), 2016. 3, 7 [51] Sangdoo Yun, Dongyoon Han, Seong Joon Oh, Sanghyuk Chun, Junsuk Choe, and Youngjoon Yoo. Cutmix: Regu- larization strategy to train strong classiﬁers with localizable features. In IEEE/CVF International Conference on Com- puter Vision (ICCV), 2019. 8 [52] Bowen Zhang, Shuyang Gu, Bo Zhang, Jianmin Bao, Dong Chen, Fang Wen, Yong Wang, and Baining Guo. Styleswin: Transformer-based gan for high-resolution image genera- tion. In IEEE/CVF Conference on Computer Vision and Pat- tern Recognition (CVPR), 2022. 4 [53] Hongyi Zhang, Moustapha Cisse, Yann N. Dauphin, and David Lopez-Paz. mixup: Beyond empirical risk minimiza- tion. In International Conference on Learning Representa- tions (ICLR), 2018. 8 [54] Zhun Zhong, Liang Zheng, Guoliang Kang, Shaozi Li, and Yi Yang. Random erasing data augmentation. In AAAI Con- ference on Artiﬁcial Intelligence (AAAI), 2020. 8 [55] Bolei Zhou, Hang Zhao, Xavier Puig, Sanja Fidler, Adela Barriuso, and Antonio Torralba. Scene parsing through ade20k dataset. In IEEE/CVF Conference on Computer Vi- sion and Pattern Recognition (CVPR), 2017. 10, 11 14"
+  },
+  {
+    "paper_id": "2209.15001v3",
+    "title": "Dilated Neighborhood Attention Transformer",
+    "page_num": 15,
+    "chunk_id": "2209.15001v3_page15_chunk2",
+    "text": "a variable d. NA however has a special way to handle edge/corner pixels, which requires additional changes to support dilation. The greater challenge in adding dilation to NATTEN was adding it to the “tiled” kernels that utilize shared memory. Tiled NA kernels are a more recent addition to NATTEN, and boost NA’s throughput signiﬁcantly. Tiled implementations of matrix multiplica- tion and convolutions are essential in parallelizing these operations efﬁciently, while minimizing DRAM accesses. As the name suggests, tiled implementations divide the op- eration into tiles and cache tiles o inputs from the global memory into the shared memory within each threadblock. Accessing values from shared memory is typically much faster compared to directly accessing global memory, but also comes with challenges such as bank conﬂicts. Tiled im- plementations also operate with the assumption that access patterns are not broken. Introducing dilation values would break those access patterns and require a re-implementation that ensures dilated neighbors are cached instead of local neighbors. We present a layer-wise relative speed and mem- ory usage comparison between NAT and DiNAT with re- spect to Swin in Fig. I. Scaling and brain ﬂoat support. In order to train our larger models and avoid overﬂowing activation"
+  },
+  {
+    "paper_id": "2209.15001v3",
+    "title": "Dilated Neighborhood Attention Transformer",
+    "page_num": 15,
+    "chunk_id": "2209.15001v3_page15_chunk3",
+    "text": "re-implementation that ensures dilated neighbors are cached instead of local neighbors. We present a layer-wise relative speed and mem- ory usage comparison between NAT and DiNAT with re- spect to Swin in Fig. I. Scaling and brain ﬂoat support. In order to train our larger models and avoid overﬂowing activation values in later layers of the model, we’ve had to switch from auto- matic mixed-precision training with the default half pre- cision data type, ﬂoat16, which has 5 exponent bits and 10 mantissa bits, to bﬂoat16, which has the advantage of having 8 exponent bits while having only 7 mantissa bits. Utilizing bﬂoat16 has often been recommended for cases which lead to large activations, which includes ours as we scale our model. However, switching to bﬂoat16 required Variant Downsampling Layers Dim × MLP # of FLOPs per level Heads ratio Params • DiNATs-T Patched 2, 2, 6, 2 32 × 3 4 28 M 4.5 G • DiNATs-S Patched 2, 2, 18, 2 32 × 3 4 50 M 8.7 G • DiNATs-B Patched 2, 2, 18, 2 32 × 4 4 88 M 15.4 G • DiNATs-L Patched 2, 2, 18, 2 32 × 6 4 197 M 34.5"
+  },
+  {
+    "paper_id": "2209.15001v3",
+    "title": "Dilated Neighborhood Attention Transformer",
+    "page_num": 15,
+    "chunk_id": "2209.15001v3_page15_chunk8",
+    "text": "ImageNet’s relatively small in- put resolution, level 4 layers cannot go beyond a dilation value of 1, which is equivalent to NA. Also note that at 224×224 resolution, level 4 inputs will be exactly 7×7, therefore NA will be equivalent to self attention. This is not true in downstream tasks where reso- lutions are noticeably higher where levels 2 and 3 have gradually increasing dilation values, which are repeated in deeper models. This corresponds to the highlighted rows in Tab. 9 labeled “Grad- ual”. These conﬁgurations apply to all downstream experiments (excluding those in Sec. 4.4). a re-implementation of NATTEN’s half precision kernels to support and utilize bﬂoat16 correctly. B. Training settings We provide additional details on training DiNAT in Tab. I. We also provide details on DiNATs, which utilizes non-overlapping patch embedding and downsampling, sim- ilar to Swin [29] and ConvNeXt [30]. DiNATs serves as an alternative DiNA-based model, which has an architec- ture identical to Swin. DiNATs can also serve as an abla- tion model, since it is identical to Swin in architecture, with WSA replaced with NA, and SWSA replaced with DiNA. One of the most important architecture-related hyperpa- rameters in DiNA-based models is dilation values. Both"
+  },
+  {
+    "paper_id": "2209.15001v3",
+    "title": "Dilated Neighborhood Attention Transformer",
+    "page_num": 15,
+    "chunk_id": "2209.15001v3_page15_chunk9",
+    "text": "which has an architec- ture identical to Swin. DiNATs can also serve as an abla- tion model, since it is identical to Swin in architecture, with WSA replaced with NA, and SWSA replaced with DiNA. One of the most important architecture-related hyperpa- rameters in DiNA-based models is dilation values. Both 15"
+  },
+  {
+    "paper_id": "2209.15001v3",
+    "title": "Dilated Neighborhood Attention Transformer",
+    "page_num": 16,
+    "chunk_id": "2209.15001v3_page16_chunk2",
+    "text": "% 84 % 100 % 81 % 100 % 81 % 100 % 81 % 100 % 80 % 100 % 80 % 100 % 81 % Feature map resolution Relative memory usage w.r.t. Swin (%) WSA + SWSA (Swin) NA/DiNA + NA/DiNA (NAT/DiNAT) (b) Memory usage. Figure I. Layer-wise relative speed and memory comparison between NAT and DiNAT, with respect to Swin. NAT layers, which are only two consecutive NA layers with kernel size 72, are already up to 40% faster than Swin layers with the same kernel size. DiNAT layers, comprised of an NA layer followed by a DiNA layer, are slightly slower in practice due to the break in memory access pattern, but are still faster than Swin layers. DiNAT and DiNATs use a combination of NA and DiNA layers. We typically set dilation values in DiNA layers to be the maximum possible value with respect to input reso- lutions, if known. For example, ImageNet classiﬁcation at 224×224 is downsampled to a quarter of the original size initially, therefore Level 1 layers take feature maps of reso- lution 56×56 as input. With a kernel size of 7×7, the max- imum possible dilation value is ⌊56/7⌋= 8. Level"
+  },
+  {
+    "paper_id": "2209.15001v3",
+    "title": "Dilated Neighborhood Attention Transformer",
+    "page_num": 16,
+    "chunk_id": "2209.15001v3_page16_chunk3",
+    "text": "input reso- lutions, if known. For example, ImageNet classiﬁcation at 224×224 is downsampled to a quarter of the original size initially, therefore Level 1 layers take feature maps of reso- lution 56×56 as input. With a kernel size of 7×7, the max- imum possible dilation value is ⌊56/7⌋= 8. Level 2 will take feature maps of resolution 28×28 as input, leading to a maximum possible dilation value of 4. Because of this, we change dilation values depending on the task and reso- lution. We present the ﬁnal dilation values we used in clas- siﬁcation, detection, and segmentation in Tab. II. Note that we only change dilation values for DiNA layers, since we found that ﬁne-tuning NA layers to DiNA layers may re- sult in a slight decrease in initial performance (see Sec. 4.4, Tab. 12). C. Experiments with alternative architecture We conducted all primary experiments with both our main model, DiNAT, as well as DiNATs. We found that DiNATs could serve as alternatives in certain cases, as they still provide noticeable improvements over Swin in terms of speed, accuracy, and memory usage. Classiﬁcation re- sults are provided in Tab. III, object detection and instance segmentation results are provided in Tab."
+  },
+  {
+    "paper_id": "2209.15001v3",
+    "title": "Dilated Neighborhood Attention Transformer",
+    "page_num": 16,
+    "chunk_id": "2209.15001v3_page16_chunk4",
+    "text": "DiNAT, as well as DiNATs. We found that DiNATs could serve as alternatives in certain cases, as they still provide noticeable improvements over Swin in terms of speed, accuracy, and memory usage. Classiﬁcation re- sults are provided in Tab. III, object detection and instance segmentation results are provided in Tab. IV, and semantic segmentation results are provided in Tab. VI. In Sec. 4.4 we experimented with architecture-related hyperparameters that are introduced by DiNA: dilation val- ues, and the ordering of NA and DiNA layers. We also complete those dilation experiments by adding DiNATs and Swin, and presente the results in Tabs. V and VII. Model Res. # of FLOPs Thru. Memory Top-1 Params (imgs/sec) (GB) (%) ImageNet-1K trained models ◦NAT-M 2242 20 M 2.7 G 2132 2.4 81.8 • DiNAT-M 2242 20 M 2.7 G 2080 2.4 81.8 ◦Swin-T 2242 28 M 4.5 G 1724 4.8 81.3 • DiNATs-T 2242 28 M 4.5 G 1954 4.0 81.8 • ConvNeXt-T 2242 28 M 4.5 G 2491 3.4 82.1 ◦NAT-T 2242 28 M 4.3 G 1537 2.5 83.2 • DiNAT-T 2242 28 M 4.3 G 1500 2.5 82.7 ◦Swin-S 2242 50 M 8.7 G 1056 5.0 83.0 • DiNATs-S 2242 50 M"
+  },
+  {
+    "paper_id": "2209.15001v3",
+    "title": "Dilated Neighborhood Attention Transformer",
+    "page_num": 17,
+    "chunk_id": "2209.15001v3_page17_chunk4",
+    "text": "Cascade Mask R-CNN, therefore we trained it with their ofﬁcial checkpoint. Throughput is measured on a single A100 GPU. Note that DiNATs is identical in architecture to Swin, and only different in attention modules (WSA/SWSA replaced with NA/DiNA). Model Dilation ImageNet MSCOCO ADE20K per level Top-1 (%) APb APm mIoU ◦Swin-Tiny Not Applicable 81.3 46.0 41.6 45.8 ◦NATs-Tiny 1, 1, 1, 1 81.8 46.1 41.5 46.2 • DiNATs-Tiny 8, 4, 2, 1 81.8 46.3 41.6 46.7 • DiNATs-Tiny 16, 8, 4, 2 - 46.4 41.8 47.1 • DiNATs-Tiny Maximum 81.8 46.4 41.9 47.0 • DiNATs-Tiny Gradual - 46.6 42.1 47.4 ◦NAT-Tiny 1, 1, 1, 1 83.2 47.7 42.6 48.4 • DiNAT-Tiny 8, 4, 2, 1 82.7 48.0 42.9 48.5 • DiNAT-Tiny 16, 8, 4, 2 - 48.3 43.4 48.5 • DiNAT-Tiny Maximum 82.7 48.6 43.5 48.7 • DiNAT-Tiny Gradual - 48.6 43.5 48.8 Table V. Dilation impact on performance. Models listed within the same section have identical architectures and are different only in attention patterns (NATs is identical to Swin with both WSA and SWSA replaced with NA, DiNATs replaces SWSA with DiNA). Backbone Res. # of FLOPs Thru. mIoU Params (FPS) single scale multi scale ◦NAT-M 2048 × 512"
+  },
+  {
+    "paper_id": "2209.15001v3",
+    "title": "Dilated Neighborhood Attention Transformer",
+    "page_num": 17,
+    "chunk_id": "2209.15001v3_page17_chunk7",
+    "text": "was pre-trained on ImageNet-22K. †indicates increased window size from 72 to 122. Throughput is measured on a single A100 GPU. Note that DiNATs is identical in architecture to Swin, and only different in attention modules (WSA/SWSA replaced with NA/DiNA). Variant Layer ImageNet MSCOCO ADE20K structure Top-1 (%) APb APm mIoU ◦◦Swin-Tiny WSA-SWSA 81.3 46.0 41.6 45.8 ◦◦NATs-Tiny NA-NA 81.8 46.1 41.5 46.2 ◦• DiNATs-Tiny NA-DiNA 81.8 46.4 41.8 47.1 • ◦ DiNA-NA 81.5 46.5 41.8 46.9 • • DiNA-DiNA 79.7 39.8 36.8 40.7 ◦◦NAT-Tiny NA-NA 83.2 47.7 42.6 48.4 ◦• DiNAT-Tiny NA-DiNA 82.7 48.3 43.4 48.5 • ◦ DiNA-NA 82.6 48.5 43.5 47.9 • • DiNA-DiNA 82.2 44.9 40.5 45.8 Table VII. Layer structure impact on performance. 17"
+  }
+]

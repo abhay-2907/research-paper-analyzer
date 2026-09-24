@@ -1,0 +1,590 @@
+[
+  {
+    "paper_id": "2212.14538v2",
+    "title": "Transformer in Transformer as Backbone for Deep Reinforcement Learning",
+    "page_num": 1,
+    "chunk_id": "2212.14538v2_page1_chunk1",
+    "text": "Transformer in Transformer as Backbone for Deep Reinforcement Learning Hangyu Mao 1 Rui Zhao 2 Hao Chen 3 Jianye Hao 1 4 Yiqun Chen 3 Dong Li 1 Junge Zhang 5 6 Zhen Xiao 7 Abstract Designing better deep networks and better rein- forcement learning (RL) algorithms are both im- portant for deep RL. This work focuses on the former. Previous methods build the network with several modules like CNN, LSTM and Attention. Recent methods combine the Transformer with these modules for better performance. However, it requires tedious optimization skills to train a net- work composed of mixed modules, making these methods inconvenient to use in practice. In this pa- per, we propose to design pure Transformer-based networks for deep RL, aiming at providing off- the-shelf backbones for both the online and ofﬂine settings. Speciﬁcally, the Transformer in Trans- former (TIT) backbone is proposed, which cas- cades two Transformers in a very natural way: the inner one is used to process a single observation, while the outer one is responsible for processing the observation history. Combining both is ex- pected to extract spatial-temporal representations for good decision-making. Experiments show that TIT can achieve satisfactory performance in dif- ferent settings consistently."
+  },
+  {
+    "paper_id": "2212.14538v2",
+    "title": "Transformer in Transformer as Backbone for Deep Reinforcement Learning",
+    "page_num": 1,
+    "chunk_id": "2212.14538v2_page1_chunk2",
+    "text": "a very natural way: the inner one is used to process a single observation, while the outer one is responsible for processing the observation history. Combining both is ex- pected to extract spatial-temporal representations for good decision-making. Experiments show that TIT can achieve satisfactory performance in dif- ferent settings consistently. 1. Introduction Deep reinforcement learning (RL) has made great progress in various domains, such as mastering video games (Mnih et al., 2015), cooling data centers (Evans & Gao, 2016), and manipulating robotic arms (Kalashnikov et al., 2018). In general, a deep RL method mainly consists of two parts: the deep network that generates the action (and value), and the RL algorithm that trains the deep network. Most deep RL methods focus on the innovation of the RL algorithms. The representative methods include but are not 1Noah’s Ark Lab, Huawei 2Multimedia Laboratory, The Chi- nese University of Hong Kong 3University of Chinese Academy of Sciences 4Tianjin University 5School of Artiﬁcial Intelligence, University of Chinese Academy of Sciences 6CRISE, Institute of Automation, Chinese Academy of Sciences 7Peking University. Correspondence to: Hangyu Mao <hy.mao@pku.edu.cn>. limited to the fundamental DQN (Mnih et al., 2015), the asynchronous methods like A3C (Mnih et al., 2016) and"
+  },
+  {
+    "paper_id": "2212.14538v2",
+    "title": "Transformer in Transformer as Backbone for Deep Reinforcement Learning",
+    "page_num": 1,
+    "chunk_id": "2212.14538v2_page1_chunk3",
+    "text": "Chinese Academy of Sciences 4Tianjin University 5School of Artiﬁcial Intelligence, University of Chinese Academy of Sciences 6CRISE, Institute of Automation, Chinese Academy of Sciences 7Peking University. Correspondence to: Hangyu Mao <hy.mao@pku.edu.cn>. limited to the fundamental DQN (Mnih et al., 2015), the asynchronous methods like A3C (Mnih et al., 2016) and GA3C (Babaeizadeh et al., 2016), the deterministic policy gradient methods like DDPG (Lillicrap et al., 2015) and TD3 (Fujimoto et al., 2018), the trust region based policy optimization methods like TRPO (Schulman et al., 2015) and PPO (Schulman et al., 2017), the distributional methods like C51 (Bellemare et al., 2017) and QR-DQN (Dabney et al., 2018), the model-based methods like Dreamer (Hafner et al., 2019) and Dreaming (Okada & Taniguchi, 2021), and even the ofﬂine methods like BCQ (Fujimoto et al., 2019) and CQL (Kumar et al., 2020). It is fair to say that a large variety of RL algorithms can be used in practice. In contrast, although the design of better deep networks for deep RL is a very important and long-pursuing target for the community (see Section 2), we have much fewer network modules to choose to build the deep network. Speciﬁcally, the Convolutional Neural Network (CNN) and"
+  },
+  {
+    "paper_id": "2212.14538v2",
+    "title": "Transformer in Transformer as Backbone for Deep Reinforcement Learning",
+    "page_num": 1,
+    "chunk_id": "2212.14538v2_page1_chunk4",
+    "text": "can be used in practice. In contrast, although the design of better deep networks for deep RL is a very important and long-pursuing target for the community (see Section 2), we have much fewer network modules to choose to build the deep network. Speciﬁcally, the Convolutional Neural Network (CNN) and Multilayer Perceptron (MLP) are directly used in most cases, e.g, in DQN. When the problem is partially-observable, the Long Short-Term Memory (LSTM) (Greff et al., 2016) and At- tention are typically used, e.g., in DRQN (Hausknecht & Stone, 2015) and DARQN (Sorokin et al., 2015). Recently, the Transformer (Vaswani et al., 2017) has been applied to build better networks for deep RL, resulting in some success- ful methods like GTrXL (Parisotto et al., 2020), Catformer (Davis et al., 2021) and CoBERL (Banino et al., 2022). Although Transformer-based methods can achieve better performance than previous methods, it is inconvenient to use them in practice. Firstly, these methods need combine Transformers with other network modules, but ﬁguring out the suitable way to combine them is sometimes difﬁcult. More seriously, different modules need different optimiza- tion skills, but it is hard to master all skills for all mod- ules, letting alone optimizing them"
+  },
+  {
+    "paper_id": "2212.14538v2",
+    "title": "Transformer in Transformer as Backbone for Deep Reinforcement Learning",
+    "page_num": 1,
+    "chunk_id": "2212.14538v2_page1_chunk5",
+    "text": "them in practice. Firstly, these methods need combine Transformers with other network modules, but ﬁguring out the suitable way to combine them is sometimes difﬁcult. More seriously, different modules need different optimiza- tion skills, but it is hard to master all skills for all mod- ules, letting alone optimizing them jointly. For example, GTrXL and Catformer combine ResNet (He et al., 2016), Transformer-XL (Dai et al., 2019), Gating and MLP, while CoBERL combines ResNet, BERT (Kenton & Toutanova, 2019), LSTM, Gating, and MLP. During model training, the authors apply a lot of optimization skills, e.g., pretrain- ing of ResNet, special initialization for network parameters, contrastive representation learning, regularization for self- attention consistency, distributed training, and so on. It makes these methods very unstable to be optimized, and the arXiv:2212.14538v2 [cs.LG] 3 Jan 2023"
+  },
+  {
+    "paper_id": "2212.14538v2",
+    "title": "Transformer in Transformer as Backbone for Deep Reinforcement Learning",
+    "page_num": 2,
+    "chunk_id": "2212.14538v2_page2_chunk1",
+    "text": "Transformer in Transformer as Backbone for Deep Reinforcement Learning performance varies greatly as shown by our experiments. Because mastering the skills to train networks composed of hybrid modules is especially hard, we ask the following question in this paper: can we design deep networks for deep RL purely based on Transformers, so that we can use it as backbone off-the-shelf to achieve good performance, without being disturbed by the combination of other network modules and the tedious optimization skills? We target at Transformers rather than other network modules due to the following reasons. Firstly, Transformer (Vaswani et al., 2017; Kenton & Toutanova, 2019; Brown et al., 2020) and Vision Transformer (Dosovitskiy et al., 2020; Liu et al., 2021; Han et al., 2021) are the most outstanding break- throughs in natural language processing (NLP) and com- puter vision (CV), and they have demonstrated the practi- cal effectiveness and scalability for processing sequential words and image patches (and more generally, sequential data). Secondly, the goal of deep RL is sequential decision- making based on sequential observations (and popularly, the observation is an image), which matches the ability of Trans- former and Vision Transformer exactly. Lastly, reviewing previous deep RL methods like DQN,"
+  },
+  {
+    "paper_id": "2212.14538v2",
+    "title": "Transformer in Transformer as Backbone for Deep Reinforcement Learning",
+    "page_num": 2,
+    "chunk_id": "2212.14538v2_page2_chunk2",
+    "text": "sequential words and image patches (and more generally, sequential data). Secondly, the goal of deep RL is sequential decision- making based on sequential observations (and popularly, the observation is an image), which matches the ability of Trans- former and Vision Transformer exactly. Lastly, reviewing previous deep RL methods like DQN, DRQN, DARQN and these discussed in Section 2, we ﬁnd that (1) their deep net- works are largely inspired by the breakthroughs in NLP and CV, and that (2) both NLP and CV breakthroughs will even- tually result in better deep RL performance when properly applied, so do Transformers we believe. To this end, we propose to explore two Transformer in Trans- former (TIT) backbones. Speciﬁcally, both of the two TIT backbones are made up of an Inner Transformer and an Outer Transformer: the inner one is used to process a single observation at the observation patch level to learn a good observation representation that captures important spatial information in an observation, while the outer one is re- sponsible for processing sequential observations (or tuples of ⟨return, observation, action⟩in the learning paradigm of Decision Transformer (Chen et al., 2021b)) to capture im- portant temporal information across multiple consecutive observations, and"
+  },
+  {
+    "paper_id": "2212.14538v2",
+    "title": "Transformer in Transformer as Backbone for Deep Reinforcement Learning",
+    "page_num": 2,
+    "chunk_id": "2212.14538v2_page2_chunk3",
+    "text": "a good observation representation that captures important spatial information in an observation, while the outer one is re- sponsible for processing sequential observations (or tuples of ⟨return, observation, action⟩in the learning paradigm of Decision Transformer (Chen et al., 2021b)) to capture im- portant temporal information across multiple consecutive observations, and combining both is expected to extract spatial-temporal representations for better decision-making. The two TIT backbones differ in the way how the two Trans- formers are cascaded. The Vanilla TIT shown in Figure 1 applies L Inner Transformer blocks before L Outer Trans- former blocks. There is no information interaction between the two types of blocks. In contrast, the Enhanced TIT shown in Figure 2 builds its TIT block by the inner block and the outer block, and stacks L TIT blocks to form the TIT backbone. Therefore, it can fuse the spatial-temporal information in every TIT blocks, which may capture more suitable representations compared to Vanilla TIT. Our contributions are summarized as follows. (1) To our best knowledge, we are the ﬁrst to show that pure Trans- formers can serve as the backbones for both the standard online and ofﬂine RL methods (e.g., PPO and CQL), as long as we"
+  },
+  {
+    "paper_id": "2212.14538v2",
+    "title": "Transformer in Transformer as Backbone for Deep Reinforcement Learning",
+    "page_num": 2,
+    "chunk_id": "2212.14538v2_page2_chunk4",
+    "text": "more suitable representations compared to Vanilla TIT. Our contributions are summarized as follows. (1) To our best knowledge, we are the ﬁrst to show that pure Trans- formers can serve as the backbones for both the standard online and ofﬂine RL methods (e.g., PPO and CQL), as long as we design the backbones properly. This plays a similar role as ViT (Dosovitskiy et al., 2020), which proves that pure Transformer-based networks can perform well for CV tasks. Moreover, pure Transformer-based backbones bring advantages like that it needs fewer optimization skills; it is agnostic to the RL training algorithms; it can be used off-the-shelf by combining with popular RL libraries like stable-baseline3 (Rafﬁn et al., 2021); and it may handle the complex observations like 3D images more effectively. (2) We propose two TIT backbones. We empirically show that the best one achieves comparable or better performance than several strong baselines not only in online and ofﬂine RL settings, but also in the supervised learning paradigm recently proposed by Decision Transformer. (3) We also analyze the backbone from a lot of aspects to provide better understanding of our methods. 2. Related Work The design of better deep networks for deep RL methods"
+  },
+  {
+    "paper_id": "2212.14538v2",
+    "title": "Transformer in Transformer as Backbone for Deep Reinforcement Learning",
+    "page_num": 2,
+    "chunk_id": "2212.14538v2_page2_chunk5",
+    "text": "only in online and ofﬂine RL settings, but also in the supervised learning paradigm recently proposed by Decision Transformer. (3) We also analyze the backbone from a lot of aspects to provide better understanding of our methods. 2. Related Work The design of better deep networks for deep RL methods has drawn relatively less attention, compared to the design of RL algorithms. In this paper, we roughly divide the traditional methods into two categories: the RL-property- consistent networks (Wang et al., 2016; Tamar et al., 2016) and the larger-deeper networks (Ota et al., 2020; Sinha et al., 2020; Bjorck et al., 2021; Ota et al., 2021). The Dueling Network (Wang et al., 2016) and Value Iteration Network (Tamar et al., 2016) are the representative studies of the former type. They design a two-branch dueling network to compute the advantages of actions and a value iteration mod- ule to mimic the procedure of value iteration, respectively. They have been selected as the best papers of ICML’16 and NIPS’16, respectively. It means that designing better deep networks is an important and recognized target of the deep RL community. The latter type is largely inﬂuenced by the breakthroughs in CV community, e.g., OFENet"
+  },
+  {
+    "paper_id": "2212.14538v2",
+    "title": "Transformer in Transformer as Backbone for Deep Reinforcement Learning",
+    "page_num": 2,
+    "chunk_id": "2212.14538v2_page2_chunk6",
+    "text": "procedure of value iteration, respectively. They have been selected as the best papers of ICML’16 and NIPS’16, respectively. It means that designing better deep networks is an important and recognized target of the deep RL community. The latter type is largely inﬂuenced by the breakthroughs in CV community, e.g., OFENet (Ota et al., 2020) and D2RL (Sinha et al., 2020) focus on designing larger and deeper networks by applying different variants of DenseNet (Huang et al., 2017) to stabilize training. Recently, there is a trend of applying Transformers to deep RL, which is well surveyed by (Hu et al., 2022). As far as we know, the recent methods only use one Transformer to pro- cess either a single image observation independently (Sopov & Makarov, 2022; Meng et al., 2022; Tao et al., 2022) or observation history as a whole (Parisotto et al., 2020; Davis et al., 2021; Banino et al., 2022; Goul˜ao & Oliveira, 2022). Besides, these methods often mix several network modules, e.g, CoBERL (Banino et al., 2022) mixes ResNet, BERT, LSTM and Gating, which makes these methods unstable to train and hard to deploy (Davis et al., 2021). In contrast,"
+  },
+  {
+    "paper_id": "2212.14538v2",
+    "title": "Transformer in Transformer as Backbone for Deep Reinforcement Learning",
+    "page_num": 2,
+    "chunk_id": "2212.14538v2_page2_chunk7",
+    "text": "2022; Goul˜ao & Oliveira, 2022). Besides, these methods often mix several network modules, e.g, CoBERL (Banino et al., 2022) mixes ResNet, BERT, LSTM and Gating, which makes these methods unstable to train and hard to deploy (Davis et al., 2021). In contrast,"
+  },
+  {
+    "paper_id": "2212.14538v2",
+    "title": "Transformer in Transformer as Backbone for Deep Reinforcement Learning",
+    "page_num": 3,
+    "chunk_id": "2212.14538v2_page3_chunk1",
+    "text": "Transformer in Transformer as Backbone for Deep Reinforcement Learning we apply two Transformers to process a single observation and the observation history harmoniously, and we focus on exploring whether the pure Transformer-based networks can achieve good performance for deep RL, independent of the training algorithms and the optimization skills. There are some works applying Transformers in meta RL (Melo, 2022) and model-based RL (Chen et al., 2021a; Micheli et al., 2022). Methods like Decision Transformer (Chen et al., 2021b) and Trajectory Transformer (Janner et al., 2021) solve ofﬂine RL problem by training a Trans- former with supervised learning. These works are orthog- onal to ours, since we aim at designing pure Transformer- based backbones for deep RL. In CV community, some studies, e.g., TNT (Han et al., 2021), ViViT (Arnab et al., 2021), DualFormer (Liang et al., 2022) and COAT (Yu et al., 2022), apply two or more Trans- formers to handle tasks like image classiﬁcation and person search. But our preliminary experiments show that these designs are too complex for RL tasks, which motivates our minimal implementation of TIT. 3. Background We consider the problems that can be formulated as a Markov Decision Process (MDP), which is formally de-"
+  },
+  {
+    "paper_id": "2212.14538v2",
+    "title": "Transformer in Transformer as Backbone for Deep Reinforcement Learning",
+    "page_num": 3,
+    "chunk_id": "2212.14538v2_page3_chunk2",
+    "text": "to handle tasks like image classiﬁcation and person search. But our preliminary experiments show that these designs are too complex for RL tasks, which motivates our minimal implementation of TIT. 3. Background We consider the problems that can be formulated as a Markov Decision Process (MDP), which is formally de- ﬁned by a tuple ⟨S, A, T, R, γ⟩, where S is the set of pos- sible states s ∈S; A represents the set of possible actions a ∈A; T(s′|s, a) : S × A × S →[0, 1] denotes the state transition function; R(s, a) : S × A →R is the reward function; γ ∈[0, 1] is the discount factor. We use st, at and rt = R(st, at) to denote the state, action and reward at timestep t, respectively. Our goal is to learn a policy π(at|st) that can maximize E[ ˆR] where ˆR = ΣH t=0γtrt is the return, and H is the time horizon. Reinforcement learn- ing (Sutton & Barto, 2018) is a popular approach to solve the MDP problems. In practice, the environment can be noisy, so we can only get an observation ot, which contains partial information of the state st. We have"
+  },
+  {
+    "paper_id": "2212.14538v2",
+    "title": "Transformer in Transformer as Backbone for Deep Reinforcement Learning",
+    "page_num": 3,
+    "chunk_id": "2212.14538v2_page3_chunk3",
+    "text": "is the return, and H is the time horizon. Reinforcement learn- ing (Sutton & Barto, 2018) is a popular approach to solve the MDP problems. In practice, the environment can be noisy, so we can only get an observation ot, which contains partial information of the state st. We have to learn the policy based on the observation history ⟨ot−(K−1), ..., ot−1, ot⟩. This setting is called partially-observable MDP (POMDP). 4. Approach The proposed Vanilla TIT and Enhanced TIT backbones mainly consist of two Transformers as shown in Figure 1 and 2, respectively. The inner one is used to process a single observation; the outer one is responsible for processing the observation history; combining both is expected to extract spatial-temporal representations for better decision-making. 4.1. The Vanilla TIT In this section, we aim at exploring the minimal implemen- tation of TIT. Therefore, compared to previous methods like GTrXL and CoBERL, the Vanilla TIT is designed by simply replacing their ResNet in the lower layers with the most basic Vision Transformer (Dosovitskiy et al., 2020), and further replacing their Transformer-XL or BERT with the most basic Transformer (Vaswani et al., 2017). 4.1.1. THE INNER TRANSFORMER The Inner Transformer operates on the"
+  },
+  {
+    "paper_id": "2212.14538v2",
+    "title": "Transformer in Transformer as Backbone for Deep Reinforcement Learning",
+    "page_num": 3,
+    "chunk_id": "2212.14538v2_page3_chunk4",
+    "text": "the Vanilla TIT is designed by simply replacing their ResNet in the lower layers with the most basic Vision Transformer (Dosovitskiy et al., 2020), and further replacing their Transformer-XL or BERT with the most basic Transformer (Vaswani et al., 2017). 4.1.1. THE INNER TRANSFORMER The Inner Transformer operates on the observation patch, which is similar to ViT (Dosovitskiy et al., 2020). To make our paper self-contained, we brieﬂy introduce it with the following 6 steps. (1) Observation Patch Generation. Given an image ob- servation o ∈RH×W ×C, we split it into a sequence of observation patches op ∈RN×(P 2×C), where (H, W) is the resolution of the original image observation; C is the number of channels; (P, P) is the resolution of each patch; and N = HW/P 2 is the resulting number of patches, which is known as the context length for the Inner Transformer. If the observation is a 1-dimensional array with D entries, i.e., o ∈RD, we will take each entry as one patch indepen- dently. That is to say, the sequence of observation patches will be op ∈RN×1 where N = D. This is convenient and reasonable because each entry usually has atomic semantics. For example,"
+  },
+  {
+    "paper_id": "2212.14538v2",
+    "title": "Transformer in Transformer as Backbone for Deep Reinforcement Learning",
+    "page_num": 3,
+    "chunk_id": "2212.14538v2_page3_chunk5",
+    "text": "a 1-dimensional array with D entries, i.e., o ∈RD, we will take each entry as one patch indepen- dently. That is to say, the sequence of observation patches will be op ∈RN×1 where N = D. This is convenient and reasonable because each entry usually has atomic semantics. For example, in the classic Mountain Car environment 1, the 2 entries of observation array represent atomic meaning of ‘Car position’ and ‘Cart velocity’, respectively. If there is prior knowledge, we can generate the observation patches in other ways (e.g., several entries as a patch). (2) Observation Patch Embedding. We map each obser- vation patch op i into the observation patch embedding with a trainable linear projection Ep: ˆz0 = [op 1Ep; op 2Ep; ...; op NEp] ∈RN×Dp (1) where Ep ∈R(P 2C)×Dp for image observations and Ep ∈ R1×Dp for array observations, and Dp is the dimension of the observation patch embedding. (3) Class Token Encoding. Similar to BERT and ViT, we also prepend a trainable class token zclass 0 ∈R1×Dp: ˇz0 = [zclass 0 ; ˆz0] ∈R(N+1)×Dp (2) (4) Observation Patch Position Encoding. We add obser- vation patch position encoding, which is a trainable parame- ter Ep pos, to retain"
+  },
+  {
+    "paper_id": "2212.14538v2",
+    "title": "Transformer in Transformer as Backbone for Deep Reinforcement Learning",
+    "page_num": 3,
+    "chunk_id": "2212.14538v2_page3_chunk6",
+    "text": "embedding. (3) Class Token Encoding. Similar to BERT and ViT, we also prepend a trainable class token zclass 0 ∈R1×Dp: ˇz0 = [zclass 0 ; ˆz0] ∈R(N+1)×Dp (2) (4) Observation Patch Position Encoding. We add obser- vation patch position encoding, which is a trainable parame- ter Ep pos, to retain positional information: z0 = ˇz0 + Ep pos Ep pos ∈R(N+1)×Dp (3) The resulting z0 serves as the input of the Inner Transformer. 1https://www.gymlibrary.dev/environments/ classic_control/mountain_car/"
+  },
+  {
+    "paper_id": "2212.14538v2",
+    "title": "Transformer in Transformer as Backbone for Deep Reinforcement Learning",
+    "page_num": 4,
+    "chunk_id": "2212.14538v2_page4_chunk1",
+    "text": "Transformer in Transformer as Backbone for Deep Reinforcement Learning Outer Block × 𝐿 Inner Block Inner Block Outer Block ෡𝑹 𝑜 𝑎 Outer Block ෡𝑹 𝑜 𝑎 t-1 t-1 t-1 t t t 𝑎 t Inner Block × 𝐿 Decision Transformer Block ෡𝑹 𝑜 𝑎 Decision Transformer Block ෡𝑹 𝑜 𝑎 t-1 t-1 t-1 t t t 𝑎 t 21 return action observation Decision Transformer Our Vanilla_TIT …… …… …… ෡𝑹 t-(K-1) …… …… …… ෡𝑹 t-(K-1) Figure 1. The architecture of the proposed Vanilla TIT (right). Compared with Decision Transformer (left), the Vanilla TIT can be regarded as simply replacing its CNN in the lower layers with the most basic Vision Transformer (i.e., the Inner Transformer). Compared with GTrXL and CoBERL, the Vanilla TIT can be seen as replacing their ResNet in the lower layers with the Inner Transformer, and further replacing their Transformer-XL or BERT with the Outer Transformer. 𝑂𝑡 Inner Block Outer Block 𝑎 t 𝑂𝑡−1 Inner Block Inner Block Outer Block Inner Block TIT Block × 𝐿 1 Observation Patch position encoding Observation Patch embedding * Class Token encoding Data Flow of Inner Block Data Flow of Outer Block …… …… …… …… …… 𝑂𝑡−(𝐾−1) Figure"
+  },
+  {
+    "paper_id": "2212.14538v2",
+    "title": "Transformer in Transformer as Backbone for Deep Reinforcement Learning",
+    "page_num": 4,
+    "chunk_id": "2212.14538v2_page4_chunk2",
+    "text": "Transformer. 𝑂𝑡 Inner Block Outer Block 𝑎 t 𝑂𝑡−1 Inner Block Inner Block Outer Block Inner Block TIT Block × 𝐿 1 Observation Patch position encoding Observation Patch embedding * Class Token encoding Data Flow of Inner Block Data Flow of Outer Block …… …… …… …… …… 𝑂𝑡−(𝐾−1) Figure 2. The architecture of the proposed Enhanced TIT. It not only fuses the spatial-temporal information in every TIT blocks (i.e., the gray rectangles), but also adopts a dense connection design (i.e., the red dotted lines) to direct information from each TIT blocks to the ﬁnal output explicitly. Note that the inner blocks in the same layer share model parameters across different timesteps. (5) Inner Transformer Block. We use the Transformer encoder (i.e., without masking of other observation patches) since all patches in an observation can be used for decision- making. The operations in the l-th block T in l are: ˜zl = zl−1 + MSA(LN(zl−1)) l = 1, ..., L (4) zl = zl−1 + FFN(LN(˜zl−1)) l = 1, ..., L (5) where MSA, LN and FFN stand for the multiheaded self- attention (MSA), layer normalization (LN) and feed-forward network (FFN) used in the original Transformer (Vaswani et al., 2017)."
+  },
+  {
+    "paper_id": "2212.14538v2",
+    "title": "Transformer in Transformer as Backbone for Deep Reinforcement Learning",
+    "page_num": 4,
+    "chunk_id": "2212.14538v2_page4_chunk3",
+    "text": "˜zl = zl−1 + MSA(LN(zl−1)) l = 1, ..., L (4) zl = zl−1 + FFN(LN(˜zl−1)) l = 1, ..., L (5) where MSA, LN and FFN stand for the multiheaded self- attention (MSA), layer normalization (LN) and feed-forward network (FFN) used in the original Transformer (Vaswani et al., 2017). In this way, the output of each block zl builds the spatial relationships among observation patches within single observation, by computing interactions between any two observation patches. For example, in the Pong observa- tion shown in Figure 1, the patch containing the ‘Paddle’ is more related to the patch containing the ‘Ball’, but interacts"
+  },
+  {
+    "paper_id": "2212.14538v2",
+    "title": "Transformer in Transformer as Backbone for Deep Reinforcement Learning",
+    "page_num": 5,
+    "chunk_id": "2212.14538v2_page5_chunk1",
+    "text": "Transformer in Transformer as Backbone for Deep Reinforcement Learning less with other background patches. (6) Inner Transformer. We stack L blocks to form the Inner Transformer, so we ﬁnally get zL ∈R(N+1)×Dp. As BERT and ViT, the ﬁrst element zL[0] ∈R1×Dp (i.e., the class token zclass L ) serves as the integrated representation of all observation patches. 4.1.2. THE OUTER TRANSFORMER (1) Input Generation. In Vanilla TIT, the input of the Outer Transformer is exactly the output of the Inner Trans- former. Speciﬁcally, since we make decisions based on the history of observations ⟨ot−(K−1), ..., ot−1, ot⟩in POMDP, the input of the Outer Transformer will be the concatenation of all zL[0]s across K timesteps, and we formally represent it as y0 = {zL[0]t}t t−(K−1) ∈RK×Dp. Here, K is the context length of the Outer Transformer. Note that we make decisions based on the history of tuples of ⟨ˆRt, ot, at⟩in the learning paradigm of Decision Trans- former (Chen et al., 2021b). In this case, we will replace ot by zL[0]t as shown in Figure 1. (2) Outer Transformer Block. We use the Transformer decoder (i.e., with masking of future observations) since future observations will not be available for decision-making during"
+  },
+  {
+    "paper_id": "2212.14538v2",
+    "title": "Transformer in Transformer as Backbone for Deep Reinforcement Learning",
+    "page_num": 5,
+    "chunk_id": "2212.14538v2_page5_chunk2",
+    "text": "the learning paradigm of Decision Trans- former (Chen et al., 2021b). In this case, we will replace ot by zL[0]t as shown in Figure 1. (2) Outer Transformer Block. We use the Transformer decoder (i.e., with masking of future observations) since future observations will not be available for decision-making during inference. The operations in the l-th block T out l are: ˜yl = yl−1 + MSA(LN(yl−1)) l = 1, ..., L (6) yl = yl−1 + FFN(LN(˜yl−1)) l = 1, ..., L (7) In this way, the output of each block yl builds the tempo- ral relationships among multiple consecutive observations, which is known to be helpful for the POMDP setting. (3) Outer Transformer. We stack L blocks to form the Outer Transformer, so we ﬁnally get yL ∈RK×Dp. Since there is masking in Outer Transformer, only the last element of yL can fully represent the information of all observations. Thus, we apply an FFN upon the last element yL[K −1] ∈ R1×Dp, which corresponds to the current timestep t, to generate the ﬁnal action at as shown by Figure 1. 4.2. The Enhanced TIT As shown in Figure 2, the Enhanced TIT has two improve- ments compared to Vanilla"
+  },
+  {
+    "paper_id": "2212.14538v2",
+    "title": "Transformer in Transformer as Backbone for Deep Reinforcement Learning",
+    "page_num": 5,
+    "chunk_id": "2212.14538v2_page5_chunk3",
+    "text": "Thus, we apply an FFN upon the last element yL[K −1] ∈ R1×Dp, which corresponds to the current timestep t, to generate the ﬁnal action at as shown by Figure 1. 4.2. The Enhanced TIT As shown in Figure 2, the Enhanced TIT has two improve- ments compared to Vanilla TIT. First, it builds a TIT block (i.e., the grey rectangle in Figure 2), which is composed of both the inner block and the outer block. Therefore, both spatial and temporal information can be fused in every TIT blocks, which may learn better representations for decision- making. Second, in order to stabilize training, we propose a dense connection design (i.e., the red dotted lines in Figure 2) to direct all immediate outputs of every TIT blocks to the ﬁnal output explicitly. The effectiveness of this design has been veriﬁed by both CV methods like DenseNet (Huang et al., 2017) and RL network design studies like OFENet (Ota et al., 2020) and D2RL(Sinha et al., 2020). (1-4) Input Generation. The Enhanced TIT also operates on the observation patch, so the following steps are the same as Vanilla TIT: (1) observation path generation; (2) observation patch embedding; (3) class token encoding; (4)"
+  },
+  {
+    "paper_id": "2212.14538v2",
+    "title": "Transformer in Transformer as Backbone for Deep Reinforcement Learning",
+    "page_num": 5,
+    "chunk_id": "2212.14538v2_page5_chunk4",
+    "text": "RL network design studies like OFENet (Ota et al., 2020) and D2RL(Sinha et al., 2020). (1-4) Input Generation. The Enhanced TIT also operates on the observation patch, so the following steps are the same as Vanilla TIT: (1) observation path generation; (2) observation patch embedding; (3) class token encoding; (4) observation patch position encoding. After these steps, we get z0 ∈R(N+1)×Dp as the input of the TIT block. (5) TIT Block. The operations in the l-th TIT block are: zl = T in l (zl−1) l = 1, ..., L (8) yl = T out l ({zl[0]t}t t−(K−1)) l = 1, ..., L (9) where {zl[0]t}t t−(K−1) represents the concatenation of all zl[0]s (i.e., all class token zclass l s) across K timesteps. Therefore, the spatial-temporal information is fused in every TIT blocks, which may learn more suitable representations for better decision-making. (6) TIT Backbone. We stack L TIT blocks to form the En- hanced TIT backbone, so we ﬁnally get ⟨y1, y2, ..., yL⟩, and each of them has a dimension of yl ∈RK×Dp. We apply a dense connection to concatenate all of the last element yl[K −1] ∈R1×Dp, i.e., y = {yl[K −1]}L l=1 ∈RL×Dp, and apply an"
+  },
+  {
+    "paper_id": "2212.14538v2",
+    "title": "Transformer in Transformer as Backbone for Deep Reinforcement Learning",
+    "page_num": 5,
+    "chunk_id": "2212.14538v2_page5_chunk5",
+    "text": "to form the En- hanced TIT backbone, so we ﬁnally get ⟨y1, y2, ..., yL⟩, and each of them has a dimension of yl ∈RK×Dp. We apply a dense connection to concatenate all of the last element yl[K −1] ∈R1×Dp, i.e., y = {yl[K −1]}L l=1 ∈RL×Dp, and apply an FFN upon the concatenation y to generate the ﬁnal action at as shown by Figure 2. 5. Experiment Our experiments focus on the following research questions (RQ). RQ1: Can TIT work better than other network ar- chitectures in the online RL setting? RQ2: Can TIT also work well in the ofﬂine setting? RQ3: Is there any deeper understanding of TIT by ablation and other approaches? 5.1. Setting Library Selection. We have argued that TIT needs fewer optimization skills, and it can be used off-the-shelf by com- bining with popular RL libraries to achieve good perfor- mance. To verify this, we choose Stable-baseline3 (SB3) (Rafﬁn et al., 2021) and d3rlpy (Takuma Seno, 2021) for our base implementation. The two libraries are widely-accepted by the community, and they ensure that the RL algorithms are implemented correctly. Besides, the two libraries pro- vide credible benchmark results for popular environments to ensure a fair"
+  },
+  {
+    "paper_id": "2212.14538v2",
+    "title": "Transformer in Transformer as Backbone for Deep Reinforcement Learning",
+    "page_num": 5,
+    "chunk_id": "2212.14538v2_page5_chunk6",
+    "text": "choose Stable-baseline3 (SB3) (Rafﬁn et al., 2021) and d3rlpy (Takuma Seno, 2021) for our base implementation. The two libraries are widely-accepted by the community, and they ensure that the RL algorithms are implemented correctly. Besides, the two libraries pro- vide credible benchmark results for popular environments to ensure a fair comparison. Unless otherwise noted, we only use the RL loss provided in these libraries to train TIT without applying any other optimization skills. Algorithm Selection. We also argued that TIT is agnostic to the RL training algorithms. In fact, it is general enough for most RL settings, e.g., both the online and ofﬂine set- tings, both on-policy and off-policy algorithms, both the Q-learning and policy gradient algorithms, environments"
+  },
+  {
+    "paper_id": "2212.14538v2",
+    "title": "Transformer in Transformer as Backbone for Deep Reinforcement Learning",
+    "page_num": 6,
+    "chunk_id": "2212.14538v2_page6_chunk1",
+    "text": "Transformer in Transformer as Backbone for Deep Reinforcement Learning with both the image observation and the array observation, and environments with both the discrete and continuous action spaces. However, there are too many combinations to test all. We decide to evaluate TIT with the PPO (Schulman et al., 2017) algorithm from SB3 and the CQL (Kumar et al., 2020) algorithm from d3rlpy, because they can cover a lot of settings as shown by the following table. SETTING PPO CQL ONLINE / OFFLINE √/ × × / √ ON-POLICY / OFF-POLICY √/ × × / √ POLICY GRADIENT / Q-LEARNING √/ × × / √ IMAGE / ARRAY OBSERVATION √/ √ √/ √ DISCRETE / CONTINUOUS ACTION √/ √ √/ √ To further verify the general applicability of TIT, we apply TIT to the ofﬂine supervised learning (SL) setting proposed by Decision Transformer (DT) (Chen et al., 2021b), which is a popular paradigm to solve long-term decision-making problems as ofﬂine RL does. We refer the readers to their original papers for more details of PPO, CQL and DT. Environment Selection. Gym environments are typically used for evaluating new RL methods (Brockman et al., 2016), and we follow this practice. Speciﬁcally, for"
+  },
+  {
+    "paper_id": "2212.14538v2",
+    "title": "Transformer in Transformer as Backbone for Deep Reinforcement Learning",
+    "page_num": 6,
+    "chunk_id": "2212.14538v2_page6_chunk2",
+    "text": "popular paradigm to solve long-term decision-making problems as ofﬂine RL does. We refer the readers to their original papers for more details of PPO, CQL and DT. Environment Selection. Gym environments are typically used for evaluating new RL methods (Brockman et al., 2016), and we follow this practice. Speciﬁcally, for envi- ronments with image observations, we evaluate a few Gym Atari tasks like PongNoFrameskip-v4. For environments with array observations, the Gym Classic Control tasks like CartPole-v1 and the Gym MuJoCo tasks like Hopper-v3 are used for evaluation. We choose these tasks because they are popularly used, and also have been credibly benchmarked by SB3, d3rlpy and DT. Baseline Network Architecture Selection. For environ- ments with image observations, we compare TIT with Na- tureCNN + MLP (Mnih et al., 2015), ResNet + MLP (Shah & Kumar, 2021), ResNet + Transformer + MLP (i.e., Cat- former (Davis et al., 2021)), ResNet + Transformer + Gating + LSTM + MLP (i.e., CoBERL (Banino et al., 2022)). For environments with array observations, we compare TIT with the Pure MLP, OFENet (Ota et al., 2020) and D2RL (Sinha et al., 2020). As mentioned before, OFENet and D2RL design larger and deeper networks by applying different"
+  },
+  {
+    "paper_id": "2212.14538v2",
+    "title": "Transformer in Transformer as Backbone for Deep Reinforcement Learning",
+    "page_num": 6,
+    "chunk_id": "2212.14538v2_page6_chunk3",
+    "text": "Transformer + Gating + LSTM + MLP (i.e., CoBERL (Banino et al., 2022)). For environments with array observations, we compare TIT with the Pure MLP, OFENet (Ota et al., 2020) and D2RL (Sinha et al., 2020). As mentioned before, OFENet and D2RL design larger and deeper networks by applying different variants of DenseNet. Similarly, Catformer takes the con- catenation of the outputs of all previous layers as the input of the current layer to reduce sensitivity. The dense connec- tion in the output layer of Enhanced TIT adopts a similar design. So we can roughly know whether the Transformers are really helpful by comparing with these architectures. Hyperparameter Selection. We implement the above net- work architectures as closely as possible to their original papers and open-source code repositories. Except for the network architectures, we do not change any hyperparame- ters and settings of SB3, d3rlpy and DT for fair comparison. The detailed settings can be found in Appendix A. 5.2. RQ1: Network Architecture Comparison The results for tasks with image-based and array-based ob- servations are shown in Table 1 and 2, respectively. The following conclusions can be drawn from these results. (1) Our reproduction is correct. In these tables, ‘Re-"
+  },
+  {
+    "paper_id": "2212.14538v2",
+    "title": "Transformer in Transformer as Backbone for Deep Reinforcement Learning",
+    "page_num": 6,
+    "chunk_id": "2212.14538v2_page6_chunk4",
+    "text": "The detailed settings can be found in Appendix A. 5.2. RQ1: Network Architecture Comparison The results for tasks with image-based and array-based ob- servations are shown in Table 1 and 2, respectively. The following conclusions can be drawn from these results. (1) Our reproduction is correct. In these tables, ‘Re- ported’ means the results reported by ofﬁcial SB3 (see Ap- pendix A.5 for details), while the ‘NatureCNN + MLP (Re- pro)’ and ‘Pure MLP (Repro)’ represent our reproduction of PPO based on speciﬁc network architectures. As we can see, NatureCNN + MLP and Pure MLP achieve similar or better results than Reported in nine out of ten tasks, and the only exception is MountainCar, which is known to be sensitive to solve. These results indicate that our code-level imple- mentation of PPO is correct, so we can ensure a credible comparison based on our implementation. (2) Our motivation has been veriﬁed. The results in Table 1 demonstrate that Catformer and CoBERL are unstable across different tasks. For example, they get almost the full score (i.e., 21.0) in Pong, but get low scores in other tasks. When we tune them carefully with many optimization skills proposed in the papers (we call"
+  },
+  {
+    "paper_id": "2212.14538v2",
+    "title": "Transformer in Transformer as Backbone for Deep Reinforcement Learning",
+    "page_num": 6,
+    "chunk_id": "2212.14538v2_page6_chunk5",
+    "text": "veriﬁed. The results in Table 1 demonstrate that Catformer and CoBERL are unstable across different tasks. For example, they get almost the full score (i.e., 21.0) in Pong, but get low scores in other tasks. When we tune them carefully with many optimization skills proposed in the papers (we call the resulting algorithms Catformer+tuned and CoBERL+tuned), they achieve higher scores than before as shown by the last two rows of Table 1, but they still cannot get superior performance compared to NatureCNN + MLP, ResNet + MLP and our Enhanced TIT. This shows that previous Transformer-based deep RL meth- ods, which are usually composed of several mixed modules, are hard to optimize. (3) Enhanced TIT achieves comparable performance than several strong baselines in different tasks. Speciﬁ- cally, it achieves almost full scores in Pong and CartPole, the highest scores in MsPacman and MountainCar, and compa- rable scores to the best baselines in other Atari and Classic Control tasks. However, Enhanced TIT performs slightly worse than the state-of-the-arts in MoJoCo tasks, although it has obtained good scores. In summary, these results demon- strate the potential of pure-Transformer networks for online RL settings. 5.3. RQ2: Applying TIT in Ofﬂine Setting As mentioned"
+  },
+  {
+    "paper_id": "2212.14538v2",
+    "title": "Transformer in Transformer as Backbone for Deep Reinforcement Learning",
+    "page_num": 6,
+    "chunk_id": "2212.14538v2_page6_chunk6",
+    "text": "baselines in other Atari and Classic Control tasks. However, Enhanced TIT performs slightly worse than the state-of-the-arts in MoJoCo tasks, although it has obtained good scores. In summary, these results demon- strate the potential of pure-Transformer networks for online RL settings. 5.3. RQ2: Applying TIT in Ofﬂine Setting As mentioned before, we apply TIT to both the ofﬂine RL setting based on CQL and the ofﬂine SL setting based on DT. We call our methods CQL TIT and DT TIT, respectively. Table 3 shows the normalized scores, which demonstrate the following conclusions. (1) Our implementation of CQL and DT is correct. Speciﬁcally, ‘CQL Reported’ and ‘DT Reported’ represent the ofﬁcial results (see Appendix A.5 for details), while ‘Repro’ means our reproduced results, and they have very close values in most datasets. Therefore, we can ensure a credible comparison based on our correct implementation."
+  },
+  {
+    "paper_id": "2212.14538v2",
+    "title": "Transformer in Transformer as Backbone for Deep Reinforcement Learning",
+    "page_num": 7,
+    "chunk_id": "2212.14538v2_page7_chunk1",
+    "text": "Transformer in Transformer as Backbone for Deep Reinforcement Learning Table 1. The results for online Atari tasks. Compared to other Transformer-based networks, Enhanced TIT is the most stable across tasks. TASK NAME BREAKOUT MSPACMAN PONG SPACEINVADERS OBS/ACT SPACE (1, 84, 84) 4D (1, 84, 84) 9D (1, 84, 84) 9D (1, 84, 84) 6D EPISODE RETURN MEAN STD MEAN STD MEAN STD MEAN STD REPORTED 398 33 1754 172 20.989 0.105 960 425 NATURECNN+MLP (REPRO) 391 26 2111 589 21.000 0.000 1455 387 VANILLA TIT (OURS) 169 91 748 205 9.600 6.445 752 77 ENHANCED TIT (OURS) 321 68 2246 326 20.750 1.577 1645 168 RESNET+MLP 397 57 1807 405 21.000 0.000 1700 511 CATFORMER 165 57 427 388 19.980 0.139 1427 597 COBERL 189 26 195 252 19.460 1.557 618 245 CATFORMER+TUNED 242 41 1579 461 - - - - COBERL+TUNED 358 34 2190 327 - - 821 314 Table 2. The results for online Classic Control and MoJoCo tasks. In the table, ‘OBS/ACT Space’ means observation and action space, and 3D/8C means the action space is discrete/continuous with 3/8 entries; and there are diverse settings for ‘OBS/ACT Space’. TASK TYPE CLASSIC CONTROL MOJOCO TASK NAME ACROBOT CARTPOLE MOUNTAINCAR"
+  },
+  {
+    "paper_id": "2212.14538v2",
+    "title": "Transformer in Transformer as Backbone for Deep Reinforcement Learning",
+    "page_num": 7,
+    "chunk_id": "2212.14538v2_page7_chunk2",
+    "text": "Table 2. The results for online Classic Control and MoJoCo tasks. In the table, ‘OBS/ACT Space’ means observation and action space, and 3D/8C means the action space is discrete/continuous with 3/8 entries; and there are diverse settings for ‘OBS/ACT Space’. TASK TYPE CLASSIC CONTROL MOJOCO TASK NAME ACROBOT CARTPOLE MOUNTAINCAR ANT HOPPER WALKER2D OBS/ACT SPACE 6 3D 4 2D 2 3D 111 8C 11 3C 17 6C EPISODE RETURN MEAN STD MEAN STD MEAN STD MEAN STD MEAN STD MEAN STD REPORTED -73 18 500 0 -110 19 1327 451 2410 10 3478 821 PURE MLP (REPRO) -81 11 500 0 -200 0 2284 584 3530 13 3306 1119 VANILLA TIT -84 19 500 0 -96 7 976 186 1060 56 1701 323 ENHANCED TIT -81 17 500 0 -97 7 1975 234 2008 48 2911 249 OFENET -81 10 500 0 -200 0 2111 542 3483 17 3956 611 D2RL -83 11 500 0 -200 0 1825 875 3565 65 2141 774 Table 3. The normalized scores for ofﬂine MoJoCo datasets from D4RL (Fu et al., 2020). According to the normalization rule shown in Appendix A.2, a small increase of the normalized score means a large improvement of the"
+  },
+  {
+    "paper_id": "2212.14538v2",
+    "title": "Transformer in Transformer as Backbone for Deep Reinforcement Learning",
+    "page_num": 7,
+    "chunk_id": "2212.14538v2_page7_chunk3",
+    "text": "D2RL -83 11 500 0 -200 0 1825 875 3565 65 2141 774 Table 3. The normalized scores for ofﬂine MoJoCo datasets from D4RL (Fu et al., 2020). According to the normalization rule shown in Appendix A.2, a small increase of the normalized score means a large improvement of the original score. Note that CQL and DT use different versions of ofﬂine datasets (see Appendix A.6 for the details), so the results of CQL and DT may not be comparable; but for each separate algorithm, our CQL TIT is superior to CQL, and our DT TIT is superior to DT. DATASET TASK NAME CQL REPORTED REPRO CQL TIT DT REPORTED REPRO DT TIT MEDIUM HALFCHEETAH 42.6±0.1 42.6±0.1 42.6±0.1 42.6±0.1 42.5±2.3 42.8±2.3 HOPPER 100.7±0.3 100.8±0.3 100.8±0.2 67.6±1.0 67.4±4.1 68.2±2.4 WALKER2D 82.8±1.3 83.1±1.2 84.1±0.9 74.0±1.4 75.2±0.6 77.6±0.6 MEDIUM REPLAY HALFCHEETAH 47.1±0.6 46.1±0.1 47.8±0.1 36.6±0.8 37.0±2.8 40.8±2.3 HOPPER 85.1±16.2 58.8±12.7 99.2±1.7 82.7±7.0 71.0±4.7 89.6±2.7 WALKER2D 49.6±5.2 49.5±2.9 53.6±3.7 66.6±3.0 71.0±0.5 74.1±0.6 (2) For the ofﬂine RL setting, CQL TIT is better than CQL, especially in practical datasets with complex dis- tributions. Speciﬁcally, CQL TIT matches or exceeds CQL by a small margin in ‘Medium’ datasets that are generated from a single policy. Furthermore,"
+  },
+  {
+    "paper_id": "2212.14538v2",
+    "title": "Transformer in Transformer as Backbone for Deep Reinforcement Learning",
+    "page_num": 7,
+    "chunk_id": "2212.14538v2_page7_chunk4",
+    "text": "89.6±2.7 WALKER2D 49.6±5.2 49.5±2.9 53.6±3.7 66.6±3.0 71.0±0.5 74.1±0.6 (2) For the ofﬂine RL setting, CQL TIT is better than CQL, especially in practical datasets with complex dis- tributions. Speciﬁcally, CQL TIT matches or exceeds CQL by a small margin in ‘Medium’ datasets that are generated from a single policy. Furthermore, in ‘Medium Replay’ datasets that combine multiple policies 2, CQL TIT outper- forms CQL by a large margin. Since the mixed datasets 2The ‘Medium Replay’ is used in the original DT paper, while it is called ‘Mixed’ dataset in the original CQL paper. with complex distributions are more likely to be common in practice (Kumar et al., 2020), we expect that CQL TIT will work better than CQL in practical applications. (3) For the ofﬂine SL setting, DT TIT is better than DT, especially in practical datasets. The analysis is similar to that of the ofﬂine RL setting. (4) The ofﬂine TIT can achieve better results than the online TIT in MoJoCo tasks. This is easy to see by com-"
+  },
+  {
+    "paper_id": "2212.14538v2",
+    "title": "Transformer in Transformer as Backbone for Deep Reinforcement Learning",
+    "page_num": 7,
+    "chunk_id": "2212.14538v2_page7_chunk5",
+    "text": "ofﬂine TIT can achieve better results than the online TIT in MoJoCo tasks. This is easy to see by com-"
+  },
+  {
+    "paper_id": "2212.14538v2",
+    "title": "Transformer in Transformer as Backbone for Deep Reinforcement Learning",
+    "page_num": 8,
+    "chunk_id": "2212.14538v2_page8_chunk1",
+    "text": "Transformer in Transformer as Backbone for Deep Reinforcement Learning Table 4. The results of ablation models in Atari tasks. TASK NAME PONG SPACEINVADERS EPISODE RETURN MEAN STD MEAN STD VANILLA TIT 9.600 6.445 752 77 ENHANCED TIT 20.750 1.577 1645 168 W/O DENSE 18.620 3.267 938 256 W/O INNER 19.350 2.441 1363 91 W/O OUTER 20.180 2.034 1295 233 paring Table 2 and 3. We discuss some possible reasons for this in Appendix C. 5.4. RQ3: Deeper Understanding of TIT Here we show the ablation study and feature visualization. More results and analyses are shown in the Appendix B. 5.4.1. ABLATION STUDY Vanilla TIT can be regarded as an ablation model of En- hanced TIT. Table 1 and 2 show that although Vanilla TIT can achieve good results in simple Classic Control tasks, its performance is worse than Enhanced TIT in other tasks. In this section, we further consider three ablation models: ‘w/o Dense’ means that the dense connection is removed; ‘w/o Inner’ means that the inner blocks are removed; ‘w/o Outer’ means that the outer blocks are removed. We show some results in Table 4. The details of these models and more results can be found in Appendix B.2."
+  },
+  {
+    "paper_id": "2212.14538v2",
+    "title": "Transformer in Transformer as Backbone for Deep Reinforcement Learning",
+    "page_num": 8,
+    "chunk_id": "2212.14538v2_page8_chunk2",
+    "text": "ablation models: ‘w/o Dense’ means that the dense connection is removed; ‘w/o Inner’ means that the inner blocks are removed; ‘w/o Outer’ means that the outer blocks are removed. We show some results in Table 4. The details of these models and more results can be found in Appendix B.2. Compared to Enhanced TIT, ‘w/o Dense’ has the maximum performance degradation. It implies that the dense con- nection is important for pure Transformer-based net- works. As far as we know, previous studies have shown that the dense connection is also important for the CNN (Huang et al., 2017) and MLP (Ota et al., 2020; Sinha et al., 2020) networks, but TIT is the ﬁrst work to demonstrate this for Transformer networks. Furthermore, both ‘w/o Inner’ and ‘w/o Outer’ perform worse than Enhanced TIT, which indicates that both inner and outer blocks (and proper arrangement of them) are nec- essary for good performance. 5.4.2. FEATURE VISUALIZATION We visualize the feature attention of different methods in Figure 3, which presents the following phenomena. (1) From the spatial perspective, Enhanced TIT has more explainable attention maps than other methods. Speciﬁcally, its attention is highly correlated with the ob- jects in the original observation"
+  },
+  {
+    "paper_id": "2212.14538v2",
+    "title": "Transformer in Transformer as Backbone for Deep Reinforcement Learning",
+    "page_num": 8,
+    "chunk_id": "2212.14538v2_page8_chunk3",
+    "text": "good performance. 5.4.2. FEATURE VISUALIZATION We visualize the feature attention of different methods in Figure 3, which presents the following phenomena. (1) From the spatial perspective, Enhanced TIT has more explainable attention maps than other methods. Speciﬁcally, its attention is highly correlated with the ob- jects in the original observation in most cases (only the ﬁrst row is an exception). Furthermore, in the SpaceInvaders Observation NatureCNN Catformer Enhanced_TIT Figure 3. The feature attention of different methods. Observations (i.e., the ﬁrst column) are randomly generated from Pong (i.e., the ﬁrst two rows) and SpaceInvaders (i.e., the last two rows). task, the invaders close to the agent get more attention (i.e., the visualization color is darker). In this way, Enhanced TIT may learn better spatial representations for good decision- making. In contrast, Catformer has disorganized attention maps, and it sometimes generates unexplainable attention as shown by the second row. NatureCNN has organized attention maps, but it is not so accurate at the object level. (2) From the temporal perspective, Enhanced TIT has more stable attention maps than other methods. For ex- ample, when the observation changes slightly (e.g., the sec- ond row is slightly changed compared to the ﬁrst; so does the"
+  },
+  {
+    "paper_id": "2212.14538v2",
+    "title": "Transformer in Transformer as Backbone for Deep Reinforcement Learning",
+    "page_num": 8,
+    "chunk_id": "2212.14538v2_page8_chunk4",
+    "text": "attention maps, but it is not so accurate at the object level. (2) From the temporal perspective, Enhanced TIT has more stable attention maps than other methods. For ex- ample, when the observation changes slightly (e.g., the sec- ond row is slightly changed compared to the ﬁrst; so does the fourth compared to the third), its attention map does not change signiﬁcantly. Therefore, Enhanced TIT may learn consistent temporal representations for good decision- making and its stable performance. In contrast, the attention map of NatureCNN and Catformer has changed a lot. 6. Conclusion This paper explored the minimal implementation of Trans- former in Transformer (TIT) backbone for deep RL. The key idea is cascading two Transformers in a very natural way: the inner one is used to process a single observation, while the outer one is responsible for processing the history of observations; combining both can extract spatial-temporal representations for better decision-making. The experiments demonstrated that TIT can be used off-the-shelf as back- bones to achieve good results without tedious optimization skills and the combination of other network modules. The experiments also presented deeper understanding of TIT. The limitations and future directions are discussed in Ap- pendix C."
+  },
+  {
+    "paper_id": "2212.14538v2",
+    "title": "Transformer in Transformer as Backbone for Deep Reinforcement Learning",
+    "page_num": 8,
+    "chunk_id": "2212.14538v2_page8_chunk5",
+    "text": "better decision-making. The experiments demonstrated that TIT can be used off-the-shelf as back- bones to achieve good results without tedious optimization skills and the combination of other network modules. The experiments also presented deeper understanding of TIT. The limitations and future directions are discussed in Ap- pendix C."
+  },
+  {
+    "paper_id": "2212.14538v2",
+    "title": "Transformer in Transformer as Backbone for Deep Reinforcement Learning",
+    "page_num": 9,
+    "chunk_id": "2212.14538v2_page9_chunk1",
+    "text": "Transformer in Transformer as Backbone for Deep Reinforcement Learning References Arnab, A., Dehghani, M., Heigold, G., Sun, C., Luˇci´c, M., and Schmid, C. Vivit: A video vision transformer. In 2021 IEEE/CVF International Conference on Computer Vision (ICCV), pp. 6816–6826, 2021. doi: 10.1109/ICCV48922. 2021.00676. Babaeizadeh, M., Frosio, I., Tyree, S., Clemons, J., and Kautz, J. Ga3c: Gpu-based a3c for deep reinforcement learning. CoRR abs/1611.06256, 2016. Banino, A., Badia, A. P., Walker, J. C., Scholtes, T., Mitro- vic, J., and Blundell, C. Coberl: Contrastive bert for reinforcement learning. In International Conference on Learning Representations, 2022. Beattie, C., Leibo, J. Z., Teplyashin, D., Ward, T., Wain- wright, M., K¨uttler, H., Lefrancq, A., Green, S., Vald´es, V., Sadik, A., et al. Deepmind lab. arXiv preprint arXiv:1612.03801, 2016. Bellemare, M. G., Dabney, W., and Munos, R. A distribu- tional perspective on reinforcement learning. In Interna- tional Conference on Machine Learning, pp. 449–458. PMLR, 2017. Bjorck, N., Gomes, C. P., and Weinberger, K. Q. Towards deeper deep reinforcement learning with spectral nor- malization. Advances in Neural Information Processing Systems, 34:8242–8255, 2021. Brockman, G., Cheung, V., Pettersson, L., Schneider, J., Schulman, J., Tang, J., and Zaremba, W. Openai gym, 2016. Brown, T., Mann, B., Ryder, N., Subbiah,"
+  },
+  {
+    "paper_id": "2212.14538v2",
+    "title": "Transformer in Transformer as Backbone for Deep Reinforcement Learning",
+    "page_num": 9,
+    "chunk_id": "2212.14538v2_page9_chunk2",
+    "text": "N., Gomes, C. P., and Weinberger, K. Q. Towards deeper deep reinforcement learning with spectral nor- malization. Advances in Neural Information Processing Systems, 34:8242–8255, 2021. Brockman, G., Cheung, V., Pettersson, L., Schneider, J., Schulman, J., Tang, J., and Zaremba, W. Openai gym, 2016. Brown, T., Mann, B., Ryder, N., Subbiah, M., Kaplan, J. D., Dhariwal, P., Neelakantan, A., Shyam, P., Sastry, G., Askell, A., et al. Language models are few-shot learners. Advances in neural information processing systems, 33: 1877–1901, 2020. Chen, C., Yoon, J., Wu, Y.-F., and Ahn, S. Transdreamer: Reinforcement learning with transformer world models. In Deep RL Workshop NeurIPS 2021, 2021a. Chen, L., Lu, K., Rajeswaran, A., Lee, K., Grover, A., Laskin, M., Abbeel, P., Srinivas, A., and Mordatch, I. De- cision transformer: Reinforcement learning via sequence modeling. Advances in neural information processing systems, 34:15084–15097, 2021b. Dabney, W., Rowland, M., Bellemare, M., and Munos, R. Distributional reinforcement learning with quantile re- gression. In Proceedings of the AAAI Conference on Artiﬁcial Intelligence, volume 32, 2018. Dai, Z., Yang, Z., Yang, Y., Carbonell, J. G., Le, Q., and Salakhutdinov, R. Transformer-xl: Attentive language models beyond a ﬁxed-length context. In Proceedings of the 57th Annual Meeting of the Association for Computa-"
+  },
+  {
+    "paper_id": "2212.14538v2",
+    "title": "Transformer in Transformer as Backbone for Deep Reinforcement Learning",
+    "page_num": 9,
+    "chunk_id": "2212.14538v2_page9_chunk3",
+    "text": "with quantile re- gression. In Proceedings of the AAAI Conference on Artiﬁcial Intelligence, volume 32, 2018. Dai, Z., Yang, Z., Yang, Y., Carbonell, J. G., Le, Q., and Salakhutdinov, R. Transformer-xl: Attentive language models beyond a ﬁxed-length context. In Proceedings of the 57th Annual Meeting of the Association for Computa- tional Linguistics, pp. 2978–2988, 2019. Davis, J. Q., Gu, A., Choromanski, K., Dao, T., Re, C., Finn, C., and Liang, P. Catformer: Designing stable transform- ers via sensitivity analysis. In International Conference on Machine Learning, pp. 2489–2499. PMLR, 2021. Dosovitskiy, A., Beyer, L., Kolesnikov, A., Weissenborn, D., Zhai, X., Unterthiner, T., Dehghani, M., Minderer, M., Heigold, G., Gelly, S., et al. An image is worth 16x16 words: Transformers for image recognition at scale. In International Conference on Learning Representations, 2020. Evans, R. and Gao, J. Deepmind ai reduces google data centre cooling bill by 40%. DeepMind blog, 20:158, 2016. Fu, J., Kumar, A., Nachum, O., Tucker, G., and Levine, S. D4rl: Datasets for deep data-driven reinforcement learning, 2020. Fujimoto, S., Hoof, H., and Meger, D. Addressing function approximation error in actor-critic methods. In Interna- tional conference on machine learning, pp. 1587–1596. PMLR, 2018. Fujimoto, S., Meger, D., and Precup, D."
+  },
+  {
+    "paper_id": "2212.14538v2",
+    "title": "Transformer in Transformer as Backbone for Deep Reinforcement Learning",
+    "page_num": 9,
+    "chunk_id": "2212.14538v2_page9_chunk4",
+    "text": "J., Kumar, A., Nachum, O., Tucker, G., and Levine, S. D4rl: Datasets for deep data-driven reinforcement learning, 2020. Fujimoto, S., Hoof, H., and Meger, D. Addressing function approximation error in actor-critic methods. In Interna- tional conference on machine learning, pp. 1587–1596. PMLR, 2018. Fujimoto, S., Meger, D., and Precup, D. Off-policy deep reinforcement learning without exploration. In Interna- tional conference on machine learning, pp. 2052–2062. PMLR, 2019. Gildenblat, J. and contributors. Pytorch library for cam methods. https://github.com/jacobgil/ pytorch-grad-cam, 2021. Goul˜ao, M. and Oliveira, A. L. Pretraining the vision transformer using self-supervised methods for vision based deep reinforcement learning. arXiv preprint arXiv:2209.10901, 2022. Greff, K., Srivastava, R. K., Koutn´ık, J., Steunebrink, B. R., and Schmidhuber, J. Lstm: A search space odyssey. IEEE transactions on neural networks and learning systems, 28 (10):2222–2232, 2016. Hafner, D., Lillicrap, T., Ba, J., and Norouzi, M. Dream to control: Learning behaviors by latent imagination. arXiv preprint arXiv:1912.01603, 2019. Han, K., Xiao, A., Wu, E., Guo, J., Xu, C., and Wang, Y. Transformer in transformer. Advances in Neural Informa- tion Processing Systems, 34:15908–15919, 2021."
+  },
+  {
+    "paper_id": "2212.14538v2",
+    "title": "Transformer in Transformer as Backbone for Deep Reinforcement Learning",
+    "page_num": 9,
+    "chunk_id": "2212.14538v2_page9_chunk5",
+    "text": "arXiv:1912.01603, 2019. Han, K., Xiao, A., Wu, E., Guo, J., Xu, C., and Wang, Y. Transformer in transformer. Advances in Neural Informa- tion Processing Systems, 34:15908–15919, 2021."
+  },
+  {
+    "paper_id": "2212.14538v2",
+    "title": "Transformer in Transformer as Backbone for Deep Reinforcement Learning",
+    "page_num": 10,
+    "chunk_id": "2212.14538v2_page10_chunk1",
+    "text": "Transformer in Transformer as Backbone for Deep Reinforcement Learning Hausknecht, M. and Stone, P. Deep recurrent q-learning for partially observable mdps. In 2015 aaai fall symposium series, 2015. He, K., Zhang, X., Ren, S., and Sun, J. Deep residual learn- ing for image recognition. In Proceedings of the IEEE conference on computer vision and pattern recognition, pp. 770–778, 2016. Hu, S., Shen, L., Zhang, Y., Chen, Y., and Tao, D. On transforming reinforcement learning by transformer: The development trajectory. arXiv preprint arXiv:2212.14164, 2022. Huang, G., Liu, Z., Van Der Maaten, L., and Weinberger, K. Q. Densely connected convolutional networks. In 2017 IEEE Conference on Computer Vision and Pattern Recognition (CVPR), pp. 2261–2269, 2017. doi: 10.1109/ CVPR.2017.243. Janner, M., Li, Q., and Levine, S. Reinforcement learning as one big sequence modeling problem. In ICML 2021 Work- shop on Unsupervised Reinforcement Learning, 2021. Kalashnikov, D., Irpan, A., Pastor, P., Ibarz, J., Herzog, A., Jang, E., Quillen, D., Holly, E., Kalakrishnan, M., Van- houcke, V., et al. Scalable deep reinforcement learning for vision-based robotic manipulation. In Conference on Robot Learning, pp. 651–673. PMLR, 2018. Kenton, J. D. M.-W. C. and Toutanova, L. K. Bert: Pre- training of deep bidirectional transformers for language understanding."
+  },
+  {
+    "paper_id": "2212.14538v2",
+    "title": "Transformer in Transformer as Backbone for Deep Reinforcement Learning",
+    "page_num": 10,
+    "chunk_id": "2212.14538v2_page10_chunk2",
+    "text": "A., Jang, E., Quillen, D., Holly, E., Kalakrishnan, M., Van- houcke, V., et al. Scalable deep reinforcement learning for vision-based robotic manipulation. In Conference on Robot Learning, pp. 651–673. PMLR, 2018. Kenton, J. D. M.-W. C. and Toutanova, L. K. Bert: Pre- training of deep bidirectional transformers for language understanding. In Proceedings of NAACL-HLT, pp. 4171– 4186, 2019. Kumar, A., Zhou, A., Tucker, G., and Levine, S. Con- servative q-learning for ofﬂine reinforcement learning. Advances in Neural Information Processing Systems, 33: 1179–1191, 2020. Liang, Y., Zhou, P., Zimmermann, R., and Yan, S. Dual- former: Local-global stratiﬁed transformer for efﬁcient video recognition. In Avidan, S., Brostow, G., Ciss´e, M., Farinella, G. M., and Hassner, T. (eds.), Computer Vision – ECCV 2022, pp. 577–595, Cham, 2022. Springer Nature Switzerland. ISBN 978-3-031-19830-4. Lillicrap, T. P., Hunt, J. J., Pritzel, A., Heess, N., Erez, T., Tassa, Y., Silver, D., and Wierstra, D. Continuous control with deep reinforcement learning. arXiv preprint arXiv:1509.02971, 2015. Liu, Z., Lin, Y., Cao, Y., Hu, H., Wei, Y., Zhang, Z., Lin, S., and Guo, B. Swin transformer: Hierarchical vision transformer using shifted windows. In Proceedings of the IEEE/CVF International Conference on Computer Vision, pp. 10012–10022, 2021. Melo, L. C. Transformers"
+  },
+  {
+    "paper_id": "2212.14538v2",
+    "title": "Transformer in Transformer as Backbone for Deep Reinforcement Learning",
+    "page_num": 10,
+    "chunk_id": "2212.14538v2_page10_chunk3",
+    "text": "with deep reinforcement learning. arXiv preprint arXiv:1509.02971, 2015. Liu, Z., Lin, Y., Cao, Y., Hu, H., Wei, Y., Zhang, Z., Lin, S., and Guo, B. Swin transformer: Hierarchical vision transformer using shifted windows. In Proceedings of the IEEE/CVF International Conference on Computer Vision, pp. 10012–10022, 2021. Melo, L. C. Transformers are meta-reinforcement learners. In International Conference on Machine Learning, pp. 15340–15359. PMLR, 2022. Meng, L., Goodwin, M., Yazidi, A., and Engelstad, P. Deep reinforcement learning with swin transformer. arXiv preprint arXiv:2206.15269, 2022. Micheli, V., Alonso, E., and Fleuret, F. Transform- ers are sample efﬁcient world models. arXiv preprint arXiv:2209.00588, 2022. Mnih, V., Kavukcuoglu, K., Silver, D., Rusu, A. A., Veness, J., Bellemare, M. G., Graves, A., Riedmiller, M., Fidje- land, A. K., Ostrovski, G., et al. Human-level control through deep reinforcement learning. nature, 518(7540): 529–533, 2015. Mnih, V., Badia, A. P., Mirza, M., Graves, A., Lillicrap, T., Harley, T., Silver, D., and Kavukcuoglu, K. Asyn- chronous methods for deep reinforcement learning. In International conference on machine learning, pp. 1928– 1937. PMLR, 2016. Okada, M. and Taniguchi, T. Dreaming: Model-based re- inforcement learning by latent imagination without re- construction. In 2021 IEEE International Conference on Robotics and Automation (ICRA), pp. 4209–4215."
+  },
+  {
+    "paper_id": "2212.14538v2",
+    "title": "Transformer in Transformer as Backbone for Deep Reinforcement Learning",
+    "page_num": 10,
+    "chunk_id": "2212.14538v2_page10_chunk4",
+    "text": "D., and Kavukcuoglu, K. Asyn- chronous methods for deep reinforcement learning. In International conference on machine learning, pp. 1928– 1937. PMLR, 2016. Okada, M. and Taniguchi, T. Dreaming: Model-based re- inforcement learning by latent imagination without re- construction. In 2021 IEEE International Conference on Robotics and Automation (ICRA), pp. 4209–4215. IEEE, 2021. Ota, K., Oiki, T., Jha, D., Mariyama, T., and Nikovski, D. Can increasing input dimensionality improve deep reinforcement learning? In III, H. D. and Singh, A. (eds.), Proceedings of the 37th International Conference on Machine Learning, volume 119 of Proceedings of Machine Learning Research, pp. 7424–7433. PMLR, 13– 18 Jul 2020. URL https://proceedings.mlr. press/v119/ota20a.html. Ota, K., Jha, D. K., and Kanezaki, A. Training larger net- works for deep reinforcement learning. arXiv e-prints, pp. arXiv–2102, 2021. Parisotto, E., Song, F., Rae, J., Pascanu, R., Gulcehre, C., Jayakumar, S., Jaderberg, M., Kaufman, R. L., Clark, A., Noury, S., et al. Stabilizing transformers for reinforce- ment learning. In International conference on machine learning, pp. 7487–7498. PMLR, 2020. Paster, K., McIlraith, S. A., and Ba, J. You can’t count on luck: Why decision transformers fail in stochastic environments. In Decision Awareness in Reinforcement Learning Workshop at ICML 2022, 2022. URL https: //openreview.net/forum?id=DfCBqPKLsA."
+  },
+  {
+    "paper_id": "2212.14538v2",
+    "title": "Transformer in Transformer as Backbone for Deep Reinforcement Learning",
+    "page_num": 10,
+    "chunk_id": "2212.14538v2_page10_chunk5",
+    "text": "Stabilizing transformers for reinforce- ment learning. In International conference on machine learning, pp. 7487–7498. PMLR, 2020. Paster, K., McIlraith, S. A., and Ba, J. You can’t count on luck: Why decision transformers fail in stochastic environments. In Decision Awareness in Reinforcement Learning Workshop at ICML 2022, 2022. URL https: //openreview.net/forum?id=DfCBqPKLsA. Rafﬁn, A., Hill, A., Gleave, A., Kanervisto, A., Ernestus, M., and Dormann, N. Stable-baselines3: Reliable rein- forcement learning implementations. Journal of Machine"
+  },
+  {
+    "paper_id": "2212.14538v2",
+    "title": "Transformer in Transformer as Backbone for Deep Reinforcement Learning",
+    "page_num": 11,
+    "chunk_id": "2212.14538v2_page11_chunk1",
+    "text": "Transformer in Transformer as Backbone for Deep Reinforcement Learning Learning Research, 22(268):1–8, 2021. URL http: //jmlr.org/papers/v22/20-1364.html. Schulman, J., Levine, S., Abbeel, P., Jordan, M., and Moritz, P. Trust region policy optimization. In International conference on machine learning, pp. 1889–1897. PMLR, 2015. Schulman, J., Wolski, F., Dhariwal, P., Radford, A., and Klimov, O. Proximal policy optimization algorithms. CoRR, abs/1707.06347, 2017. URL http://arxiv. org/abs/1707.06347. Shah, R. M. and Kumar, V. Rrl: Resnet as representation for reinforcement learning. In Meila, M. and Zhang, T. (eds.), Proceedings of the 38th International Conference on Machine Learning, volume 139 of Proceedings of Machine Learning Research, pp. 9465–9476. PMLR, 18– 24 Jul 2021. URL https://proceedings.mlr. press/v139/shah21a.html. Sinha, S., Bharadhwaj, H., Srinivas, A., and Garg, A. D2rl: Deep dense architectures in reinforcement learning. arXiv preprint arXiv:2010.09163, 2020. Sopov, V. and Makarov, I. Transformer-based deep rein- forcement learning in vizdoom. In International Confer- ence on Analysis of Images, Social Networks and Texts, pp. 96–110. Springer, 2022. Sorokin, I., Seleznev, A., Pavlov, M., Fedorov, A., and Ignateva, A. Deep attention recurrent q-network. arXiv preprint arXiv:1512.01693, 2015. Sutton, R. S. and Barto, A. G. Reinforcement learning: An introduction. MIT press, 2018. Takuma Seno, M. I. d3rlpy: An ofﬂine deep reinforcement library."
+  },
+  {
+    "paper_id": "2212.14538v2",
+    "title": "Transformer in Transformer as Backbone for Deep Reinforcement Learning",
+    "page_num": 11,
+    "chunk_id": "2212.14538v2_page11_chunk2",
+    "text": "Networks and Texts, pp. 96–110. Springer, 2022. Sorokin, I., Seleznev, A., Pavlov, M., Fedorov, A., and Ignateva, A. Deep attention recurrent q-network. arXiv preprint arXiv:1512.01693, 2015. Sutton, R. S. and Barto, A. G. Reinforcement learning: An introduction. MIT press, 2018. Takuma Seno, M. I. d3rlpy: An ofﬂine deep reinforcement library. In NeurIPS 2021 Ofﬂine Reinforcement Learning Workshop, December 2021. Tamar, A., Wu, Y., Thomas, G., Levine, S., and Abbeel, P. Value iteration networks. Advances in neural information processing systems, 29, 2016. Tao, T., Reda, D., and van de Panne, M. Evaluating vi- sion transformer methods for deep reinforcement learning from pixels. arXiv preprint arXiv:2204.04905, 2022. Vaswani, A., Shazeer, N., Parmar, N., Uszkoreit, J., Jones, L., Gomez, A. N., Kaiser, Ł., and Polosukhin, I. At- tention is all you need. Advances in neural information processing systems, 30, 2017. Wang, Z., Schaul, T., Hessel, M., Van Hasselt, H., Lanctot, M., and De Freitas, N. Dueling network architectures for deep reinforcement learning. In Proceedings of the 33rd International Conference on International Conference on Machine Learning - Volume 48, ICML’16, pp. 1995–2003. JMLR.org, 2016. Yu, R., Du, D., LaLonde, R., Davila, D., Funk, C., Hoogs, A., and Clipp, B. Cascade transformers for end-to-end per-"
+  },
+  {
+    "paper_id": "2212.14538v2",
+    "title": "Transformer in Transformer as Backbone for Deep Reinforcement Learning",
+    "page_num": 11,
+    "chunk_id": "2212.14538v2_page11_chunk3",
+    "text": "Freitas, N. Dueling network architectures for deep reinforcement learning. In Proceedings of the 33rd International Conference on International Conference on Machine Learning - Volume 48, ICML’16, pp. 1995–2003. JMLR.org, 2016. Yu, R., Du, D., LaLonde, R., Davila, D., Funk, C., Hoogs, A., and Clipp, B. Cascade transformers for end-to-end per- son search. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR), pp. 7267–7276, June 2022. Zheng, Q., Zhang, A., and Grover, A. Online decision transformer. arXiv preprint arXiv:2202.05607, 2022."
+  },
+  {
+    "paper_id": "2212.14538v2",
+    "title": "Transformer in Transformer as Backbone for Deep Reinforcement Learning",
+    "page_num": 12,
+    "chunk_id": "2212.14538v2_page12_chunk1",
+    "text": "Transformer in Transformer as Backbone for Deep Reinforcement Learning A. Experiment Details A.1. Hyperparameter of PPO TIT Hyperparameters: For common hyperparameters, we use the exact values proposed by stable baselines3 (SB3), which can be found in: 1) https://stable-baselines3.readthedocs.io/en/master/modules/ ppo.html#parameters; and 2) https://github.com/DLR-RM/rl-baselines3-zoo/blob/master/ hyperparams/ppo.yml. In Table 5 and 6, we only list the speciﬁc hyperparameters for Transformers used in our PPO TIT. Note that PPO TIT needs some hypertuning (with common values for the Transformer), but it does not need complex optimization skills for good performance. Training: Based on the ofﬁcial results shown in https://github.com/DLR-RM/rl-baselines3-zoo/blob/ master/benchmark.md, we train different networks with PPO for 100,000, 1,000,000 and 10,000,000 timesteps on Classic Control tasks, MuJoCo tasks and Atari tasks, respectively. This is exactly the same as SB3. Evaluation: Based on the ofﬁcial results shown in https://github.com/DLR-RM/rl-baselines3-zoo/ blob/master/benchmark.md, we ﬁnd that the ofﬁcial SB3 evaluates the converged agents with 150,000, 150,000, and 600,000 timesteps on Classic Control tasks, MuJoCo tasks and Atari tasks, respectively. However, in our implementation, we evaluate the converged agents with 100 episodes for all tasks. We argue that 100 episodes are enough for creditable evaluation of Gym tasks. As ofﬁcial SB3, we report the mean and the standard deviation of"
+  },
+  {
+    "paper_id": "2212.14538v2",
+    "title": "Transformer in Transformer as Backbone for Deep Reinforcement Learning",
+    "page_num": 12,
+    "chunk_id": "2212.14538v2_page12_chunk2",
+    "text": "on Classic Control tasks, MuJoCo tasks and Atari tasks, respectively. However, in our implementation, we evaluate the converged agents with 100 episodes for all tasks. We argue that 100 episodes are enough for creditable evaluation of Gym tasks. As ofﬁcial SB3, we report the mean and the standard deviation of the episode returns of 100 episodes. Our experimental results are based on ﬁve independent runs of training and evaluation (seeds are 0, 1, 2, 3, and 4). Table 5. Hyperparameter of PPO TIT. The values in this table are used in Atari tasks. HYPERPARAMETER NAME VALUE NUMBER OF TIT BLOCKS 2, 4 PATCH SIZE 6, 12, 42 EMBEDDING DIMENSION 64, 128 NUMBER OF ATTENTION HEADS FOR INNER BLOCK 2, 4 NUMBER OF ATTENTION HEADS FOR OUTER BLOCK 2, 4 ATTENTION DROPOUT FOR INNER BLOCK 0.1 FFN DROPOUT FOR INNER BLOCK 0.1 ATTENTION DROPOUT FOR OUTER BLOCK 0.1 FFN DROPOUT FOR OUTER BLOCK 0.1 ACTIVATION FUNCTION FOR INNER BLOCK GELU ACTIVATION FUNCTION FOR OUTER BLOCK GELU Table 6. Hyperparameter of PPO TIT. The values in this table are used in MoJoCo and Classic Control tasks. HYPERPARAMETER NAME VALUE NUMBER OF TIT BLOCKS 2 PATCH SIZE 1 EMBEDDING DIMENSION 32, 64 NUMBER"
+  },
+  {
+    "paper_id": "2212.14538v2",
+    "title": "Transformer in Transformer as Backbone for Deep Reinforcement Learning",
+    "page_num": 12,
+    "chunk_id": "2212.14538v2_page12_chunk3",
+    "text": "OUTER BLOCK 0.1 ACTIVATION FUNCTION FOR INNER BLOCK GELU ACTIVATION FUNCTION FOR OUTER BLOCK GELU Table 6. Hyperparameter of PPO TIT. The values in this table are used in MoJoCo and Classic Control tasks. HYPERPARAMETER NAME VALUE NUMBER OF TIT BLOCKS 2 PATCH SIZE 1 EMBEDDING DIMENSION 32, 64 NUMBER OF ATTENTION HEADS FOR INNER BLOCK 1 NUMBER OF ATTENTION HEADS FOR OUTER BLOCK 1 ATTENTION DROPOUT FOR INNER BLOCK 0.0 FFN DROPOUT FOR INNER BLOCK 0.0 ATTENTION DROPOUT FOR OUTER BLOCK 0.0 FFN DROPOUT FOR OUTER BLOCK 0.0 ACTIVATION FUNCTION FOR INNER BLOCK GELU ACTIVATION FUNCTION FOR OUTER BLOCK GELU A.2. Hyperparameter of CQL TIT Hyperparameters: For common hyperparameters, we use the exact values proposed by d3rlpy, which can be found in: 1) https://d3rlpy.readthedocs.io/en/v1.1.1/references/generated/d3rlpy. algos.CQL.html; and 2) https://github.com/takuseno/d3rlpy/blob/master/reproductions/"
+  },
+  {
+    "paper_id": "2212.14538v2",
+    "title": "Transformer in Transformer as Backbone for Deep Reinforcement Learning",
+    "page_num": 13,
+    "chunk_id": "2212.14538v2_page13_chunk1",
+    "text": "Transformer in Transformer as Backbone for Deep Reinforcement Learning offline/cql.py#L28. In Table 7, we only list the speciﬁc hyperparameters for Transformers used in our CQL TIT. Note that we only tune the values of these hyperparameters about 5 times, and simply set most values based on our empirical experiences, and they work well in ofﬂine RL settings. This demonstrates a key difference between online RL and ofﬂine RL. Table 7. Hyperparameter of CQL TIT. HYPERPARAMETER NAME VALUE NUMBER OF TIT BLOCKS 2 PATCH SIZE OBSERVATION SIZE EMBEDDING DIMENSION 256 NUMBER OF ATTENTION HEADS FOR INNER BLOCK 1 NUMBER OF ATTENTION HEADS FOR OUTER BLOCK 4 ATTENTION DROPOUT FOR INNER BLOCK 0.0 FFN DROPOUT FOR INNER BLOCK 0.0 ATTENTION DROPOUT FOR OUTER BLOCK 0.0 FFN DROPOUT FOR OUTER BLOCK 0.1 ACTIVATION FUNCTION FOR INNER BLOCK GELU ACTIVATION FUNCTION FOR OUTER BLOCK GELU Training: We use the standard MuJoCo datasets from D4RL (Fu et al., 2020) to train the networks with CQL for 500,000 timesteps (see https://github.com/takuseno/d3rlpy/blob/master/reproductions/ offline/cql.py#L41). This is exactly the same as d3rlpy. Evaluation: As d3rlpy, we evaluate the converged agents every 1 training epoch (which is made up of 1,000 training timesteps, see https://github.com/takuseno/d3rlpy/blob/master/reproductions/ offline/cql.py#L42), so we will get"
+  },
+  {
+    "paper_id": "2212.14538v2",
+    "title": "Transformer in Transformer as Backbone for Deep Reinforcement Learning",
+    "page_num": 13,
+    "chunk_id": "2212.14538v2_page13_chunk2",
+    "text": "(Fu et al., 2020) to train the networks with CQL for 500,000 timesteps (see https://github.com/takuseno/d3rlpy/blob/master/reproductions/ offline/cql.py#L41). This is exactly the same as d3rlpy. Evaluation: As d3rlpy, we evaluate the converged agents every 1 training epoch (which is made up of 1,000 training timesteps, see https://github.com/takuseno/d3rlpy/blob/master/reproductions/ offline/cql.py#L42), so we will get 500,000/1,000=500 evaluation scores. Here, each evaluation score is the average episode reward by testing the converged agents with 10 episodes (see https://github. com/takuseno/d3rlpy/blob/master/reproductions/offline/cql.py#L45 and https://github. com/takuseno/d3rlpy/blob/master/d3rlpy/metrics/scorer.py#L405). We normalize the best evalu- ation score out of all 500 scores (note that this is the same for the original CQL, see Section A.5.2 for detials). The normalized score is calculated by 100.0 ∗(score −random score)/(expert score −random score); the random score and expert score are shown in Table 8, which can be found in https://github.com/takuseno/d3rlpy-benchmarks/ blob/main/d3rlpy_benchmarks/utils.py#L16 and https://github.com/Farama-Foundation/ D4RL/blob/master/d4rl/infos.py (the second link has other MuJoCo tasks’ information). We ﬁnally report the mean and the standard deviation of the normalized score based on ﬁve independent runs of training and evaluation (the running seeds are 0, 1, 2, 3, and 4). Table 8. The random score and expert score for MoJoCo tasks. TASK NAME RANDOM SCORE EXPERT SCORE HALFCHEETAH -280.178953 12135.0 HOPPER -20.272305 3234.3"
+  },
+  {
+    "paper_id": "2212.14538v2",
+    "title": "Transformer in Transformer as Backbone for Deep Reinforcement Learning",
+    "page_num": 13,
+    "chunk_id": "2212.14538v2_page13_chunk3",
+    "text": "and the standard deviation of the normalized score based on ﬁve independent runs of training and evaluation (the running seeds are 0, 1, 2, 3, and 4). Table 8. The random score and expert score for MoJoCo tasks. TASK NAME RANDOM SCORE EXPERT SCORE HALFCHEETAH -280.178953 12135.0 HOPPER -20.272305 3234.3 WALKER 1.629008 4592.3 A.3. Hyperparameter of DT TIT Hyperparameters: For common hyperparameters, we use the exact values proposed by Decision Transformer (DT), which can be found in: https://github.com/kzl/decision-transformer/blob/master/gym/experiment. py#L283. For the speciﬁc hyperparameters of Transformers used in our DT TIT, they are shown in Table 9. Here, 1) we do not need to set the values of outer Transformer, because the authors implement DT highly based on huggingface 3, and it is not easy to modify the outer Transformer, so we use the default values as DT; 2) the activation function of inner block is set to relu, which is intent to match the default setting of DT: https://github.com/kzl/decision-transformer/ blob/master/gym/experiment.py#L295. Note that we did not tune the values of these hyperparameters at all, 3https://github.com/huggingface/transformers"
+  },
+  {
+    "paper_id": "2212.14538v2",
+    "title": "Transformer in Transformer as Backbone for Deep Reinforcement Learning",
+    "page_num": 13,
+    "chunk_id": "2212.14538v2_page13_chunk4",
+    "text": "intent to match the default setting of DT: https://github.com/kzl/decision-transformer/ blob/master/gym/experiment.py#L295. Note that we did not tune the values of these hyperparameters at all, 3https://github.com/huggingface/transformers"
+  },
+  {
+    "paper_id": "2212.14538v2",
+    "title": "Transformer in Transformer as Backbone for Deep Reinforcement Learning",
+    "page_num": 14,
+    "chunk_id": "2212.14538v2_page14_chunk1",
+    "text": "Transformer in Transformer as Backbone for Deep Reinforcement Learning but simply set an empirical values based on our experiences, and they work well in ofﬂine SL settings. This demonstrates a key difference between online RL and ofﬂine SL. Table 9. Hyperparameter of DT TIT. HYPERPARAMETER NAME VALUE NUMBER OF TIT BLOCKS 1 PATCH SIZE OBSERVATION SIZE EMBEDDING DIMENSION 128 NUMBER OF ATTENTION HEADS FOR INNER BLOCK 1 NUMBER OF ATTENTION HEADS FOR OUTER BLOCK - ATTENTION DROPOUT FOR INNER BLOCK 0.0 FFN DROPOUT FOR INNER BLOCK 0.0 ATTENTION DROPOUT FOR OUTER BLOCK - FFN DROPOUT FOR OUTER BLOCK - ACTIVATION FUNCTION FOR INNER BLOCK RELU ACTIVATION FUNCTION FOR OUTER BLOCK - Training: We use exactly the same training procedure as Decision Transformer. Speciﬁcally, we ﬁrst download the datasets based on: https://github.com/kzl/decision-transformer/blob/master/gym/data/download_ d4rl_datasets.py, then train the DT and DT TIT agents by 10 epochs. Evaluation: We use exactly the same evaluation procedure as Decision Transformer. Speciﬁcally, we evaluate the converged agents based on the target return-to-go (12000 and 6000 for halfcheetah; 3600 and 1800 for hopper; 5000 and 2500 for walker2d) after each training epoch, and report the max return (which has been normalized based on Table 8) among 10 epochs."
+  },
+  {
+    "paper_id": "2212.14538v2",
+    "title": "Transformer in Transformer as Backbone for Deep Reinforcement Learning",
+    "page_num": 14,
+    "chunk_id": "2212.14538v2_page14_chunk2",
+    "text": "procedure as Decision Transformer. Speciﬁcally, we evaluate the converged agents based on the target return-to-go (12000 and 6000 for halfcheetah; 3600 and 1800 for hopper; 5000 and 2500 for walker2d) after each training epoch, and report the max return (which has been normalized based on Table 8) among 10 epochs. Our experimental results are based on three independent runs of training and evaluation as the original DT (the running seeds are randomly generated as the original DT). A.4. The Architecture of DT TIT and the Comparison with Other TIT Models The Network Architecture of DT TIT is shown on the right of Figure 4. Comparing DT TIT with DT, the state is processed by an inner CNN in DT, while the state is processed by an inner ViT in DT TIT. In contrast, the sequence of tuples of ⟨observation, action, return⟩is processed by the outer causal transformer. Comparing DT TIT with Vanilla TIT shown in Figure 1, both have exactly the same inner ViT; however, the outer causal transformer in DT TIT is used to process the sequence of tuples of ⟨observation, action, return⟩, but the outer causal transformer in Vanilla TIT is used to process the sequence of observations."
+  },
+  {
+    "paper_id": "2212.14538v2",
+    "title": "Transformer in Transformer as Backbone for Deep Reinforcement Learning",
+    "page_num": 14,
+    "chunk_id": "2212.14538v2_page14_chunk3",
+    "text": "with Vanilla TIT shown in Figure 1, both have exactly the same inner ViT; however, the outer causal transformer in DT TIT is used to process the sequence of tuples of ⟨observation, action, return⟩, but the outer causal transformer in Vanilla TIT is used to process the sequence of observations. In summary, there core idea of TIT (no matter Vanilla TIT, Enhanced TIT nor DT TIT) is that we cascade two Transformers in a natural way: the inner one is used to process a single observation at the observation patch level, while the outer one is responsible for processing sequential observations (or tuples of ⟨observation, action, return⟩in the paradigm of DT). In this paper, all models based on this general idea are called TIT. A.5. The Referenced Results of Different Algorithms on Different Tasks In the experiment part, we have provided the ‘Reported’ results of different algorithms on different tasks, then reproduced these results to ensure that our implementation of algorithms is correct. Here, we give a more clear description about the ‘Reported’ results. A.5.1. STABLE BASELINE3 The ‘Reported’ results of stable baseline3 are referenced from this link: https://github.com/DLR-RM/ rl-baselines3-zoo/blob/master/benchmark.md. A.5.2. D3RLPY The ‘Reported’ results (i.e., best normalized return and"
+  },
+  {
+    "paper_id": "2212.14538v2",
+    "title": "Transformer in Transformer as Backbone for Deep Reinforcement Learning",
+    "page_num": 14,
+    "chunk_id": "2212.14538v2_page14_chunk4",
+    "text": "then reproduced these results to ensure that our implementation of algorithms is correct. Here, we give a more clear description about the ‘Reported’ results. A.5.1. STABLE BASELINE3 The ‘Reported’ results of stable baseline3 are referenced from this link: https://github.com/DLR-RM/ rl-baselines3-zoo/blob/master/benchmark.md. A.5.2. D3RLPY The ‘Reported’ results (i.e., best normalized return and best normalized std) of d3rlpy are referenced from this link: https://github.com/takuseno/d3rlpy-benchmarks/blob/main/d4rl_table.csv. Every one"
+  },
+  {
+    "paper_id": "2212.14538v2",
+    "title": "Transformer in Transformer as Backbone for Deep Reinforcement Learning",
+    "page_num": 15,
+    "chunk_id": "2212.14538v2_page15_chunk1",
+    "text": "Transformer in Transformer as Backbone for Deep Reinforcement Learning state Decision Transformer (DT) The state is processed by a CNN or MLP. state 1 2 9 * … 0 Inner Transformer Block Linear Projection of State Patches Decision Transformer in Transformer (DT_TIT) The state is processed by a ViT. Figure 4. The comparison between the original DT (left) and our DT TIT (right). installed the d3rlpy-benchmarks library 4 can reproduce these results perfectly, by running score = load d4rl score(algo name, env name, dataset name) (10) best normalized return = np.mean(score.scores.max(axis = 1) (11) best normalized std = np.std(score.scores.max(axis = 1)) (12) where the load d4rl score function is in this link: https://github.com/takuseno/d3rlpy-benchmarks/ blob/main/d3rlpy_benchmarks/data_loader.py#L33. Please note that the results of d3rlpy-CQL and original-paper-CQL are different, as shown in Table 10. Here, original-paper- CQL means that the results are referenced from the original CQL paper (Kumar et al., 2020), which are also referenced in the original DT paper (Chen et al., 2021b). In contrast, d3rlpy-CQL means that the results are referenced from the d3rlpy (i.e., the above link). Note again: we use the d3rlpy-CQL’s results because 1) d3rlpy-CQL generally achieves better scores than the original-paper-CQL as shown in Table 10; 2)"
+  },
+  {
+    "paper_id": "2212.14538v2",
+    "title": "Transformer in Transformer as Backbone for Deep Reinforcement Learning",
+    "page_num": 15,
+    "chunk_id": "2212.14538v2_page15_chunk2",
+    "text": "also referenced in the original DT paper (Chen et al., 2021b). In contrast, d3rlpy-CQL means that the results are referenced from the d3rlpy (i.e., the above link). Note again: we use the d3rlpy-CQL’s results because 1) d3rlpy-CQL generally achieves better scores than the original-paper-CQL as shown in Table 10; 2) our CQL TIT is implemented based on d3rlpy-CQL. Table 10. The results of d3rlpy-CQL and original-paper-CQL are different. DATASET TYPE TASK NAME ORIGINAL-PAPER-CQL D3RLPY-CQL MEDIUM HALFCHEETAH 44.4 42.6±0.1 HOPPER 58.0 100.7±0.3 WALKER2D 79.2 82.8±1.3 MEDIUM REPLAY HALFCHEETAH 46.2 47.1±0.6 HOPPER 48.6 85.1±16.2 WALKER2D 26.7 49.6±5.2 4https://github.com/takuseno/d3rlpy-benchmarks"
+  },
+  {
+    "paper_id": "2212.14538v2",
+    "title": "Transformer in Transformer as Backbone for Deep Reinforcement Learning",
+    "page_num": 16,
+    "chunk_id": "2212.14538v2_page16_chunk1",
+    "text": "Transformer in Transformer as Backbone for Deep Reinforcement Learning A.5.3. DECISION TRANSFORMER The ‘Reported’ results of Decision Transformer (DT) are referenced from Table 2 of the original paper (Chen et al., 2021b). A.6. Ofﬂine Dataset Information We must point out that d3rlpy-CQL and DT use different versions of ofﬂine datasets! Speciﬁcally, d3rlpy-CQL uses the d4rl-v0 datasets, but DT uses the d4rl-v2 datasets; and the differences between v0 and v2 can be found in this link: https://github.com/Farama-Foundation/d4rl/wiki/Tasks#gym. In general, the results based on different datasets can NOT be comparable; but note that for each separate algorithm, our d3rlpy-CQL TIT is comparable with d3rlpy-CQL, and our DT TIT is comparable with DT. We notice that the DT’s authors compare their results with the CQL’s results shown in the original paper (Kumar et al., 2020); but DT uses d4rl-v2 datasets while the original CQL uses d4rl-v0 datasets. Therefore, their results may not be comparable, which has also been pointed out by other researchers: https://github.com/kzl/decision-transformer/ issues/42. In summary, the d3rlpy-CQL and the original-paper-CQL use d4rl-v0 datasets, but DT uses d4rl-v2 datasets. B. More Analyses of TIT B.1. Results for Ofﬂine RL Setting The results in Table 3 show that CQL TIT works much better"
+  },
+  {
+    "paper_id": "2212.14538v2",
+    "title": "Transformer in Transformer as Backbone for Deep Reinforcement Learning",
+    "page_num": 16,
+    "chunk_id": "2212.14538v2_page16_chunk2",
+    "text": "comparable, which has also been pointed out by other researchers: https://github.com/kzl/decision-transformer/ issues/42. In summary, the d3rlpy-CQL and the original-paper-CQL use d4rl-v0 datasets, but DT uses d4rl-v2 datasets. B. More Analyses of TIT B.1. Results for Ofﬂine RL Setting The results in Table 3 show that CQL TIT works much better than CQL on Medium Replay datasets, but it only outperforms CQL by a small margin on Medium datasets. Here, we show the learning curves of different methods in Figure 5, which demonstrates that the CQL TIT has a much faster learning speed than CQL on some datasets, although they have similar ﬁnal converged scores. 0 100000 200000 300000 400000 500000 30 32 34 36 38 40 42 CQL CQL_TIT_Enhanced 0 100000 200000 300000 400000 500000 10 20 30 40 50 60 70 80 CQL CQL_TIT_Enhanced Figure 5. The learning curves on halfcheetah medium dataset (left) and walker2d medium dataset (right). Although CQL TIT and CQL have similar ﬁnal converged scores, CQL TIT has a much faster learning speed than CQL on datasets like walker2d medium. B.2. Ablation Study The ablation results are shown in Table 11. The model named ‘w/o Dense Connection’ means that the dense connection design (i.e., the"
+  },
+  {
+    "paper_id": "2212.14538v2",
+    "title": "Transformer in Transformer as Backbone for Deep Reinforcement Learning",
+    "page_num": 16,
+    "chunk_id": "2212.14538v2_page16_chunk3",
+    "text": "Although CQL TIT and CQL have similar ﬁnal converged scores, CQL TIT has a much faster learning speed than CQL on datasets like walker2d medium. B.2. Ablation Study The ablation results are shown in Table 11. The model named ‘w/o Dense Connection’ means that the dense connection design (i.e., the red dotted lines in Figure 2) is removed, and only the output of the last TIT block is used to generate the action. The model named ‘w/o Inner Block’ means that the inner blocks are removed, and the input of the outer blocks is the observation embedding, which is generated by linearly mapping the whole observation image with an trainable parameter Eo, i.e., y0 = [ot−(K−1)Eo, ot−(K−2)Eo, ..., otEo]."
+  },
+  {
+    "paper_id": "2212.14538v2",
+    "title": "Transformer in Transformer as Backbone for Deep Reinforcement Learning",
+    "page_num": 17,
+    "chunk_id": "2212.14538v2_page17_chunk1",
+    "text": "Transformer in Transformer as Backbone for Deep Reinforcement Learning The model named ‘w/o Outer Block’ means that the outer blocks are removed, and the K observations are stacked in the same way as DQN, then processed by the inner blocks to generate the action. Compared to Enhanced TIT, ‘w/o Dense Connection’ has the maximum performance degradation. It implies that the dense connection is important for pure Transformer-based networks. As far as we know, previous studies have shown that the dense connection is also important for the CNN (Huang et al., 2017) and MLP (Ota et al., 2020; Sinha et al., 2020) networks, but TIT is the ﬁrst work to demonstrate this for Transformer networks. Furthermore, both ‘w/o Inner Block’ and ‘w/o Outer Block’ perform worse than Enhanced TIT, which indicates that both inner and outer blocks (and proper arrangement of them) are necessary for good performance. Table 11. The results of ablation models in online Atari tasks. TASK NAME BREAKOUT MSPACMAN PONG SPACEINVADERS OBS/ACT SPACE (1, 84, 84) 4D (1, 84, 84) 9D (1, 84, 84) 9D (1, 84, 84) 6D EPISODE RETURN MEAN STD MEAN STD MEAN STD MEAN STD VANILLA TIT 169 91 748 205 9.600 6.445 752"
+  },
+  {
+    "paper_id": "2212.14538v2",
+    "title": "Transformer in Transformer as Backbone for Deep Reinforcement Learning",
+    "page_num": 17,
+    "chunk_id": "2212.14538v2_page17_chunk2",
+    "text": "of ablation models in online Atari tasks. TASK NAME BREAKOUT MSPACMAN PONG SPACEINVADERS OBS/ACT SPACE (1, 84, 84) 4D (1, 84, 84) 9D (1, 84, 84) 9D (1, 84, 84) 6D EPISODE RETURN MEAN STD MEAN STD MEAN STD MEAN STD VANILLA TIT 169 91 748 205 9.600 6.445 752 77 ENHANCED TIT 321 68 2246 326 20.750 1.577 1645 168 W/O DENSE CONNECTION 121 34 1372 192 18.620 3.267 938 256 W/O INNER BLOCK 276 59 1588 516 19.350 2.441 1363 91 W/O OUTER BLOCK 229 83 1591 396 20.180 2.034 1295 233 B.3. Feature Attention Visualization We visualize the feature attention of different methods by Grad-CAM (Gildenblat & contributors, 2021), which is a typical method for visualization and explainability of deep networks. The results are shown in Figure 6. From the spatial perspective, Enhanced TIT generates more explainable attention maps than other methods. As can be seen, the attention of NatureCNN, ResNet and Enhanced TIT is highly correlated with the objects in the original observation in most cases. In contrast, Catformer and Vanilla TIT have disorganized attention maps, and they sometimes generate unexplainable attention as shown by the ﬁrst two rows. Furthermore, in the SpaceInvaders task, we found"
+  },
+  {
+    "paper_id": "2212.14538v2",
+    "title": "Transformer in Transformer as Backbone for Deep Reinforcement Learning",
+    "page_num": 17,
+    "chunk_id": "2212.14538v2_page17_chunk3",
+    "text": "attention of NatureCNN, ResNet and Enhanced TIT is highly correlated with the objects in the original observation in most cases. In contrast, Catformer and Vanilla TIT have disorganized attention maps, and they sometimes generate unexplainable attention as shown by the ﬁrst two rows. Furthermore, in the SpaceInvaders task, we found that the attention weight is often positively-correlated with the density of the invaders (i.e., the attention color is darker where there are many invaders). From the temporal perspective, Enhanced TIT generates more stable attention maps than other methods. For example, when the observation changes slightly (i.e., the second row is slightly changed compared to the ﬁrst; so does the fourth compared to the third), its attention map does not change signiﬁcantly. Therefore, Enhanced TIT may learn consistent temporal representations for good decision-making, which may explain its stable performance. In contrast, the attention map of NatureCNN and Catformer has changed a lot. However, please note that the attention map is better used for explanation, but is not necessarily positively-correlated with the performance. For example, Catformer achieves good scores in Pong and SpaceInvaders, but its attention maps are disorganized. B.4. Attention Weights Visualization In the above section, we have visualized the feature"
+  },
+  {
+    "paper_id": "2212.14538v2",
+    "title": "Transformer in Transformer as Backbone for Deep Reinforcement Learning",
+    "page_num": 17,
+    "chunk_id": "2212.14538v2_page17_chunk4",
+    "text": "lot. However, please note that the attention map is better used for explanation, but is not necessarily positively-correlated with the performance. For example, Catformer achieves good scores in Pong and SpaceInvaders, but its attention maps are disorganized. B.4. Attention Weights Visualization In the above section, we have visualized the feature attention of different methods by Grad-CAM, which cares more about gradients. In this section, we visualize the attention weights directly based on the original weight values. The results are shown in Figure 7. The analyses from spatial perspective. As shown by the ﬁfth image, which visualizes the attention weights of the Inner Transformer. Here, we use the class token as the key in this self-attention operation, because the class token serves as the integrated representation of all observation patches as mentioned in our main paper. As we can see, the top and the bottom parts of the observation image get higher attention weights, since the top part is the game score and the bottom part is the paddles and ball, which are important for the game. In contrast, the middle part of the observation image is mainly the background, which may have little inﬂuence on the game, so the attention"
+  },
+  {
+    "paper_id": "2212.14538v2",
+    "title": "Transformer in Transformer as Backbone for Deep Reinforcement Learning",
+    "page_num": 17,
+    "chunk_id": "2212.14538v2_page17_chunk5",
+    "text": "higher attention weights, since the top part is the game score and the bottom part is the paddles and ball, which are important for the game. In contrast, the middle part of the observation image is mainly the background, which may have little inﬂuence on the game, so the attention weight values of the middle part are small. Based on this visualization, we conclude that Enhanced TIT (and the Inner Transformer) can indeed capture important spatial"
+  },
+  {
+    "paper_id": "2212.14538v2",
+    "title": "Transformer in Transformer as Backbone for Deep Reinforcement Learning",
+    "page_num": 18,
+    "chunk_id": "2212.14538v2_page18_chunk1",
+    "text": "Transformer in Transformer as Backbone for Deep Reinforcement Learning Observation NatureCNN ResNet Catformer Vanilla_TIT Enhanced_TIT Figure 6. The feature attention visualization of different methods by Grad-CAM. Observations (i.e., the ﬁrst column) are randomly generated from Pong (i.e., the ﬁrst two rows) and SpaceInvaders (i.e., the last two rows). Inner Attention Weights Outer Attention Weights 𝑂𝑡 𝑂𝑡−1 𝑂𝑡−2 𝑂𝑡−3 Figure 7. The original attention weights visualization of Enhanced TIT. Observations (i.e., the ﬁrst four images) are randomly generated from Pong. The ﬁfth image is the visualization of attention weights of the Inner Transformer, while the last image is the visualization of attention weights of the Outer Transformer. information for good decision-making. The analyses from temporal perspective. As shown by the last image, which visualizes the attention weights of the Outer Transformer. Here, we use four observations to form the observation history to match the setting of the original DQN, for fair comparison. As we can see, the current observation ot usually gets the highest attention weights (i.e., the color on diagonal is darker), so that the most updated information can be used for decision-making. Moreover, the observation (e.g., ot−3) far away from the current timestep gets higher attention weights than the"
+  },
+  {
+    "paper_id": "2212.14538v2",
+    "title": "Transformer in Transformer as Backbone for Deep Reinforcement Learning",
+    "page_num": 18,
+    "chunk_id": "2212.14538v2_page18_chunk2",
+    "text": "comparison. As we can see, the current observation ot usually gets the highest attention weights (i.e., the color on diagonal is darker), so that the most updated information can be used for decision-making. Moreover, the observation (e.g., ot−3) far away from the current timestep gets higher attention weights than the middle observations (e.g., ot−1 and ot−2), therefore the information with the greatest change (in terms of the current observation) can be used for decision-making. Based on this visualization, we conclude that Enhanced TIT (and the Outer Transformer) can indeed capture important temporal information for good decision-making. C. Discussion and Improvement This paper aims at providing a proof of concept that the pure Transformer-based backbones can achieve good results for deep RL, without changing any other settings except for the deep networks. In this section, we give some discussions and"
+  },
+  {
+    "paper_id": "2212.14538v2",
+    "title": "Transformer in Transformer as Backbone for Deep Reinforcement Learning",
+    "page_num": 19,
+    "chunk_id": "2212.14538v2_page19_chunk1",
+    "text": "Transformer in Transformer as Backbone for Deep Reinforcement Learning Table 12. The number of information ﬂows for Different TIT backbones. FLOW TYPE VANILLA TIT ENHANCED TIT SPATIAL LK LK TEMPORAL L L S-S (L-1)K (L-1)K T-T L-1 L S-T K LK T-S 0 0 point out some directions for further improvements. Information Unit and Information Flow. It is easy to see that the inner block operates on the observation patches; then the class token integrates the information of all patches, and the outer block operates on this integration. Consequently, there are two types of horizontal information ﬂow: the spatial ﬂow in the inner block and the temporal ﬂow in the outer block. Moreover, there could be four types of vertical information ﬂow: the spatial-to-spatial (S-S) ﬂow, the temporal-to-temporal (T-T) ﬂow, the spatial-to-temporal (S-T) ﬂow, and the temporal-to-spatial (T-S) ﬂow. Table 12 shows the number of these ﬂows in different TIT backbones. It can be seen that the Enhanced TIT has more information interactions in the vertical direction. Besides, comparing Vanilla TIT with previous methods like Catformer (i.e., comparing ‘Transformer + Transformer’ with ‘ResNet + Transformer’), it can be seen that previous methods also operate on observation patches, but they do"
+  },
+  {
+    "paper_id": "2212.14538v2",
+    "title": "Transformer in Transformer as Backbone for Deep Reinforcement Learning",
+    "page_num": 19,
+    "chunk_id": "2212.14538v2_page19_chunk2",
+    "text": "backbones. It can be seen that the Enhanced TIT has more information interactions in the vertical direction. Besides, comparing Vanilla TIT with previous methods like Catformer (i.e., comparing ‘Transformer + Transformer’ with ‘ResNet + Transformer’), it can be seen that previous methods also operate on observation patches, but they do not have any spatial ﬂows because the CNN in ResNet is local as discussed in ViT (Dosovitskiy et al., 2020). Future Improvement. On one hand, one can design more advanced network architectures. There are three concrete directions. 1) It could be beneﬁcial if the Transformers directly operate on the whole observation. 2) Architectures enabling the T-S information ﬂow can be complementary to the current TIT. 3) The exploration of more advanced Transformers like Swin Transformer (Liu et al., 2021) is also possible. In fact, we tested some advanced architectures, e.g., TNT (Han et al., 2021) and ViViT (Arnab et al., 2021) from CV community, but did not get consistent improvement. We hypothesize that it is inappropriate to train an overly complex architecture only by the signal of RL loss, which motivates our minimal implementation of TIT. Thus, we try to design TIT as simple as possible. On the other hand,"
+  },
+  {
+    "paper_id": "2212.14538v2",
+    "title": "Transformer in Transformer as Backbone for Deep Reinforcement Learning",
+    "page_num": 19,
+    "chunk_id": "2212.14538v2_page19_chunk3",
+    "text": "2021) from CV community, but did not get consistent improvement. We hypothesize that it is inappropriate to train an overly complex architecture only by the signal of RL loss, which motivates our minimal implementation of TIT. Thus, we try to design TIT as simple as possible. On the other hand, it is exciting to consider dedicated optimization skills to improve the training of pure Transformer-based backbones (although it is not the purpose of this paper), especially for an overly complex backbone. For example, self- supervised methods like next-observation prediction and contrastive representation learning can be very effective to train large Transformer models in RL setting (Tao et al., 2022; Goul˜ao & Oliveira, 2022). Besides, Enhanced TIT performs slightly worse than the state-of-the-arts in the online MoJoCo tasks. We are currently unable to ﬁgure out the exact reasons, but hypothesize that 1) the action space is an important factor for pure Transformer- based RL methods because Classic Control and Atari have discrete action space while MoJoCo has continuous action space; 2) the inner Transformer is actually a ViT, which is good at processing image observation, but MuJoCo has array observation. However, in the ofﬂine MuJoCo tasks, our CQL TIT is superior"
+  },
+  {
+    "paper_id": "2212.14538v2",
+    "title": "Transformer in Transformer as Backbone for Deep Reinforcement Learning",
+    "page_num": 19,
+    "chunk_id": "2212.14538v2_page19_chunk4",
+    "text": "Transformer- based RL methods because Classic Control and Atari have discrete action space while MoJoCo has continuous action space; 2) the inner Transformer is actually a ViT, which is good at processing image observation, but MuJoCo has array observation. However, in the ofﬂine MuJoCo tasks, our CQL TIT is superior to CQL, and our DT TIT is superior to DT. This makes us very confused about these hypotheses since the action space and observation space in the ofﬂine MoJoCo setting do not change at all compared to the online MoJoCo setting. This also demonstrates the different working mechanisms between ofﬂine RL and online RL algorithms. Therefore, we think the most possible reason is that the ofﬂine D4RL dataset is more deterministic than the online MuJoCo environment (Paster et al., 2022), and the deterministic setting is more friendly to the training of large-scale networks like Transformers. We will investigate all of these in the future. Finally, we are interested in whether our TIT design is also helpful for Online Decision Transformer (Zheng et al., 2022). Furthermore, since the inner Transformer is a ViT, which is generally superior to CNN, we expect that TIT could demonstrate greater advantages when the observations are"
+  },
+  {
+    "paper_id": "2212.14538v2",
+    "title": "Transformer in Transformer as Backbone for Deep Reinforcement Learning",
+    "page_num": 19,
+    "chunk_id": "2212.14538v2_page19_chunk5",
+    "text": "these in the future. Finally, we are interested in whether our TIT design is also helpful for Online Decision Transformer (Zheng et al., 2022). Furthermore, since the inner Transformer is a ViT, which is generally superior to CNN, we expect that TIT could demonstrate greater advantages when the observations are more complex or the environment is more partially observable, and we will test this based on DeepMind Lab (Beattie et al., 2016) 5 which provides a suite of challenging 3D navigation and puzzle-solving tasks for learning agents. 5https://github.com/deepmind/lab"
+  }
+]

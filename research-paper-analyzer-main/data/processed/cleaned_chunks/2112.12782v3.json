@@ -1,0 +1,415 @@
+[
+  {
+    "paper_id": "2112.12782v3",
+    "title": "SeMask: Semantically Masked Transformers for Semantic Segmentation",
+    "page_num": 1,
+    "chunk_id": "2112.12782v3_page1_chunk1",
+    "text": "SeMask: Semantically Masked Transformers for Semantic Segmentation Jitesh Jain1,2,3* Anukriti Singh2 Nikita Orlov1 Zilong Huang2 Jiachen Li1,2 Steven Walton1,2 Humphrey Shi1,2 1Picsart AI Research (PAIR) 2SHI Lab @ University of Oregon & UIUC 3IIT Roorkee Abstract Finetuning a pretrained backbone in the encoder part of an image transformer network has been the traditional ap- proach for the semantic segmentation task. However, such an approach leaves out the semantic context that an im- age provides during the encoding stage. This paper ar- gues that incorporating semantic information of the im- age into pretrained hierarchical transformer-based back- bones while ﬁnetuning improves the performance consid- erably. To achieve this, we propose SeMask, a simple and effective framework that incorporates semantic infor- mation into the encoder with the help of a semantic at- tention operation. In addition, we use a lightweight se- mantic decoder during training to provide supervision to the intermediate semantic prior maps at every stage. Our experiments demonstrate that incorporating semantic pri- ors enhances the performance of the established hierar- chical encoders with a slight increase in the number of FLOPs. We provide empirical proof by integrating SeMask into Swin Transformer and Mix Transformer backbones as our encoder paired with different"
+  },
+  {
+    "paper_id": "2112.12782v3",
+    "title": "SeMask: Semantically Masked Transformers for Semantic Segmentation",
+    "page_num": 1,
+    "chunk_id": "2112.12782v3_page1_chunk2",
+    "text": "maps at every stage. Our experiments demonstrate that incorporating semantic pri- ors enhances the performance of the established hierar- chical encoders with a slight increase in the number of FLOPs. We provide empirical proof by integrating SeMask into Swin Transformer and Mix Transformer backbones as our encoder paired with different decoders. Our frame- work achieves a new state-of-the-art of 58.25% mIoU on the ADE20K dataset and improvements of over 3% in the mIoU metric on the Cityscapes dataset. The code and check- points are publicly available at https://github.com/Picsart- AI-Research/SeMask-Segmentation. 1. Introduction Semantic Segmentation aims to perform dense predic- tion for labeling each pixel in an image corresponding to the class that the pixel represents. Transformer-based vision networks [17,46] have outperformed Convolutional Neural Networks on the image-classiﬁcation task [31]. In mod- ern times, transformer backbones have shown impressive performance when transferred to downstream tasks like se- mantic segmentation [2,24,37]. Most of the architectural designs in vision transformers *Work done during an internship at Picsart AI Research (PAIR). Feature Decoder Semantic Decoder Ours Transformer Layer Semantic Layer Encoder Per-Pixel Loss Transformer Layer Transformer Layer Transformer Layer Semantic Layer Semantic Layer Train + Inference Train Only Encoder Feature Decoder Existing Methods Per-Pixel Loss"
+  },
+  {
+    "paper_id": "2112.12782v3",
+    "title": "SeMask: Semantically Masked Transformers for Semantic Segmentation",
+    "page_num": 1,
+    "chunk_id": "2112.12782v3_page1_chunk3",
+    "text": "the architectural designs in vision transformers *Work done during an internship at Picsart AI Research (PAIR). Feature Decoder Semantic Decoder Ours Transformer Layer Semantic Layer Encoder Per-Pixel Loss Transformer Layer Transformer Layer Transformer Layer Semantic Layer Semantic Layer Train + Inference Train Only Encoder Feature Decoder Existing Methods Per-Pixel Loss Transformer Layer Transformer Layer Transformer Layer Transformer Layer Figure 1. Comparison between popular transformer-based net- work for segmentation (left) and SeMask (right). In contrast to most existing methods ( [37] in above ﬁgure) that directly use the pretrained backbones without any changes, SeMask uses semantic priors in the encoder backbones by adding an additional semantic layer; this simple change signiﬁcantly improves performance. approach the problem in either of the two ways: (i) Use an existing pretrained backbone as an encoder and transfer it to downstream tasks using pre-existing standard decoders such as, Semantic FPN [30] or UperNet [51]; OR (ii) de- sign a new encoder-decoder network where the encoder is pretrained on ImageNet for the semantic segmentation task. Both of these ways, as mentioned earlier, involve ﬁnetuning the encoder backbone on the segmentation task. Finetun- ing from a large-scale dataset help early attention layers to incorporate local information at lower"
+  },
+  {
+    "paper_id": "2112.12782v3",
+    "title": "SeMask: Semantically Masked Transformers for Semantic Segmentation",
+    "page_num": 1,
+    "chunk_id": "2112.12782v3_page1_chunk4",
+    "text": "de- sign a new encoder-decoder network where the encoder is pretrained on ImageNet for the semantic segmentation task. Both of these ways, as mentioned earlier, involve ﬁnetuning the encoder backbone on the segmentation task. Finetun- ing from a large-scale dataset help early attention layers to incorporate local information at lower layers of the trans- formers [41]. However, it can still not harness the semantic context during ﬁnetuning due to the relatively smaller size of the dataset and a change in the number and nature of se- mantic classes from classiﬁcation to the segmentation task. Hierarchical vision transformers [37,52] tackle the problem with progressive downsampling of features along the stages, although they still lack the semantic context of the image. Liu et al. [37] introduced the Swin Transformer, which constructs hierarchical feature maps making it compatible as a general-purpose backbone for major downstream vi- sion tasks. [10] proposed to use two attention: globally sub- sampled and locally sub-samples on top of PVT [48] and 1 arXiv:2112.12782v3 [cs.CV] 13 Apr 2022"
+  },
+  {
+    "paper_id": "2112.12782v3",
+    "title": "SeMask: Semantically Masked Transformers for Semantic Segmentation",
+    "page_num": 2,
+    "chunk_id": "2112.12782v3_page2_chunk1",
+    "text": "CPVT [11] for effective segmentation. Xie et al. [52] fur- ther modiﬁed the hierarchical transformer encoder by mak- ing it free from positional-encoding and thus robust to dif- ferent resolutions as generally found in the segmentation task. All these works modiﬁed the encoders to make them work better for downstream tasks like segmentation and achieved success to an impressive extent. Still, they did not pay attention to capturing the semantic-level contextual in- formation of the whole image. A lack of semantic contex- tual information leads to sub-optimal segmentation perfor- mance, especially in the case of small objects where those get merged with the boundaries of the larger categories, leading to wrong predictions. Recently, [44] tried to tackle this issue by designing a pure transformer-based decoder that jointly processes the patch and class embedding. How- ever, it does not perform efﬁciently for tiny variants and fails with hierarchical architectures leading to sub-optimal performance when used with major transformer backbones like Swin [37], and Twins [10] transformers. Jin et al. in [29] proposed ISNet to model the image level contextual information along with semantic level contextual information by introducing the SLCM and ILCM modules in the decoder structure. However there is still"
+  },
+  {
+    "paper_id": "2112.12782v3",
+    "title": "SeMask: Semantically Masked Transformers for Semantic Segmentation",
+    "page_num": 2,
+    "chunk_id": "2112.12782v3_page2_chunk2",
+    "text": "sub-optimal performance when used with major transformer backbones like Swin [37], and Twins [10] transformers. Jin et al. in [29] proposed ISNet to model the image level contextual information along with semantic level contextual information by introducing the SLCM and ILCM modules in the decoder structure. However there is still a caveat: IS- Net is a CNN based method and only focuses on the decoder part of the network, leaving out the encoder unchanged. To address the issues mentioned above, we propose the SeMask framework that incorporates semantic information into hierarchical vision transformer architectures and aug- ments the global feature information captured by the trans- formers with the semantic context. The existing frame- works formulate the architecture as an encoder-decoder structure with transformers pretrained on ImageNet [31] acting as the encoders and using a specialized decoder for semantic segmentation. In contrast to directly using the hi- erarchical transformers as a backbone, we insert a Seman- tic Layer after the Transformer Layer at each stage in the backbone, giving us the SeMask version of the backbone as illustrated in Fig. 1. We use a lightweight semantic decoder to accumulate the semantic maps from all the stages, and a standard decoder like"
+  },
+  {
+    "paper_id": "2112.12782v3",
+    "title": "SeMask: Semantically Masked Transformers for Semantic Segmentation",
+    "page_num": 2,
+    "chunk_id": "2112.12782v3_page2_chunk3",
+    "text": "backbone, we insert a Seman- tic Layer after the Transformer Layer at each stage in the backbone, giving us the SeMask version of the backbone as illustrated in Fig. 1. We use a lightweight semantic decoder to accumulate the semantic maps from all the stages, and a standard decoder like Semantic-FPN [30] for the main per- pixel prediction. The added semantic modeling with feature modeling throughout the encoder helps us improve the per- formance of the semantic segmentation task. In Sec. 4, we integrate the proposed SeMask block into the Swin Trans- former [37] and Mix Transformer [52] backbones. Our ex- perimental results show considerable improvement in se- mantic segmentation for both backbones on two different datasets. To summarize, our contributions are three fold: • To the best of our knowledge, we are the ﬁrst to study the effect of adding semantic context to pretrained transformer backbones for the semantic segmentation task. Furthermore, we introduce a SeMask Block which can be plugged into any existing hierarchical vision transformer. We provide empirical evidence by integrating SeMask into Swin-transformer [37] and Mix-Transformer [52], and achieving considerable performance improvement. • We also propose to use a simple semantic decoder for aggregating the semantic"
+  },
+  {
+    "paper_id": "2112.12782v3",
+    "title": "SeMask: Semantically Masked Transformers for Semantic Segmentation",
+    "page_num": 2,
+    "chunk_id": "2112.12782v3_page2_chunk4",
+    "text": "segmentation task. Furthermore, we introduce a SeMask Block which can be plugged into any existing hierarchical vision transformer. We provide empirical evidence by integrating SeMask into Swin-transformer [37] and Mix-Transformer [52], and achieving considerable performance improvement. • We also propose to use a simple semantic decoder for aggregating the semantic priors from different stages of the encoder. The semantic priors receive super- vision from the ground truth using a per-pixel cross- entropy loss. • Lastly, we provide an in-depth analysis of the SeMask Block’s effect on two different datasets: ADE20K and Cityscapes. We achieve the new state-of-the-art per- formance on the ADE20K dataset and an improvement above 3% on the Cityscapes dataset. 2. Related Work 2.1. Semantic Segmentation Semantic segmentation broadly formulates to a dense per-pixel classiﬁcation task. The seminal work of FCN [38] introduced the use of deep CNNs, removing fully connected layers to tackle the segmentation task. Several following works [1, 33, 42] were built upon the same idea of using the encoder-decoder architecture. [4] introduced the use of atrous convolutions inside the DCNN to tackle the signal downsampling issue. Later, various works focused on the aggregating long-range context in the ﬁnal feature map: ASPP [5–7] uses atrous"
+  },
+  {
+    "paper_id": "2112.12782v3",
+    "title": "SeMask: Semantically Masked Transformers for Semantic Segmentation",
+    "page_num": 2,
+    "chunk_id": "2112.12782v3_page2_chunk5",
+    "text": "following works [1, 33, 42] were built upon the same idea of using the encoder-decoder architecture. [4] introduced the use of atrous convolutions inside the DCNN to tackle the signal downsampling issue. Later, various works focused on the aggregating long-range context in the ﬁnal feature map: ASPP [5–7] uses atrous convolutions with different dilation rates; PPM [54] uses pooling operators with different kernel sizes. The recent DCNN based models focus on efﬁciently ag- gregating the hierarchical features from a pretrained back- bone based encoder with specially designed modules: [43, 45,50] introduce attention modules in the decoder; [18,25] use different forms of non-local blocks [49]; [32] proposes a novel FAM module to solve the misalignment issue using semantic ﬂow; AlignSeg [26] proposes aligned feature ag- gregation module and aligned context modeling module to make contextual features be better aligned. [57] uses a seg- mentation shelf for better information ﬂow. In this work, we also follow the established direction to use a pretrained backbone and aggregating the hierarchical features [37] us- ing the Semantic-FPN [30] decoder. 2.2. Transformers for Segmentation After being heavily used in Natural Language Processing ﬁeld, transformer [47] based models have gained popular- ity for various computer vision tasks"
+  },
+  {
+    "paper_id": "2112.12782v3",
+    "title": "SeMask: Semantically Masked Transformers for Semantic Segmentation",
+    "page_num": 2,
+    "chunk_id": "2112.12782v3_page2_chunk6",
+    "text": "work, we also follow the established direction to use a pretrained backbone and aggregating the hierarchical features [37] us- ing the Semantic-FPN [30] decoder. 2.2. Transformers for Segmentation After being heavily used in Natural Language Processing ﬁeld, transformer [47] based models have gained popular- ity for various computer vision tasks since the introduction of ViT [17] for image classiﬁcation [17, 20, 27, 46]. SETR used ViT [17] as an encoder and two decoders based upon progressive upsampling and multi-level feature aggregation. 2"
+  },
+  {
+    "paper_id": "2112.12782v3",
+    "title": "SeMask: Semantically Masked Transformers for Semantic Segmentation",
+    "page_num": 3,
+    "chunk_id": "2112.12782v3_page3_chunk1",
+    "text": "Patch Partition Conv Block Stage Stage Stage Stage Conv Block Conv Block Conv Block Conv Block Swin Attention Block Linear Embedding SeMask Attention Block Semantic Layer Transformer Layer Swin Attention Block Patch Merging SeMask Attention Block Semantic Layer Transformer Layer Train Only Train + Inference Sum Semantic Maps Feature Maps Upsample Upsample Upsample Swin Attention Block Patch Merging Transformer Layer SeMask Attention Block Semantic Layer Swin Attention Block Patch Merging Transformer Layer SeMask Attention Block Semantic Layer CE Loss Interpolate Upsample Upsample Interpolate CE Loss Upsample Figure 2. SeMask Swin Semantic FPN Framework: We add a Semantic Layer with NS SeMask Blocks (Fig. 3b) after the Swin Transformer Layer to capture the semantic context in the encoder network. The Semantic Maps from the Semantic Layers at each stage are aggregated using a simple Upsample + Sum operation and passed through a weighted CE Loss to supervise the semantic context. SegFormer [52] proposed to use a hierarchical pyramid vi- sion transformer network as an encoder with an MLP based decoder to obtain the segmentation mask. Segmenter [44] designed mask transformer as a decoder, which uses learn- able class-map tokens to enhance decoding performance. MaskFormer [9] deﬁnes the problem of per-pixel classiﬁca-"
+  },
+  {
+    "paper_id": "2112.12782v3",
+    "title": "SeMask: Semantically Masked Transformers for Semantic Segmentation",
+    "page_num": 3,
+    "chunk_id": "2112.12782v3_page3_chunk2",
+    "text": "[52] proposed to use a hierarchical pyramid vi- sion transformer network as an encoder with an MLP based decoder to obtain the segmentation mask. Segmenter [44] designed mask transformer as a decoder, which uses learn- able class-map tokens to enhance decoding performance. MaskFormer [9] deﬁnes the problem of per-pixel classiﬁca- tion from a mask classiﬁcation point of view, creating an all- in-one module for all segmentation tasks. Mask2Former [8] further evolves masked attention to solve panoptic, instance and semantic segmentation tasks in one framework. Most recent transformer-based segmentation frameworks [16,37] are based on ﬁnetuning a pretrained hierarchical backbone as an encoder, and standard decoders like Semantic-FPN and UperNet [30,51] to the segmentation task. In this work, we follow the same paradigm and, in addition, propose a framework to enhance the ﬁnetuning ability of the pre- trained vision transformer backbone. Note that there is also recent concurrent work like SwinV2 [36] that reaches new state-of-the-art performance on ADE20k benchmark by us- ing improved and giant backbones (e.g. SwinV2-G with 3.0 billion parameters). That is out of the scope of this work and we follow the current practice mainly based on Swin- L backbone. Theoretically, we can get even better perfor- mance"
+  },
+  {
+    "paper_id": "2112.12782v3",
+    "title": "SeMask: Semantically Masked Transformers for Semantic Segmentation",
+    "page_num": 3,
+    "chunk_id": "2112.12782v3_page3_chunk3",
+    "text": "that reaches new state-of-the-art performance on ADE20k benchmark by us- ing improved and giant backbones (e.g. SwinV2-G with 3.0 billion parameters). That is out of the scope of this work and we follow the current practice mainly based on Swin- L backbone. Theoretically, we can get even better perfor- mance if we apply our approach to such giant models. 2.3. Semantic Context in Segmentation Zhang et al. proposed the Context Encoding Mod- ule in [53] which captures the global semantic context along with a feedback loop to balance the importance of classes in the features extracted by a ResNet backbone [21]. More recently, [28, 29] focus on capturing and integrating the semantic-level contextual information along with the image-level context with specially designed decoders which shows signiﬁcant improvement in DCNN based methods. Each of these works captures the semantic context after the encoding stage based on the extracted features and not the encoder’s ability to capture the semantic features. In this work, we argue that semantic information is lost during the encoding stage and hence, propose a framework to capture semantic information which can be plugged into any pretrained vision transformer backbone network. 3"
+  },
+  {
+    "paper_id": "2112.12782v3",
+    "title": "SeMask: Semantically Masked Transformers for Semantic Segmentation",
+    "page_num": 3,
+    "chunk_id": "2112.12782v3_page3_chunk4",
+    "text": "the encoder’s ability to capture the semantic features. In this work, we argue that semantic information is lost during the encoding stage and hence, propose a framework to capture semantic information which can be plugged into any pretrained vision transformer backbone network. 3"
+  },
+  {
+    "paper_id": "2112.12782v3",
+    "title": "SeMask: Semantically Masked Transformers for Semantic Segmentation",
+    "page_num": 4,
+    "chunk_id": "2112.12782v3_page4_chunk1",
+    "text": "3. Method An overview of our architecture with Swin- Transformer [37] backbone is shown in Fig. 2. The RGB input image, size H × W × 3, is ﬁrst split into non-overlapping patches of size 4 × 4. The smaller size of the patch supports dense prediction in segmentation. These patches act as tokens and are given as input to the hierarchical vision transformer encoder, which is the Swin-Transformer [37] in our architecture. The encoding step consists of four different stages of hierarchical feature modeling. Every stage during the encoding step consists of two layers: The transformer layer, which is NA number of Swin Transformer blocks (Fig. 3a) stacked together and Se- mantic Layer with NS number of SeMask Attention blocks (Fig. 3b). We collectively refer to the Transformer Layer and Semantic Layer at each stage as our SeMask Block. The patch tokens pass through each stage at { 1 4, 1 8, 1 16, 1 32} of the original image resolution for the feature maps and intermediate semantic-prior maps extraction. In the encoder part of the network, the Semantic Layer takes in features from the Transformer Layer as inputs and returns the intermediate semantic-prior maps and seman- tically masked"
+  },
+  {
+    "paper_id": "2112.12782v3",
+    "title": "SeMask: Semantically Masked Transformers for Semantic Segmentation",
+    "page_num": 4,
+    "chunk_id": "2112.12782v3_page4_chunk2",
+    "text": "4, 1 8, 1 16, 1 32} of the original image resolution for the feature maps and intermediate semantic-prior maps extraction. In the encoder part of the network, the Semantic Layer takes in features from the Transformer Layer as inputs and returns the intermediate semantic-prior maps and seman- tically masked features (Fig. 3b). When we plug the Se- Mask Attention Block into other hierarchical vision trans- formers, the Transformer Layer consists of attention blocks corresponding to the speciﬁc backbone, like Efﬁcient-Self Attention-based Transformer Layer for the Mix Trans- former [52] backbone. The semantically masked features from each stage are aggregated using the semantic-FPN [30] decoder for producing the ﬁnal dense-pixel prediction. Moreover, the semantic-prior maps from all the stages are aggregated using a lightweight upsample & sum operation- based semantic decoder to predict the semantic-prior for the network during training. Both decoders’ outputs are super- vised using a weighted per-pixel cross-entropy loss. These additional semantic-prior maps greatly assist the feature ex- traction and eventually improve the performance on the se- mantic segmentation task. 3.1. SeMask Encoder Each stage in our encoder consists of two layers: the Transformer Layer and the Semantic Layer. The trans- former layer is composed of NA"
+  },
+  {
+    "paper_id": "2112.12782v3",
+    "title": "SeMask: Semantically Masked Transformers for Semantic Segmentation",
+    "page_num": 4,
+    "chunk_id": "2112.12782v3_page4_chunk3",
+    "text": "cross-entropy loss. These additional semantic-prior maps greatly assist the feature ex- traction and eventually improve the performance on the se- mantic segmentation task. 3.1. SeMask Encoder Each stage in our encoder consists of two layers: the Transformer Layer and the Semantic Layer. The trans- former layer is composed of NA Swin Transformer blocks stacked to extract image-level context information from the image. The semantic layer contains NS SeMask Attention blocks stacked together to decouple semantic information from the features, producing semantic-priors and then up- dating the features with guidance from these semantic-prior maps. Transformer layer. For the transformer layer, we adapt the hierarchical structure of Swin Transformer [37] which constructs hierarchical feature maps and has linear compu- tational complexity to the image resolution. Before feed- ing the RGB image into the transformer layer in the ﬁrst stage, we split it into non-overlapping patches of size is 4 × 4 × 3 = 48. The ﬁrst stage in the encoder has a lin- ear embedding layer to change the feature dimension of the patch tokens. Inside each transformer layer, there are NA shifted window attention blocks (Fig. 3a) that have linear computation complexity along with cross-window connec- tions to handle non-overlapping"
+  },
+  {
+    "paper_id": "2112.12782v3",
+    "title": "SeMask: Semantically Masked Transformers for Semantic Segmentation",
+    "page_num": 4,
+    "chunk_id": "2112.12782v3_page4_chunk4",
+    "text": "3 = 48. The ﬁrst stage in the encoder has a lin- ear embedding layer to change the feature dimension of the patch tokens. Inside each transformer layer, there are NA shifted window attention blocks (Fig. 3a) that have linear computation complexity along with cross-window connec- tions to handle non-overlapping regions, making the design effective for image-level feature modeling. For a hierarchi- cal representation, we shrink our feature maps from H 4 × W 4 to H 8 × W 8 by patch merging layers for the next stage. This patch merging is iterated for the next stages to obtain a hier- archical feature map, with a resolution of H 2i+1 + W 2i+1 × Ci where i ∈{1, 2, 3, 4}. X represents the input features in- side the transformer layer block. And for computing self- attention in the transformer layer, X is transformed into: Q, K, V which are query, key and value matrices with same dimension of N × C. Based on swin transformer, we also follow [3, 22, 23, 37, 40] to include a relative position em- bedding (RPE) where RPE ∈RN×N and N = M × M is the length of the sequence with M"
+  },
+  {
+    "paper_id": "2112.12782v3",
+    "title": "SeMask: Semantically Masked Transformers for Semantic Segmentation",
+    "page_num": 4,
+    "chunk_id": "2112.12782v3_page4_chunk5",
+    "text": "are query, key and value matrices with same dimension of N × C. Based on swin transformer, we also follow [3, 22, 23, 37, 40] to include a relative position em- bedding (RPE) where RPE ∈RN×N and N = M × M is the length of the sequence with M = window size. The attention inside the Transformer Layer is calculated as: Attention(Q, K, V ) = SoftMax \u0012QKT √ C + RPE \u0013 V (1) N C N C N C N C Linear Linear Linear Linear (a) Swin Attention Block. N K N C N K N C Linear Linear Linear Linear (b) SeMask Attention Block. Figure 3. Attention Blocks. NA Shifted Window Self Attention Blocks, shown in Fig. 3a, are stacked inside each Transformer Layer and NS SeMask Attention Blocks, shown in Fig. 3b, are stacked inside each Semantic Layer at every stage (Fig. 2). The output, Y , from the last Swin Attention Block, is fed to the ﬁrst SeMask block in the Semantic Layer. The resulting feature Y from the Transformer Layer after the last Swin Transformer block then acts as an input to the subsequent semantic layer in the same stage as shown in"
+  },
+  {
+    "paper_id": "2112.12782v3",
+    "title": "SeMask: Semantically Masked Transformers for Semantic Segmentation",
+    "page_num": 4,
+    "chunk_id": "2112.12782v3_page4_chunk6",
+    "text": "Y , from the last Swin Attention Block, is fed to the ﬁrst SeMask block in the Semantic Layer. The resulting feature Y from the Transformer Layer after the last Swin Transformer block then acts as an input to the subsequent semantic layer in the same stage as shown in Fig. 3. 4"
+  },
+  {
+    "paper_id": "2112.12782v3",
+    "title": "SeMask: Semantically Masked Transformers for Semantic Segmentation",
+    "page_num": 5,
+    "chunk_id": "2112.12782v3_page5_chunk1",
+    "text": "Semantic Layer. The Semantic Layer follows the Transformer Layer at each stage of our hierarchical vision transformer. Unlike the Transformer Layer, the Semantic Layer’s signiﬁcance is in modeling the semantic context, which is used as a prior for calculating a segmentation score to update the feature maps based on guidance from the se- mantic nature present in the image. Inside each semantic layer, there are NS SeMask attention blocks (Fig. 3b). In- spired by the shifted window-based division of the tokens for efﬁcient computation cost, we also divide the input to our SeMask blocks into windows with cross-window con- nections before calculating the segmentation score using a single-head self-attention operation. The SeMask block is responsible for capturing the semantic context in our en- coder. It updates the features from the transformer layer from the segmentation score providing guidance and giving a semantic-prior map for efﬁcient supervision of the seman- tic modeling during training. SeMask attention block di- vides the features Y from the preceding transformer layer into three entities: Semantic Query (SQ), Semantic Key (SK), and Feature Value (YV ). We get SK and SQ by pro- jecting the features onto the semantic space. The dimension of both SQ and"
+  },
+  {
+    "paper_id": "2112.12782v3",
+    "title": "SeMask: Semantically Masked Transformers for Semantic Segmentation",
+    "page_num": 5,
+    "chunk_id": "2112.12782v3_page5_chunk2",
+    "text": "modeling during training. SeMask attention block di- vides the features Y from the preceding transformer layer into three entities: Semantic Query (SQ), Semantic Key (SK), and Feature Value (YV ). We get SK and SQ by pro- jecting the features onto the semantic space. The dimension of both SQ and SK is N × K where K is equal to the num- ber of classes, and the dimension of YV is N × C where C is the embedding dimension, N = M × M is the length of the sequence with M = window size which we set as equal to that used inside the transformer layer. SQ returns the semantic map, and a segmentation score is calculated using SK and SQ. The score is passed through a softmax and is used to update YV as shown in Fig. 3b. This SeMask attention equation is expressed as follows: Score(SQ, SK, YV ) = SoftMax(SQST K)YV (2) We perform a matrix multiplication between the feature values and the segmentation score. The matrix product is later passed through a linear layer and multiplied with a learnable scalar constant λ, used for smooth ﬁnetuning. Af- ter a residual connection [21], we ﬁnally"
+  },
+  {
+    "paper_id": "2112.12782v3",
+    "title": "SeMask: Semantically Masked Transformers for Semantic Segmentation",
+    "page_num": 5,
+    "chunk_id": "2112.12782v3_page5_chunk3",
+    "text": "SK, YV ) = SoftMax(SQST K)YV (2) We perform a matrix multiplication between the feature values and the segmentation score. The matrix product is later passed through a linear layer and multiplied with a learnable scalar constant λ, used for smooth ﬁnetuning. Af- ter a residual connection [21], we ﬁnally get the modiﬁed features, rich with semantic information which we call the Semantically Masked features. The semantic queries SQ are later used to predict the semantic-prior map. 3.2. Decoder We use two decoders to aggregate the features and the semantic-prior maps respectively from the different stages in the encoder. For aggregating the semantically masked features, we employ the popular Semantic-FPN decoder [30]. The Semantic-FPN fuses the features from different stages with a series of convolution, bilinear upsampling, and sum op- erations, making it efﬁcient and straightforward as a seg- mentation decoder for our purpose. In addition, we use a lightweight semantic decoder during training to provide ground truth supervision to the semantic-prior maps at ev- ery stage of the encoder. As the semantic-prior maps have the channel dimension of K in each stage, we only employ a series of upsampling and sum operations to aggregate the maps with K being"
+  },
+  {
+    "paper_id": "2112.12782v3",
+    "title": "SeMask: Semantically Masked Transformers for Semantic Segmentation",
+    "page_num": 5,
+    "chunk_id": "2112.12782v3_page5_chunk4",
+    "text": "semantic decoder during training to provide ground truth supervision to the semantic-prior maps at ev- ery stage of the encoder. As the semantic-prior maps have the channel dimension of K in each stage, we only employ a series of upsampling and sum operations to aggregate the maps with K being equal to the number of classes in the dataset. Lastly, the output from both the decoders is up- scaled ×4 to the resolution of the original image for the ﬁnal predictions as shown in Fig. 2. 3.3. Loss function To train our model’s parameters, we calculate the to- tal loss LT as a summation of two per-pixel cross-entropy losses: L1 and L2. The loss L1 is calculated on the main prediction from the Semantic-FPN decoder and loss L2 is calculated on the semantic-prior prediction from our light- weight decoder. F contains the main prediction of the net- work and S denotes the semantic-prior prediction. We de- ﬁne our losses on F and S as follows: L1 = 1 H × W X i,j Lce \u0000F[∗,i,j], § \u0000GT [ij] \u0001\u0001 . (3) L2 = 1 H × W X i,j Lce \u0000S[∗,i,j], § \u0000GT [ij] \u0001\u0001 . (4) LT = L1"
+  },
+  {
+    "paper_id": "2112.12782v3",
+    "title": "SeMask: Semantically Masked Transformers for Semantic Segmentation",
+    "page_num": 5,
+    "chunk_id": "2112.12782v3_page5_chunk5",
+    "text": "denotes the semantic-prior prediction. We de- ﬁne our losses on F and S as follows: L1 = 1 H × W X i,j Lce \u0000F[∗,i,j], § \u0000GT [ij] \u0001\u0001 . (3) L2 = 1 H × W X i,j Lce \u0000S[∗,i,j], § \u0000GT [ij] \u0001\u0001 . (4) LT = L1 + αL2 (5) Here, § denotes for converting the ground truth class la- bel stored in GT into one-hot format, P i,j denotes that the summation is carried out over all the pixels of the GT , and Lce is the cross-entropy loss. We empirically set α = 0.4 (check appendix for more details). 4. Experiments We compare our approach with Swin Transformer [37], and Mix-Transformer [52] with extensive experiments to demonstrate the effectiveness of the SeMask framework. We also ablate the SeMask structure and conﬁrm that pro- viding a semantic-prior to mask out the features improves semantic segmentation performance. The experiments are performed on two widely used datasets: ADE20K [14] and Cityscapes [13]. We include more experimental results in the appendix proving that our method is dataset agnostic. 4.1. Datasets and metrics ADE20K. [14] ADE20K is a scene parsing dataset covering 150 ﬁne-grained semantic concepts and it is one"
+  },
+  {
+    "paper_id": "2112.12782v3",
+    "title": "SeMask: Semantically Masked Transformers for Semantic Segmentation",
+    "page_num": 5,
+    "chunk_id": "2112.12782v3_page5_chunk6",
+    "text": "The experiments are performed on two widely used datasets: ADE20K [14] and Cityscapes [13]. We include more experimental results in the appendix proving that our method is dataset agnostic. 4.1. Datasets and metrics ADE20K. [14] ADE20K is a scene parsing dataset covering 150 ﬁne-grained semantic concepts and it is one of the most challenging semantic segmentation datasets. The training set contains 20,210 images with 150 semantic classes. The validation and test set contain 2,000 and 3,352 images re- spectively. 5"
+  },
+  {
+    "paper_id": "2112.12782v3",
+    "title": "SeMask: Semantically Masked Transformers for Semantic Segmentation",
+    "page_num": 6,
+    "chunk_id": "2112.12782v3_page6_chunk1",
+    "text": "Backbone Window Size Embedding Dim (C) Blocks (NTB) Heads (NTH) #Params (M) Swin-T 7 [96, 192, 384, 768] [2, 2, 6, 2] [3, 6, 12, 24] 28 Swin-S 7 [96, 192, 384, 768] [2, 2, 18, 2] [3, 6, 12, 24] 50 Swin-B† 12 [128, 256, 512, 1024] [2, 2, 18, 2] [4, 8, 16, 32] 88 Swin-L† 12 [192, 384, 768, 1536] [2, 2, 18, 2] [6, 12, 24, 48] 197 Table 1. Details of Swin Transformer variants. The Tiny and Small variants are trained on ImageNet-1k and with 224×224 res- olution. † stands for ImageNet-22k pre-training on 384×384 res- olution images. Cityscapes. [13] Cityscapes is an urban street driving dataset for semantic segmentation consisting of 5,000 im- ages from 50 cities with 19 semantic classes. There are 2,975 images in the training set, 500 images in the valida- tion set and 1,525 images in the test set. Metrics. We report mean Intersection-over-Union (mIoU) over all classes. 4.2. Implementation details Transformer models. For the encoder, we build upon the Swin Transformer [37] and consider the Tiny, Small, Base and Large variants as described in Tab. 1. The variation in number of parameters among the baselines is due to the"
+  },
+  {
+    "paper_id": "2112.12782v3",
+    "title": "SeMask: Semantically Masked Transformers for Semantic Segmentation",
+    "page_num": 6,
+    "chunk_id": "2112.12782v3_page6_chunk2",
+    "text": "We report mean Intersection-over-Union (mIoU) over all classes. 4.2. Implementation details Transformer models. For the encoder, we build upon the Swin Transformer [37] and consider the Tiny, Small, Base and Large variants as described in Tab. 1. The variation in number of parameters among the baselines is due to the number of transformer blocks (NTB) (Fig. 3a) and the embedding dimension (C) for each stage of the model. The number of heads (NTH) of a shifted win- dow based multi-headed self-attention (SW-MSA) or Swin Transformer block varies from stage to stage. The hidden size of the MLP following SW-MSA is four times the em- bedding dimension at the corresponding stage. We also experiment with the MiT-B4 backbone variant of the Mix- Transformer [52] on the ADE20K [14] dataset. In the following sections, we use an abbreviation to de- scribe the model variant. For example, Swin-T denotes the Tiny variant. The backbones pretrained on ImageNet- 22k [31] and with 384×384 resolution are denoted with a †: Swin-B†. All the other models are pretrained on ImageNet- 1k and with 224×224 resolution. Network Initialization. Our SeMask models are initialized with publicly available models. The Tiny and Small variants are pre-trained on ImageNet-1k with"
+  },
+  {
+    "paper_id": "2112.12782v3",
+    "title": "SeMask: Semantically Masked Transformers for Semantic Segmentation",
+    "page_num": 6,
+    "chunk_id": "2112.12782v3_page6_chunk3",
+    "text": "backbones pretrained on ImageNet- 22k [31] and with 384×384 resolution are denoted with a †: Swin-B†. All the other models are pretrained on ImageNet- 1k and with 224×224 resolution. Network Initialization. Our SeMask models are initialized with publicly available models. The Tiny and Small variants are pre-trained on ImageNet-1k with an image resolution of 224×224. The Base and Large variants are pretrained on ImageNet-22k with a resolution of 384×384. We keep the window size (M) ﬁxed as in the pretrained models and ﬁne- tune the models for the semantic segmentation task at higher resolution depending on the dataset. Following [37], we include relative position bias while calculating the attention scores. The decoders, described in Sec. 3.2 are initialized with random weights from a normal distribution [19]. Data augmentation. During training, we perform mean subtraction, scaling the image to a ratio randomly sam- pled from (0.5, 0.75, 1.0, 1.25, 1.5, 1.75), random left-right ﬂipping, and color jittering. We randomly crop large im- ages and pad small images to a ﬁxed size of 512 × 512 for ADE20K and 768×768 for Cityscapes. On ADE20K, we train our largest model Semask-L† FPN with a 640× 640 resolution, matching the resolution used by the"
+  },
+  {
+    "paper_id": "2112.12782v3",
+    "title": "SeMask: Semantically Masked Transformers for Semantic Segmentation",
+    "page_num": 6,
+    "chunk_id": "2112.12782v3_page6_chunk4",
+    "text": "random left-right ﬂipping, and color jittering. We randomly crop large im- ages and pad small images to a ﬁxed size of 512 × 512 for ADE20K and 768×768 for Cityscapes. On ADE20K, we train our largest model Semask-L† FPN with a 640× 640 resolution, matching the resolution used by the Swin- Transformer [37]. Training Settings. To ﬁne-tune the pre-trained models on the semantic segmentation task, we employ the AdamW [39] optimizer with a base learning rate γ0. Following the seminal work of DeepLab [4] we adopt the poly learning rate decay γ = γ0 (1 −Niter Ntotal )0.9 where Niter and Ntotal represent the current iteration number and the total iteration number. We use a linear warmup strategy for 1,500 itera- tions. For ADE20K, we set the base learning rate γ0 to 10−4, weight decay to 10−4 and train for 80K iterations with a batch size of 16. For Cityscapes, we set γ0 to 10−3, a weight decay of 5×10−2 and train for 80K iterations with a batch size of 8. Inference. To handle varying image sizes during infer- ence, we keep the aspect ratio intact and resize the im- age to a resolution with the smaller edge resized to"
+  },
+  {
+    "paper_id": "2112.12782v3",
+    "title": "SeMask: Semantically Masked Transformers for Semantic Segmentation",
+    "page_num": 6,
+    "chunk_id": "2112.12782v3_page6_chunk5",
+    "text": "we set γ0 to 10−3, a weight decay of 5×10−2 and train for 80K iterations with a batch size of 8. Inference. To handle varying image sizes during infer- ence, we keep the aspect ratio intact and resize the im- age to a resolution with the smaller edge resized to the training resolution and consequently rescaled to the orig- inal dimensions before calculating the metric score. For multi-scale inference, following standard practice [7] we use rescaled versions of the image with scaling factors of (0.5, 0.75, 1.0, 1.25, 1.5, 1.75). 4.3. Ablation Studies In this section, we ablate different variants of our Se- Mask framework. We investigate the model size, seman- tic attention, number of SeMask blocks (NS), effect of the learnable scalar constant (λ) inside the SeMask block and the pretraining dataset as well as image resolution. Unless stated otherwise, we use the Semantic-FPN [30] as our de- coder for the main prediction and report results using single- scale (s.s.) inference on the ADE20K [14] val dataset. Transformer size. We study the impact of transformers size on performance in Tab. 2 by experimenting with the four different Swin variants: Tiny, Small, Base and Large with NS = [1, 1,"
+  },
+  {
+    "paper_id": "2112.12782v3",
+    "title": "SeMask: Semantically Masked Transformers for Semantic Segmentation",
+    "page_num": 6,
+    "chunk_id": "2112.12782v3_page6_chunk6",
+    "text": "for the main prediction and report results using single- scale (s.s.) inference on the ADE20K [14] val dataset. Transformer size. We study the impact of transformers size on performance in Tab. 2 by experimenting with the four different Swin variants: Tiny, Small, Base and Large with NS = [1, 1, 1, 1] for all the experiments. Our method gives improvement consistently over all the baseline vari- ants with the improvement on the Cityscapes dataset being more impressive due to the fewer number of classes in the segmentation dataset creating a stronger prior. We evaluate and record the mIoU scores for the baseline Swin models by training our networks using their publicly released code based on the MMSegmentation Library [12]. Semantic Attention. We study the impact of the semantic attention operation calculated inside the SeMask Block on performance in Tab. 3 by replacing the SeMask Block with a simple single-head self-attention block on the Swin-Tiny variant. It is evident that simple attention does not help im- prove the results proving the validity and effectiveness of our SeMask Block. 6"
+  },
+  {
+    "paper_id": "2112.12782v3",
+    "title": "SeMask: Semantically Masked Transformers for Semantic Segmentation",
+    "page_num": 7,
+    "chunk_id": "2112.12782v3_page7_chunk2",
+    "text": "FPN Swin-L† 640 × 640 204 343 50.85 52.95 768 × 768 204 444 78.03 79.53 SeMask-L FPN SeMask Swin-L† 640 × 640 212 356 51.89 (+1.04) 53.52 (+0.57) 768 × 768 211 455 78.53 (+0.50) 80.39 (+0.86) Table 2. Ablation on Swin-Transformer varaints. We provide a comparison of using SeMask Swin with Semantic-FPN [30] decoder on all 4 varaints on the ADE20K-Val and Cityscapes-Val dataset. We evaluate the models using both, the single scale (s.s) and multi-scale (m.s.) mIoU (↑). All models are trained for 80k iterations. The FLOPs are calculated for the given crop sizes using the script provided by the MMSegmentation [12] library. Method Backbone SA Block SeMask Block mIoU (%) #Param (M) Swin-T FPN Swin-T 41.48 33 Trans Swin-T FPN Trans Swin-T ✓ 41.42 36 SeMask-T FPN SeMask Swin-T ✓ 42.06 35 Table 3. Ablation on Semantic Attention. We prove the effec- tiveness of the SeMask Block by replacing it with a simple Single- Head Self Attention block which harms the performance on the Tiny variant. Method Backbone λ mIoU (%) #Param (M) SeMask-T FPN SeMask Swin-T ✓ 42.06 35 SeMask-T FPN SeMask Swin-T × 41.11 35 SeMask-S FPN SeMask Swin-S ✓ 45.92 56 SeMask-S FPN"
+  },
+  {
+    "paper_id": "2112.12782v3",
+    "title": "SeMask: Semantically Masked Transformers for Semantic Segmentation",
+    "page_num": 7,
+    "chunk_id": "2112.12782v3_page7_chunk3",
+    "text": "Block by replacing it with a simple Single- Head Self Attention block which harms the performance on the Tiny variant. Method Backbone λ mIoU (%) #Param (M) SeMask-T FPN SeMask Swin-T ✓ 42.06 35 SeMask-T FPN SeMask Swin-T × 41.11 35 SeMask-S FPN SeMask Swin-S ✓ 45.92 56 SeMask-S FPN SeMask Swin-S × 45.00 56 Table 4. Ablation on λ. We support the critical claim of the learn- able scalar constant: λ inside the SeMask Block by removing and recording the mIoU (↑). Learnable Constant (λ). We study the impact of λ on per- formance in Tab. 4, by removing it for the Tiny and Small variants. We observe that the inclusion of λ is potent to the success of the SeMask block as it acts as a tuning factor for the modiﬁed features, keeping the noise from weights’ ini- tialization in check. We also observe that λ ∈[0.05, 0.3] during inference for different stages in the encoder. Number of SeMask Blocks (NS). In Tab. 5 we study the impact of number of SeMask attention blocks on per- formance by changing the values of NS inside each se- mantic layer on the Swin-Tiny variant. We observe that NS = [1,"
+  },
+  {
+    "paper_id": "2112.12782v3",
+    "title": "SeMask: Semantically Masked Transformers for Semantic Segmentation",
+    "page_num": 7,
+    "chunk_id": "2112.12782v3_page7_chunk4",
+    "text": "during inference for different stages in the encoder. Number of SeMask Blocks (NS). In Tab. 5 we study the impact of number of SeMask attention blocks on per- formance by changing the values of NS inside each se- mantic layer on the Swin-Tiny variant. We observe that NS = [1, 1, 1, 1] is the best setting. Interestingly, when stacking multiple blocks in a layer, we observe that in- putting the SQ from the previous SeMask block into the later one gives better performance than obtaining SQ from the features. This shows that extracting semantic features using a single semantic attention operation is the optimum setting. Pretraining Dataset. We study the impact of the pre- training dataset (ImageNet-1k v/s ImageNet-22k) on per- formance in Tab. 6 by training and evaluating the Base vari- ant pretrained on various settings. Our framework is agnos- Method Backbone NS mIoU (%) #Param (M) SeMask-T FPN SeMask Swin-T [1, 1, 1, 1] 42.06 35 SeMask-T FPN SeMask Swin-T [1, 2, 2, 2] 40.60 37 SeMask-T FPN SeMask Swin-T [2, 2, 2, 2] 40.09 37 Table 5. Ablation on NS. We experiment with different combi- nations of NS on the SeMask-Tiny variant and report mIoU (↑)."
+  },
+  {
+    "paper_id": "2112.12782v3",
+    "title": "SeMask: Semantically Masked Transformers for Semantic Segmentation",
+    "page_num": 7,
+    "chunk_id": "2112.12782v3_page7_chunk5",
+    "text": "FPN SeMask Swin-T [1, 1, 1, 1] 42.06 35 SeMask-T FPN SeMask Swin-T [1, 2, 2, 2] 40.60 37 SeMask-T FPN SeMask Swin-T [2, 2, 2, 2] 40.09 37 Table 5. Ablation on NS. We experiment with different combi- nations of NS on the SeMask-Tiny variant and report mIoU (↑). NS = [1, 1, 1, 1] is the best setting. Method Backbone Pre Res mIoU (%) #Param (M) Swin-B FPN Swin-B 1k 224 45.47 93 SeMask-B FPN SeMask Swin-B 1k 224 45.63 96 Swin-B FPN Swin-B 22k 224 47.65 93 SeMask-B FPN SeMask Swin-B 22k 224 48.29 96 Swin-B FPN Swin-B 22k 384 48.80 93 SeMask-B FPN SeMask Swin-B 22k 384 49.06 96 Table 6. Ablation on Pretraining dataset. We compare the improvement when using the SeMask-Base variant with different pretraining settings: ImageNet-1k v/s ImageNet-22k and 224×224 v/s 384×384 and show that it is agnostic to the pretraining setting. tic to the pretraining setting showing improvement for all combinations mainly used for the ImageNet pretraining: (i) ImageNet-1k and 224×224 image resolution; (ii) ImageNet- 22k and 224×224 image resolution; and (iii) ImageNet-22k and 384×384 image resolution. 4.4. Main Results ADE20K. Using SeMask Swin-L† as the encoder and Mask2Former-MSFaPN as our decoder"
+  },
+  {
+    "paper_id": "2112.12782v3",
+    "title": "SeMask: Semantically Masked Transformers for Semantic Segmentation",
+    "page_num": 7,
+    "chunk_id": "2112.12782v3_page7_chunk6",
+    "text": "to the pretraining setting showing improvement for all combinations mainly used for the ImageNet pretraining: (i) ImageNet-1k and 224×224 image resolution; (ii) ImageNet- 22k and 224×224 image resolution; and (iii) ImageNet-22k and 384×384 image resolution. 4.4. Main Results ADE20K. Using SeMask Swin-L† as the encoder and Mask2Former-MSFaPN as our decoder for the main pre- diction, we achieve a new state-of-the-art performance with scores of 57.00% and 58.25% on the single-scale and multi- scale mIoU metric, respectively. Following [37], our mod- els were trained on 640×640 images. We also achieve com- petitive results with our SeMask Swin-L† backbone with Semantic-FPN to the Swin-L† based UPerNet model as shown in Tab. 8. We also integrate our SeMask into the MiT-B4 based SegFormer model [52] as shown in Tab. 8 and achieve an improvement of 1.55% on the single scale mIoU and 1.31% improvememt on the multi-scale mIoU metric scores. This 7"
+  },
+  {
+    "paper_id": "2112.12782v3",
+    "title": "SeMask: Semantically Masked Transformers for Semantic Segmentation",
+    "page_num": 8,
+    "chunk_id": "2112.12782v3_page8_chunk1",
+    "text": "(b) Swin-T FPN (a) Image (c) Ours (d) Ground Truth Figure 4. Qualitative results on the Cityscapes validation set. The dot-bordered boxes at the top show zoomed-in regions from the images for a more detailed look at the improvement using our SeMask-T FPN. Method Backbone mIoU (%) MS mIoU (%) CNN Backbones PSANet [55] ResNet-101 77.94 79.05 DeepLabV3+ [7] Xception-71 - 79.55 CCNet [25] ResNet-101 80.50 81.30 Transformer Backbones Seg-L-Mask/16 [44] ViT-L/16† 79.10 81.30 Swin-L FPN [37] Swin-L† 78.03 79.53 MaskFormer [9] ResNet-101 78.50 80.30 Mask2Former [8] Swin-L† 83.30 84.30 HRNetV2-OCR+PSA [35] HRNetV2-W48† - 86.95 SeMask-L FPN (Ours) SeMask Swin-L† 78.53 80.39 SeMask-L Mask2Former (Ours) SeMask Swin-L† 83.97 84.98 Table 7. SOTA Comparison on Cityscapes-Validation. We re- port both single-scale (s.s.) and multi-scale (m.s.) mIOU (↑) on Cityscapes Validation set. supports our claim that SeMask can be plugged into any existing hierarchical vision transformer and show perfor- mance improvement. Cityscapes. Tab. 7 reports the performance of Se- Mask on Cityscapes. Semask Swin-L† is competitive with other state-of-the-art methods with SeMask Swin- L† Mask2Former achieving 84.98% mIoU. We train our SeMask-L Mask2Former on 512×1024 images following Mask2Former [8]. Qualitative results. Fig. 4 shows a qualitative compari- son of Swin-T FPN and"
+  },
+  {
+    "paper_id": "2112.12782v3",
+    "title": "SeMask: Semantically Masked Transformers for Semantic Segmentation",
+    "page_num": 8,
+    "chunk_id": "2112.12782v3_page8_chunk2",
+    "text": "Tab. 7 reports the performance of Se- Mask on Cityscapes. Semask Swin-L† is competitive with other state-of-the-art methods with SeMask Swin- L† Mask2Former achieving 84.98% mIoU. We train our SeMask-L Mask2Former on 512×1024 images following Mask2Former [8]. Qualitative results. Fig. 4 shows a qualitative compari- son of Swin-T FPN and SeMask-T FPN on the Cityscapes dataset generated using the MMSegmentation library [12]. It is evident that SeMask-T FPN is able to generate better class-wise predictions than the Swin-T FPN. As shown in the second row in Fig. 4, we are able to segment the pole with out SeMask-T FPN, while Swin-T FPN fails to do so. Similarly in the third row, we are better able to segment the boundary. 5. Conclusion This paper argues that directly ﬁnetuning off-the-shelf pretrained transformer backbone networks as encoders for semantic segmentation does not consider the semantic con- text tied up with the images. We claim that adding a seman- tic prior to guide the encoder’s feature modeling enhances the ﬁnetuning process for semantic segmentation. Further- more, to support our claim, we propose the SeMask Block, which can be plugged into any existing hierarchical vision transformer and uses a semantic attention operation to cap- ture"
+  },
+  {
+    "paper_id": "2112.12782v3",
+    "title": "SeMask: Semantically Masked Transformers for Semantic Segmentation",
+    "page_num": 8,
+    "chunk_id": "2112.12782v3_page8_chunk3",
+    "text": "claim that adding a seman- tic prior to guide the encoder’s feature modeling enhances the ﬁnetuning process for semantic segmentation. Further- more, to support our claim, we propose the SeMask Block, which can be plugged into any existing hierarchical vision transformer and uses a semantic attention operation to cap- ture the semantic context and augment the semantic rep- resentation of the feature maps. We train and evaluate the proposed framework building on the Swin-Transformer [37] and Mix-Transformer [52] backbones based networks and show a considerable improvement in the semantic segmen- tation performance on the Cityscapes and ADE20K dataset, with improvements above 3% on the Cityscapes dataset. We provide a comprehensive experimental analysis applying 8"
+  },
+  {
+    "paper_id": "2112.12782v3",
+    "title": "SeMask: Semantically Masked Transformers for Semantic Segmentation",
+    "page_num": 9,
+    "chunk_id": "2112.12782v3_page9_chunk2",
+    "text": "640 × 640 54.75 56.15 SeMask-L Mask2Former (Ours) SeMask Swin-L† 640 × 640 56.41 57.52 SeMask-L FaPN-Mask2Former∥(Ours) SeMask Swin-L† 640 × 640 56.88 58.25 SeMask-L MSFaPN-Mask2Former (Ours) SeMask Swin-L† 640 × 640 57.00 58.25 Table 8. SOTA Comparison on ADE20K-Val. We report both single-scale (s.s.) and multi-scale (m.s.) mIOU (↑) on ADE20K Val set. ‡ We use the results from the ofﬁcial MMSegmentation [12] retrained model. ∥We develop an MSFaPN network based on the changes done in FaPN [24] to the BasePixelDecoder [9]. We add similar feature alignment modules based on deformable convolutions [15] to the MSDeformAttnPixelDecoder proposed in [8] to obtain the MSFaPN design. ∗Note that we follow the convention and compare methods based on the Swin-L backbone and we currently do not consider giant models like SwinV2-G that have billions of parameters. SeMask to different backbone variants and achieving con- siderable performance improvement in every setting. Our method also achieves the new state-of-the-art performance on the ADE20K dataset. As a direction for future research, it will be interesting to observe the effect of adding similar priors for other vision downstream tasks like object detec- tion and instance segmentation. References [1] Vijay Badrinarayanan, Alex Kendall, and Roberto Cipolla. Segnet:"
+  },
+  {
+    "paper_id": "2112.12782v3",
+    "title": "SeMask: Semantically Masked Transformers for Semantic Segmentation",
+    "page_num": 9,
+    "chunk_id": "2112.12782v3_page9_chunk3",
+    "text": "also achieves the new state-of-the-art performance on the ADE20K dataset. As a direction for future research, it will be interesting to observe the effect of adding similar priors for other vision downstream tasks like object detec- tion and instance segmentation. References [1] Vijay Badrinarayanan, Alex Kendall, and Roberto Cipolla. Segnet: A deep convolutional encoder- decoder architecture for image segmentation. arXiv, 2015. 2 [2] Hangbo Bao, Li Dong, and Furu Wei. Beit: Bert pre- training of image transformers. arXiv, 2021. 1 [3] Hangbo Bao, Li Dong, Furu Wei, Wenhui Wang, Nan Yang, Xiaodong Liu, Yu Wang, Songhao Piao, Jianfeng Gao, Ming Zhou, and Hsiao-Wuen Hon. Unilmv2: Pseudo-masked language models for uni- ﬁed language model pre-training. In ICML, 2020. 4 [4] Liang-Chieh Chen, George Papandreou, Iasonas Kokkinos, Kevin Murphy, and Alan L. Yuille. Seman- tic image segmentation with deep convolutional nets and fully connected crfs. In ICLR, 2015. 2, 6 [5] Liang-Chieh Chen, George Papandreou, Iasonas Kokkinos, Kevin Murphy, and Alan L. Yuille. Deeplab: Semantic image segmentation with deep convolutional nets, atrous convolution, and fully con- nected crfs. In TPAMI, 2017. 2 [6] Liang-Chieh Chen, George Papandreou, Florian Schroff, and Hartwig Adam. Rethinking atrous convo- lution for semantic image segmentation. arXiv, 2017."
+  },
+  {
+    "paper_id": "2112.12782v3",
+    "title": "SeMask: Semantically Masked Transformers for Semantic Segmentation",
+    "page_num": 9,
+    "chunk_id": "2112.12782v3_page9_chunk4",
+    "text": "Chen, George Papandreou, Iasonas Kokkinos, Kevin Murphy, and Alan L. Yuille. Deeplab: Semantic image segmentation with deep convolutional nets, atrous convolution, and fully con- nected crfs. In TPAMI, 2017. 2 [6] Liang-Chieh Chen, George Papandreou, Florian Schroff, and Hartwig Adam. Rethinking atrous convo- lution for semantic image segmentation. arXiv, 2017. 2 [7] Liang-Chieh Chen, Yukun Zhu, George Papandreou, Florian Schroff, and Hartwig Adam. Encoder-decoder with atrous separable convolution for semantic image segmentation. In ECCV, 2018. 2, 6, 8, 9 [8] Bowen Cheng, Ishan Misra, Alexander G. Schwing, Alexander Kirillov, and Rohit Girdhar. Masked- attention mask transformer for universal image seg- mentation. arXiv, 2021. 3, 8, 9 9"
+  },
+  {
+    "paper_id": "2112.12782v3",
+    "title": "SeMask: Semantically Masked Transformers for Semantic Segmentation",
+    "page_num": 10,
+    "chunk_id": "2112.12782v3_page10_chunk1",
+    "text": "[9] Bowen Cheng, Alexander G. Schwing, and Alexander Kirillov. Per-pixel classiﬁcation is not all you need for semantic segmentation. In NeurIPS, 2021. 3, 8, 9 [10] Xiangxiang Chu, Zhi Tian, Yuqing Wang, Bo Zhang, Haibing Ren, Xiaolin Wei, Huaxia Xia, and Chunhua Shen. Twins: Revisiting the design of spatial attention in vision transformers. In NeurIPS, 2021. 1, 2 [11] Xiangxiang Chu, Zhi Tian, Bo Zhang, Xinlong Wang, Xiaolin Wei, Huaxia Xia, and Chunhua Shen. Con- ditional positional encodings for vision transformers. arXiv, 2021. 2 [12] MMSegmentation Contributors. MMSegmentation: Openmmlab semantic segmentation toolbox and benchmark. https://github.com/open- mmlab/mmsegmentation, 2020. 6, 7, 8, 9 [13] Marius Cordts, Mohamed Omran, Sebastian Ramos, Timo Rehfeld, Markus Enzweiler, Rodrigo Benenson, Uwe Franke, Stefan Roth, and Bernt Schiele. The cityscapes dataset for semantic urban scene under- standing. In CVPR, 2016. 5, 6, 12 [14] Marius Cordts, Mohamed Omran, Sebastian Ramos, Timo Rehfeld, Markus Enzweiler, Rodrigo Benenson, Uwe Franke, Stefan Roth, and Bernt Schiele. Se- mantic understanding of scenes through the ade20k dataset. In CVPR, 2017. 5, 6, 11 [15] Jifeng Dai, Haozhi Qi, Yuwen Xiong, Yi Li, Guodong Zhang, Han Hu, and Yichen Wei. Deformable convo- lutional networks. In ICCV, 2017. 9 [16] Xiaoyi Dong, Jianmin Bao,"
+  },
+  {
+    "paper_id": "2112.12782v3",
+    "title": "SeMask: Semantically Masked Transformers for Semantic Segmentation",
+    "page_num": 10,
+    "chunk_id": "2112.12782v3_page10_chunk2",
+    "text": "Franke, Stefan Roth, and Bernt Schiele. Se- mantic understanding of scenes through the ade20k dataset. In CVPR, 2017. 5, 6, 11 [15] Jifeng Dai, Haozhi Qi, Yuwen Xiong, Yi Li, Guodong Zhang, Han Hu, and Yichen Wei. Deformable convo- lutional networks. In ICCV, 2017. 9 [16] Xiaoyi Dong, Jianmin Bao, Dongdong Chen, Neng- hai Yu Weiming Zhang, Lu Yuan, Dong Chen, and Baining Guo. Cswin transformer: A general vi- sion transformer backbone with cross-shaped win- dows. arxiv:preprint, 2021. 3 [17] Alexey Dosovitskiy, Lucas Beyer, Alexander Kolesnikov, Dirk Weissenborn, Xiaohua Zhai, Thomas Unterthiner, Mostafa Dehghani, Matthias Minderer, Georg Heigold, Sylvain Gelly, Jakob Uszkoreit, and Neil Houlsby. An image is worth 16x16 words: Transformers for image recognition at scale. In ICLR, 2021. 1, 2 [18] Jun Fu, Jing Liu, Haijie Tian, Yong Li, Yongjun Bao, Zhiwei Fang, and Hanqing Lu. Dual attention network for scene segmentation. In CVPR, 2019. 2 [19] Boris Hanin and David Rolnick. How to start train- ing: The effect of initialization and architecture. In NeurIPS, 2018. 6 [20] Ali Hassani, Steven Walton, Nikhil Shah, Abulikemu Abuduweili, Jiachen Li, and Humphrey Shi. Escap- ing the big data paradigm with compact transformers. arXiv, 2021. 2 [21] Kaiming He, Xiangyu Zhang,"
+  },
+  {
+    "paper_id": "2112.12782v3",
+    "title": "SeMask: Semantically Masked Transformers for Semantic Segmentation",
+    "page_num": 10,
+    "chunk_id": "2112.12782v3_page10_chunk3",
+    "text": "Hanin and David Rolnick. How to start train- ing: The effect of initialization and architecture. In NeurIPS, 2018. 6 [20] Ali Hassani, Steven Walton, Nikhil Shah, Abulikemu Abuduweili, Jiachen Li, and Humphrey Shi. Escap- ing the big data paradigm with compact transformers. arXiv, 2021. 2 [21] Kaiming He, Xiangyu Zhang, Shaoqing Ren, and Jian Sun. Deep residual learning for image recognition. In CVPR, 2016. 3, 5 [22] Han Hu, Jiayuan Gu, Zheng Zhang, Jifeng Dai, and Yichen Wei. Relation networks for object detection. In CVPR, 2018. 4 [23] Han Hu, Zheng Zhang, Zhenda Xie, and Stephen Lin. Local relation networks for image recognition. In ICCV, 2019. 4 [24] Shihua Huang, Zhichao Lu, Ran Cheng, and Cheng He. FaPN: Feature-aligned pyramid network for dense image prediction. In ICCV, 2021. 1, 9 [25] Zilong Huang, Xinggang Wang, Yunchao Wei, Lichao Huang, Humphrey Shi, Wenyu Liu, and Thomas S. Huang. Ccnet: Criss-cross attention for semantic seg- mentation. In TPAMI, 2020. 2, 8 [26] Zilong Huang, Yunchao Wei, Xinggang Wang, Wenyu Liu, Thomas S Huang, and Humphrey Shi. Alignseg: Feature-aligned segmentation networks. In TPAMI, 2021. 2 [27] Andrew Jaegle, Felix Gimeno, Andrew Brock, An- drew Zisserman, Oriol Vinyals, and Joao Carreira. Perceiver: General perception"
+  },
+  {
+    "paper_id": "2112.12782v3",
+    "title": "SeMask: Semantically Masked Transformers for Semantic Segmentation",
+    "page_num": 10,
+    "chunk_id": "2112.12782v3_page10_chunk4",
+    "text": "for semantic seg- mentation. In TPAMI, 2020. 2, 8 [26] Zilong Huang, Yunchao Wei, Xinggang Wang, Wenyu Liu, Thomas S Huang, and Humphrey Shi. Alignseg: Feature-aligned segmentation networks. In TPAMI, 2021. 2 [27] Andrew Jaegle, Felix Gimeno, Andrew Brock, An- drew Zisserman, Oriol Vinyals, and Joao Carreira. Perceiver: General perception with iterative attention. In ICML, 2021. 2 [28] Zhenchao Jin, Tao Gong, Dongdong Yu, Qi Chu, Jian Wang, Changhu Wang, and Jie Shao. Mining contex- tual information beyond image for semantic segmen- tation. In ICCV, 2021. 3 [29] Zhenchao Jin, Bin Liu, Qi Chu, and Nenghai Yu. Is- net: Integrate image-level and semantic-level context for semantic segmentation. In ICCV, 2021. 2, 3 [30] Alexander Kirillov, Ross Girshick, Kaiming He, and Piotr Doll´ar. Panoptic feature pyramid networks. In CVPR, 2019. 1, 2, 3, 4, 5, 6, 7, 12 [31] Alex Krizhevsky, Ilya Sutskever, and Geoffrey E Hin- ton. Imagenet classiﬁcation with deep convolutional neural networks. In NeurIPS, 2012. 1, 2, 6 [32] Xiangtai Li, Ansheng You, Zhen Zhu, Houlong Zhao, Maoke Yang, Kuiyuan Yang, and Yunhai Tong. Se- mantic ﬂow for fast and accurate scene parsing. In ECCV, 2020. 2 [33] Guosheng Lin, Anton Milan, Chunhua Shen, and Ian Reid. Reﬁnenet:"
+  },
+  {
+    "paper_id": "2112.12782v3",
+    "title": "SeMask: Semantically Masked Transformers for Semantic Segmentation",
+    "page_num": 10,
+    "chunk_id": "2112.12782v3_page10_chunk5",
+    "text": "deep convolutional neural networks. In NeurIPS, 2012. 1, 2, 6 [32] Xiangtai Li, Ansheng You, Zhen Zhu, Houlong Zhao, Maoke Yang, Kuiyuan Yang, and Yunhai Tong. Se- mantic ﬂow for fast and accurate scene parsing. In ECCV, 2020. 2 [33] Guosheng Lin, Anton Milan, Chunhua Shen, and Ian Reid. Reﬁnenet: Multi-path reﬁnement networks for high-resolution semantic segmentation. In CVPR, 2017. 2 [34] Tsung-Yi Lin, Michael Maire, Serge Belongie, Lubomir Bourdev, Ross Girshick, James Hays, Pietro Perona, Deva Ramanan, C. Lawrence Zitnick, and Pi- otr Doll´ar. Microsoft coco: Common objects in con- text. In ECCV, 2014. 11, 12 10"
+  },
+  {
+    "paper_id": "2112.12782v3",
+    "title": "SeMask: Semantically Masked Transformers for Semantic Segmentation",
+    "page_num": 11,
+    "chunk_id": "2112.12782v3_page11_chunk1",
+    "text": "[35] Huajun Liu, Fuqiang Liu, Xinyi Fan, and Dong Huang. Polarized self-attention: Towards high-quality pixel-wise regression. arXiv, 2021. 8 [36] Ze Liu, Han Hu, Yutong Lin, Zhuliang Yao, Zhenda Xie, Yixuan Wei, Jia Ning, Yue Cao, Zheng Zhang, Li Dong, et al. Swin transformer v2: Scaling up capacity and resolution. arXiv, 2021. 3, 9 [37] Ze Liu, Yutong Lin, Yue Cao, Han Hu, Yixuan Wei, Zheng Zhang, Stephen Lin, and Baining Guo. Swin transformer: Hierarchical vision transformer using shifted windows. In ICCV, 2021. 1, 2, 3, 4, 5, 6, 7, 8, 9 [38] Jonathan Long, Evan Shelhamer, and Trevor Darrell. Fully convolutional networks for semantic segmenta- tion. In CVPR, 2015. 2, 9 [39] Ilya Loshchilov and Frank Hutter. Decoupled weight decay regularization. In ICLR, 2019. 6 [40] Colin Raffel, Noam Shazeer, Adam Roberts, Kather- ine Lee, Sharan Narang, Michael Matena, Yanqi Zhou, Wei Li, and Peter J. Liu. Exploring the limits of trans- fer learning with a uniﬁed text-to-text transformer. Journal of Machine Learning Research, 21(140):1– 67, 2020. 4 [41] Maithra Raghu, Thomas Unterthiner, Simon Korn- blith, Chiyuan Zhang, and Alexey Dosovitskiy. Do vision transformers see like convolutional neural net- works? arXiv, 2021. 1 [42] Olaf Ronneberger, Philipp Fischer, and"
+  },
+  {
+    "paper_id": "2112.12782v3",
+    "title": "SeMask: Semantically Masked Transformers for Semantic Segmentation",
+    "page_num": 11,
+    "chunk_id": "2112.12782v3_page11_chunk2",
+    "text": "limits of trans- fer learning with a uniﬁed text-to-text transformer. Journal of Machine Learning Research, 21(140):1– 67, 2020. 4 [41] Maithra Raghu, Thomas Unterthiner, Simon Korn- blith, Chiyuan Zhang, and Alexey Dosovitskiy. Do vision transformers see like convolutional neural net- works? arXiv, 2021. 1 [42] Olaf Ronneberger, Philipp Fischer, and Thomas Brox. U-net: Convolutional networks for biomedical image segmentation. In MICCAI, 2015. 2 [43] Qi Song, Kangfu Mei, and Rui Huang. Attanet: Attention-augmented network for fast and accurate scene parsing. In AAAI, 2021. 2 [44] Robin Strudel, Ricardo Garcia, Ivan Laptev, and Cordelia Schmid. Segmenter: Transformer for seman- tic segmentation. In ICCV, 2021. 2, 3, 8, 9 [45] Andrew Tao, Karan Sapra, and Bryan Catanzaro. Hi- erarchical multi-scale attention for semantic segmen- tation. arXiv, 2020. 2 [46] Hugo Touvron, Matthieu Cord, Matthijs Douze, Fran- cisco Massa, Alexandre Sablayrolles, and Herv´e J´egou. Training data-efﬁcient image transformers & distillation through attention. arXiv, 2020. 1, 2 [47] Ashish Vaswani, Noam Shazeer, Niki Parmar, Jakob Uszkoreit, Llion Jones, Aidan N. Gomez, Lukasz Kaiser, and Illia Polosukhin. Attention is all you need. In NeurIPS, 2017. 2 [48] Wenhai Wang, Enze Xie, Xiang Li, Deng-Ping Fan, Kaitao Song, Ding Liang, Tong Lu, Ping Luo, and Ling"
+  },
+  {
+    "paper_id": "2112.12782v3",
+    "title": "SeMask: Semantically Masked Transformers for Semantic Segmentation",
+    "page_num": 11,
+    "chunk_id": "2112.12782v3_page11_chunk3",
+    "text": "2020. 1, 2 [47] Ashish Vaswani, Noam Shazeer, Niki Parmar, Jakob Uszkoreit, Llion Jones, Aidan N. Gomez, Lukasz Kaiser, and Illia Polosukhin. Attention is all you need. In NeurIPS, 2017. 2 [48] Wenhai Wang, Enze Xie, Xiang Li, Deng-Ping Fan, Kaitao Song, Ding Liang, Tong Lu, Ping Luo, and Ling Shao. Pyramid vision transformer: A versatile backbone for dense prediction without convolutions. In ICCV, 2021. 1 [49] Xiaolong Wang, Ross Girshick, Abhinav Gupta, and Kaiming He. Non-local neural networks. In CVPR, 2018. 2 [50] Yu Wang, Quan Zhou, Jia Liu, Jian Xiong, Guangwei Gao, Xiaofu Wu, and Longin Jan Latecki. Lednet: A lightweight encoder-decoder network for real-time semantic segmentation. In ICIP, 2019. 2 [51] Tete Xiao, Yingcheng Liu, Bolei Zhou, Yuning Jiang, and Jian Sun. Uniﬁed perceptual parsing for scene understanding. In ECCV, 2018. 1, 3 [52] Enze Xie, Wenhai Wang, Zhiding Yu, Anima Anand- kumar, Jose M. Alvarez, and Ping Luo. Segformer: Simple and efﬁcient design for semantic segmentation with transformers. In NeurIPS, 2021. 1, 2, 3, 4, 5, 6, 7, 8, 9 [53] Hang Zhang, Kristin Dana, Jianping Shi, Zhongyue Zhang, Xiaogang Wang, Ambrish Tyagi, and Amit Agrawal. Context encoding for semantic segmenta- tion. arXiv, 2018. 3 [54]"
+  },
+  {
+    "paper_id": "2112.12782v3",
+    "title": "SeMask: Semantically Masked Transformers for Semantic Segmentation",
+    "page_num": 11,
+    "chunk_id": "2112.12782v3_page11_chunk4",
+    "text": "Ping Luo. Segformer: Simple and efﬁcient design for semantic segmentation with transformers. In NeurIPS, 2021. 1, 2, 3, 4, 5, 6, 7, 8, 9 [53] Hang Zhang, Kristin Dana, Jianping Shi, Zhongyue Zhang, Xiaogang Wang, Ambrish Tyagi, and Amit Agrawal. Context encoding for semantic segmenta- tion. arXiv, 2018. 3 [54] Hengshuang Zhao, Jianping Shi, Xiaojuan Qi, Xiao- gang Wang, and Jiaya Jia. Pyramid scene parsing net- work. In CVPR, 2017. 2, 9 [55] Hengshuang Zhao, Yi Zhang, Shu Liu, Jianping Shi, Chen Change Loy, Dahua Lin, and Jiaya Jia. PSANet: Point-wise spatial attention network for scene parsing. In ECCV, 2018. 8 [56] Sixiao Zheng, Jiachen Lu, Hengshuang Zhao, Xiatian Zhu, Zekun Luo, Yabiao Wang, Yanwei Fu, Jianfeng Feng, Tao Xiang, Philip H. S. Torr, and Li Zhang. Rethinking semantic segmentation from a sequence- to-sequence perspective with transformers. In CVPR, 2021. 9 [57] Juntang Zhuang, Junlin Yang, Lin Gu, and Nicha Dvornek. Shelfnet for fast semantic segmentation. In ICCV, 2019. 2 Appendix In this appendix, we present an additional ablation study for the value of the weight, α in Appendix A. Then, we share our experimental results with SeMask on the COCO- Stuff 10k dataset in Appendix B. We also provide"
+  },
+  {
+    "paper_id": "2112.12782v3",
+    "title": "SeMask: Semantically Masked Transformers for Semantic Segmentation",
+    "page_num": 11,
+    "chunk_id": "2112.12782v3_page11_chunk5",
+    "text": "Dvornek. Shelfnet for fast semantic segmentation. In ICCV, 2019. 2 Appendix In this appendix, we present an additional ablation study for the value of the weight, α in Appendix A. Then, we share our experimental results with SeMask on the COCO- Stuff 10k dataset in Appendix B. We also provide an anal- ysis on the SeMask’s effect on the feature maps in Ap- pendix C. Appendix D provides a qualitative comparison of SeMask-L FPN to Swin-L FPN on the COCO-Stuff 10k [34] and ADE20K [14] datasets. A. Tuning the hyperparameter α We weigh the loss (L2) calculated on the semantic-prior prediction with a hyperparameter α as formulated in Eq. (6). 11"
+  },
+  {
+    "paper_id": "2112.12782v3",
+    "title": "SeMask: Semantically Masked Transformers for Semantic Segmentation",
+    "page_num": 12,
+    "chunk_id": "2112.12782v3_page12_chunk1",
+    "text": "Image Ground Truth Pre-SeMask Features ( ) Post-SeMask Features ( ) Stage-3 Features Stage-4 Features Image Ground Truth Pre-SeMask Features ( ) Post-SeMask Features ( ) - High - High - Low Figure I. Analysis of features on the Cityscapes val set. We analyze pixel-wise attention maps for the Ypre and Ypost features from Stage-3 and Stage-4 of our SeMask-T FPN network. The post-SeMask (Ypost) features are richer in clear boundaries and pixel similarity than pre-SeMask (Ypre) features. Using weighted supervision for the semantic-prior maps is critical so that the model treats the semantic context as an additional signal for feature modeling and not as the main prediction. LT = L1 + αL2 (6) We study the impact of α on performance in Tab. I by changing the values of α on the Swin-Tiny variant. α = 0.4 is the optimum setting for modeling the network’s image feature level and semantic level context. Method Backbone α mIoU (%) #Param (M) SeMask-T FPN SeMask Swin-T 0.4 42.06 35 SeMask-T FPN SeMask Swin-T 0.7 41.87 35 SeMask-T FPN SeMask Swin-T 1 41.67 35 Table I. Ablation on α. We experiment with different values of α on the SeMask-Tiny variant and report single-scale"
+  },
+  {
+    "paper_id": "2112.12782v3",
+    "title": "SeMask: Semantically Masked Transformers for Semantic Segmentation",
+    "page_num": 12,
+    "chunk_id": "2112.12782v3_page12_chunk2",
+    "text": "semantic level context. Method Backbone α mIoU (%) #Param (M) SeMask-T FPN SeMask Swin-T 0.4 42.06 35 SeMask-T FPN SeMask Swin-T 0.7 41.87 35 SeMask-T FPN SeMask Swin-T 1 41.67 35 Table I. Ablation on α. We experiment with different values of α on the SeMask-Tiny variant and report single-scale mIoU (↑). α = 0.4 is the best setting. B. Experiments on COCO-Stuff 10k COCO-Stuff 10k comprises of a total of 10k images with dense pixel-level annotations, selected from the COCO [34] dataset. The training set contains 9k images with 171 se- mantic classes and the test set contains 1k images. We set the base learning rate γ0 to 10−4, weight decay to 10−4 and train for 80K iterations with a batch size of 16. We provide our experimental results in Tab. II. Our Se- Mask framework shows impressive improvement on the COCO-Stuff 10k dataset proving its dataset-agnostic abil- ity. Method Backbone Crop Size #Param. (M) s.s. mIoU (%) m.s. mIoU (%) Swin-T FPN Swin-T 512×512 33 37.14 38.37 SeMask-T FPN SeMask Swin-T 512×512 35 37.53 (+0.39) 38.88 (+0.55) Swin-S FPN Swin-S 512×512 54 40.53 41.91 SeMask-S FPN SeMask Swin-S 512×512 56 40.72 (+0.19) 42.27 (+0.36) Swin-B FPN Swin-B† 512×512"
+  },
+  {
+    "paper_id": "2112.12782v3",
+    "title": "SeMask: Semantically Masked Transformers for Semantic Segmentation",
+    "page_num": 12,
+    "chunk_id": "2112.12782v3_page12_chunk3",
+    "text": "Method Backbone Crop Size #Param. (M) s.s. mIoU (%) m.s. mIoU (%) Swin-T FPN Swin-T 512×512 33 37.14 38.37 SeMask-T FPN SeMask Swin-T 512×512 35 37.53 (+0.39) 38.88 (+0.55) Swin-S FPN Swin-S 512×512 54 40.53 41.91 SeMask-S FPN SeMask Swin-S 512×512 56 40.72 (+0.19) 42.27 (+0.36) Swin-B FPN Swin-B† 512×512 54 44.18 45.79 SeMask-B FPN SeMask Swin-B† 512×512 56 44.68 (+0.50) 46.30 (+0.51) Swin-L FPN Swin-L† 640×640 204 46.42 48.13 SeMask-L FPN SeMask Swin-L† 640×640 211 47.47 (+1.05) 48.54 (+0.41) Table II. Experiments with COCO-Stuff 10k. We provide a comparison of using SeMask Swin with Semantic-FPN [30] de- coder on the COCO Stuff-10k test set. We evaluate the models using both, the single scale (s.s) and multi-scale (m.s.) mIoU (↑). C. Analysis on SeMask In order to conﬁrm our hypothesis that adding semantic context inside the encoder with the help of the semantic at- tention operation helps in improving the semantic quality of the features, we analyze the pixel-wise attention quality of the intermediate features of our SeMask-T FPN model on the Cityscapes [13] val dataset as shown in Fig. I. 12"
+  },
+  {
+    "paper_id": "2112.12782v3",
+    "title": "SeMask: Semantically Masked Transformers for Semantic Segmentation",
+    "page_num": 13,
+    "chunk_id": "2112.12782v3_page13_chunk1",
+    "text": "N C Linear N C N K N C Semantic Attention Figure II. SeMask Block. The semantic attention outputs the se- mask features (Ysemask) using the features from the transformer layer (Ypre). We use a residual connection from Ypre to obtain the ﬁnal output (Ypost). S is the semantic-prior map used to semanti- cally mask the features (Ypre). Speciﬁcally, we analyze pixel-wise attention for the pre- SeMask (Ypre) and post-SeMask (Ypost) features (Fig. II) for Stage-3 and Stage-4 which are downsampled by ×16 and ×32, respectively. We calculate the pixel-wise atten- tion maps corresponding to the target pixel (red cross sign), and we observe that post-SeMask features have more simi- lar features for the same semantic category region with bet- ter boundaries than the pre-SeMask features. It reﬂects that the semantic prior maps help increase similarity between the pixels belonging to the same semantic category and im- prove the semantic segmentation performance. D. Qualitative results We provide qualitative results on the COCO-Stuff 10k test set in Fig. III where SeMask-L FPN produces better per-pixel predictions compared to Swin-L FPN. It is evident in (b) as the Swin-L FPN network fails to label the pole correctly and completely mislabels the sky"
+  },
+  {
+    "paper_id": "2112.12782v3",
+    "title": "SeMask: Semantically Masked Transformers for Semantic Segmentation",
+    "page_num": 13,
+    "chunk_id": "2112.12782v3_page13_chunk2",
+    "text": "segmentation performance. D. Qualitative results We provide qualitative results on the COCO-Stuff 10k test set in Fig. III where SeMask-L FPN produces better per-pixel predictions compared to Swin-L FPN. It is evident in (b) as the Swin-L FPN network fails to label the pole correctly and completely mislabels the sky region in (c). We show more qualitative results on the ADE20K valida- tion set in Fig. IV. Swin-L FPN mislabels mirror as curtain in (b) due to the reﬂection of the curtain. On the other hand, SeMask-L FPN classiﬁes the regions accurately. 13"
+  },
+  {
+    "paper_id": "2112.12782v3",
+    "title": "SeMask: Semantically Masked Transformers for Semantic Segmentation",
+    "page_num": 14,
+    "chunk_id": "2112.12782v3_page14_chunk1",
+    "text": "Swin-L FPN Image Ours Ground Truth Figure III. Qualitative results on the COCO-Stuff 10k test set. Swin-L FPN completely mislabels the sky region and a signiﬁcant part of the ground in (c), and our SeMask-L FPN shows better accuracy in classifying the regions. Swin-L FPN Image Ours Ground Truth Figure IV. Qualitative results on the ADE20K validation set. Our SeMask-L FPN can correctly classify the mirror region in (b), whereas Swin-L FPN mislabels a signiﬁcant part of the mirror as curtain owing to the reﬂection. 14"
+  }
+]

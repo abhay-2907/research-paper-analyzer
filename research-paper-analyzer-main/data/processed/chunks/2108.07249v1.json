@@ -1,0 +1,317 @@
+[
+  {
+    "paper_id": "2108.07249v1",
+    "title": "BloomNet: A Robust Transformer based model for Bloom's Learning Outcome Classification",
+    "page_num": 1,
+    "chunk_id": "2108.07249v1_page1_chunk1",
+    "text": "BloomNet: A Robust Transformer based model for Bloom’s Learning Outcome Classiﬁcation Abdul Waheedα, Muskan Goyalα, Nimisha Mittalα, Deepak Guptaα, Ashish Khannaα, Moolchand Sharmaα α Maharaja Agrasen Institute of Technology, New Delhi, India. {abdulwaheed1513, goyalmuskan1508, nimishamittal1999}@gmail.com {deepakgupta, ashishkhanna, moolchand}@mait.ac.in Abstract Bloom’s taxonomy is a common paradigm for categorizing educational learning objec- tives into three learning levels: cognitive, af- fective, and psychomotor. For the optimiza- tion of educational programs, it is crucial to design course learning outcomes (CLOs) ac- cording to the different cognitive levels of Bloom’s Taxonomy. Usually, administrators of the institutions manually complete the te- dious work of mapping CLOs and examina- tion questions to Bloom’s taxonomy levels. To address this issue, we propose a transformer based model named BloomNet that captures linguistic as well semantic information to clas- sify the course learning outcomes (CLOs) . We compare BloomNet with diverse set of basic as well as strong baselines and we observe that our model performs better than all the exper- imented baselines. Further, we also test the generalisation capability of BloomNet by eval- uating it on different distributions which our model does not encounter during training and we observe that our model is less susceptible to distribution shift compared"
+  },
+  {
+    "paper_id": "2108.07249v1",
+    "title": "BloomNet: A Robust Transformer based model for Bloom's Learning Outcome Classification",
+    "page_num": 1,
+    "chunk_id": "2108.07249v1_page1_chunk2",
+    "text": "we observe that our model performs better than all the exper- imented baselines. Further, we also test the generalisation capability of BloomNet by eval- uating it on different distributions which our model does not encounter during training and we observe that our model is less susceptible to distribution shift compared to the other consid- ered models. We support our ﬁndings by per- forming extensive result analysis. In ablation study we observe that on explicitly encapsu- lating the linguistic information along with se- mantic information improves the model’s IID (independent and identically distributed) per- formance as well as OOD (out-of-distribution) generalization capability. 1 Introduction One of the most difﬁcult challenges faced by the science educators is preparing a curriculum that facilitates the learning process in a structured, planned, and productive manner. It is the goal of the scientiﬁc curriculum to educate students who can investigate, question, participate in collabora- tive projects, and effectively communicate. The expected improvements for the students are artic- ulated in a curriculum as learning outcomes (Zor- luo˘glu et al., 2019). Learning outcomes are used to track, measure, and evaluate the standards and quality of education received by the students at edu- cational institutions (Attia, 2021). In terms"
+  },
+  {
+    "paper_id": "2108.07249v1",
+    "title": "BloomNet: A Robust Transformer based model for Bloom's Learning Outcome Classification",
+    "page_num": 1,
+    "chunk_id": "2108.07249v1_page1_chunk3",
+    "text": "and effectively communicate. The expected improvements for the students are artic- ulated in a curriculum as learning outcomes (Zor- luo˘glu et al., 2019). Learning outcomes are used to track, measure, and evaluate the standards and quality of education received by the students at edu- cational institutions (Attia, 2021). In terms of these learning outcomes, we may also identify the level of any student. Various measurement and evalua- tion studies are thus incorporated to determine the level of individual learning outcomes. Exam evaluation is critical for determining how well students understand the course material. Therefore, the objectivity and scientiﬁc relevance of the questions developed for exams must be ques- tioned in order to guarantee that students’ learning outcomes are tracked and judged effectively. One of the relevant scientiﬁc techniques for analyzing this is the Bloom’s Taxonomy (Anderson et al., 2000), which is well-known among the educators around the world. The examinations should take account of the difﬁculty levels, which correspond to the basic objectives and course outcomes in con- ventional ways like the Bloom’s taxonomy. Dr. Benjamin Bloom, an Educational Psycholo- gist, developed the Bloom’s Taxonomy in 1965. Its goal was to encourage high-order thinking, such as analyzing and examining instead"
+  },
+  {
+    "paper_id": "2108.07249v1",
+    "title": "BloomNet: A Robust Transformer based model for Bloom's Learning Outcome Classification",
+    "page_num": 1,
+    "chunk_id": "2108.07249v1_page1_chunk4",
+    "text": "should take account of the difﬁculty levels, which correspond to the basic objectives and course outcomes in con- ventional ways like the Bloom’s taxonomy. Dr. Benjamin Bloom, an Educational Psycholo- gist, developed the Bloom’s Taxonomy in 1965. Its goal was to encourage high-order thinking, such as analyzing and examining instead of rote memoriza- tion of information (Adesoji, 2018). The Bloom’s taxonomy is divided into three categories: cogni- tive (mental skills), affective (emotional areas or attitude), and psychomotor (physical skills). Our study focuses on the cognitive domain, which in- volves knowledge and intellectual skill develop- ment. Researchers have recently demonstrated a growing interest in automatic assessment based on cognitive domains in Bloom’s Taxonomy. (Abdul- jabbar and Omar, 2015; Mohammed and Omar, 2018; Yahya, 2019). The majority of previous re- search focused on question classiﬁcation from a speciﬁc domain, while Bloom’s taxonomy across arXiv:2108.07249v1 [cs.CL] 16 Aug 2021"
+  },
+  {
+    "paper_id": "2108.07249v1",
+    "title": "BloomNet: A Robust Transformer based model for Bloom's Learning Outcome Classification",
+    "page_num": 2,
+    "chunk_id": "2108.07249v1_page2_chunk1",
+    "text": "the multi-domain region is lacking ways for clas- sifying questions (Sangodiah et al., 2017). This work therefore seeks to establish a question clas- siﬁcation method based on the cognitive domain of Bloom’s taxonomy. The Hierarchical order of levels in cognitive domain is: Knowledge, Com- prehension, Application, Analysis, Synthesis and Evaluation. The ﬁrst three levels are categorised as lower level of thinking, whilst the latter three levels are considered as high level of thinking. The primary aim of this study is to assess the util- ity and efﬁcacy of Bloom’s Taxonomy as a frame- work for establishing course learning outcomes, op- timizing curriculum, and evaluating various educa- tional programs. In this paper, we propose Bloom- Net, a novel transformer-based model that incorpo- rates both linguistic and semantic information for the classiﬁcation of bloom’s course learning out- comes. We also examine the generalisation capabil- ity of BloomNet on new distributions because train and test distributions are usually not distributed identically. The evaluation datasets rarely represent the entire distribution and the test distribution often drifts over time (Quionero-Candela et al., 2009), resulting in train-test discrepancies. Due to these discrepancies, models can face unexpected condi- tions at the test time. Therefore, models should be"
+  },
+  {
+    "paper_id": "2108.07249v1",
+    "title": "BloomNet: A Robust Transformer based model for Bloom's Learning Outcome Classification",
+    "page_num": 2,
+    "chunk_id": "2108.07249v1_page2_chunk2",
+    "text": "and test distributions are usually not distributed identically. The evaluation datasets rarely represent the entire distribution and the test distribution often drifts over time (Quionero-Candela et al., 2009), resulting in train-test discrepancies. Due to these discrepancies, models can face unexpected condi- tions at the test time. Therefore, models should be able to detect and generalise to out-of-distribution (OOD) examples. In most NLP evaluations, the train and test samples are assumed to be independent and iden- tically distributed (IID). Large pretrained trans- former models can achieve high performance on a variety of tasks in the IID scenario (Wang et al., 2018). However, high IID accuracy does not al- ways imply OOD robustness. Furthermore, be- cause pretrained Transformers rely largely on false cues and annotation artifacts (Gururangan et al., 2018; Cai et al., 2017) that OOD instances are less likely to feature, their OOD robustness is unknown. Hence, we examine the robustness of BloomNet and other experimented models such as CNNs, LSTMs, pretrained transformers, and more. The contributions of our research can be summa- rized as follows: 1. We propose a transformer-based model, BloomNet, that can distinguish between six different cognitive levels of Bloom’s taxon- omy (Knowledge, Comprehension, Applica- tion, Analysis, Synthesis"
+  },
+  {
+    "paper_id": "2108.07249v1",
+    "title": "BloomNet: A Robust Transformer based model for Bloom's Learning Outcome Classification",
+    "page_num": 2,
+    "chunk_id": "2108.07249v1_page2_chunk3",
+    "text": "of BloomNet and other experimented models such as CNNs, LSTMs, pretrained transformers, and more. The contributions of our research can be summa- rized as follows: 1. We propose a transformer-based model, BloomNet, that can distinguish between six different cognitive levels of Bloom’s taxon- omy (Knowledge, Comprehension, Applica- tion, Analysis, Synthesis and Evaluation). 2. We implement, train and evaluate multiple models to perform comparative analysis. 3. We evaluate experimented models for OOD generalization and we observe that pretrained transformers (RoBERTa, DistilRoBERTa (Liu et al., 2019; Sanh et al., 2019)) along with proposed model have better generalization ca- pability compared to other models. 4. We perform ablation study to asses the con- tribution of various components in proposed model. The following is the ﬁnal exhibition. Section 2 and Section 3 describes the previous work and methodology respectively. Section 4 delves into the experiments and results. The conclusion and possible future directions are discussed in Section 5. Reproducibility We implement, train and evaluate all the considered models as well as BloomNet as described in 4.3. We intend to release all the code, trained weights, datasets, and conﬁguration upon acceptance. 2 Related Work Text classiﬁcation is an important NLP research area with numerous applications."
+  },
+  {
+    "paper_id": "2108.07249v1",
+    "title": "BloomNet: A Robust Transformer based model for Bloom's Learning Outcome Classification",
+    "page_num": 2,
+    "chunk_id": "2108.07249v1_page2_chunk4",
+    "text": "discussed in Section 5. Reproducibility We implement, train and evaluate all the considered models as well as BloomNet as described in 4.3. We intend to release all the code, trained weights, datasets, and conﬁguration upon acceptance. 2 Related Work Text classiﬁcation is an important NLP research area with numerous applications. A number of scholars have concentrated on automatic text clas- siﬁcation. In recent years, classiﬁcation of exam questions for the cognitive domain of Bloom’s tax- onomy has received a lot of attention. Previous works have used different features and methods for text classiﬁcation. Some of these works are discussed in this section. In (Chang and Chung, 2009), an online exam- ination system is created that supports automatic Bloom’s taxonomy analysis for the test questions. The researchers introduce fourteen keywords for the analysis on questions. Each keyword is associ- ated with a speciﬁc cognition level. The experiment is conducted on 288 test items and a 75% accuracy is achieved for the \"Knowledge\" cognition level. A. Swart and M. Daneti (Swart and Daneti, 2019) analyzed the learning outcomes for Elec- tronic fundamental module (of two universities) us- ing Bloom’s Taxonomy. To identify the proportion of each cognition level, the verbs of each"
+  },
+  {
+    "paper_id": "2108.07249v1",
+    "title": "BloomNet: A Robust Transformer based model for Bloom's Learning Outcome Classification",
+    "page_num": 2,
+    "chunk_id": "2108.07249v1_page2_chunk5",
+    "text": "test items and a 75% accuracy is achieved for the \"Knowledge\" cognition level. A. Swart and M. Daneti (Swart and Daneti, 2019) analyzed the learning outcomes for Elec- tronic fundamental module (of two universities) us- ing Bloom’s Taxonomy. To identify the proportion of each cognition level, the verbs of each learning outcome are connected to certain speciﬁc verbs in Bloom’s taxonomy. This reﬂected the balance between theory and practice for the cognitive de- velopment of electrical engineering students. The"
+  },
+  {
+    "paper_id": "2108.07249v1",
+    "title": "BloomNet: A Robust Transformer based model for Bloom's Learning Outcome Classification",
+    "page_num": 3,
+    "chunk_id": "2108.07249v1_page3_chunk1",
+    "text": "consistency of the ﬁndings of the two universities demonstrated that students could blend theory and practice because they had around 40 percent of higher level cognitive outcomes. Likewise, (Mohammed and Omar, 2020) classi- ﬁed exam questions for the cognitive domain of Bloom’s Taxonomy using TFPOS-IDF and pre- trained word2vec. To classify the questions, the extracted features are fed to three distinct classi- ﬁers i.e. logistic regression, K-nearest neighbour, and Support Vector Machine. For the experiment, they employ two datasets, one with 141 questions and the other with 600 questions. The ﬁrst dataset results in a weighted average of 71.1%, 82.3% and 83.7% while the second achieves a weighted aver- age of 85.4%, 89.4% and 89.7%. Adidah Lajis et al. proposed (Lajis et al., 2018) a framework for assessing students’ programming skills. Bloom’s taxonomy cognitive domain serves as the foundation for the framework. According to the ﬁndings, Bloom’s taxonomy could be used as a basis for grading students. It said that the stu- dents would be judged based on their ability using Bloom’s taxonomy. The authors also suggested that taxonomy be used as an evaluation framework rather than learning. Based on their domain knowledge, teachers and accreditation organizations manually classify course"
+  },
+  {
+    "paper_id": "2108.07249v1",
+    "title": "BloomNet: A Robust Transformer based model for Bloom's Learning Outcome Classification",
+    "page_num": 3,
+    "chunk_id": "2108.07249v1_page3_chunk2",
+    "text": "used as a basis for grading students. It said that the stu- dents would be judged based on their ability using Bloom’s taxonomy. The authors also suggested that taxonomy be used as an evaluation framework rather than learning. Based on their domain knowledge, teachers and accreditation organizations manually classify course learning outcomes (CLOs) and questions on distinct levels of cognitive domain. This is time- consuming and usually leads in errors due to human bias. As a result, this technique must be automated. Several scholars have sought to automate this pro- cess through the use of natural language processing and machine learning techniques (Haris and Omar, 2012; Jayakodi et al., 2015; Osadi et al., 2017; Kowsari et al., 2019). Deep learning has recently exhibited impressive results when compared to tra- ditional machine learning methods, particularly in the ﬁeld of text classiﬁcation (Minaee et al., 2020). For text classiﬁcation tasks, several neural mod- els that automatically represent text as embedding have been developed, such as CNNs, RNNs, graph neural networks, and a variety of attention mod- els such as hierarchical attention networks, self- attention networks, and so on. The majority of previous efforts on Bloom’s taxonomy have either used traditional machine learning"
+  },
+  {
+    "paper_id": "2108.07249v1",
+    "title": "BloomNet: A Robust Transformer based model for Bloom's Learning Outcome Classification",
+    "page_num": 3,
+    "chunk_id": "2108.07249v1_page3_chunk3",
+    "text": "mod- els that automatically represent text as embedding have been developed, such as CNNs, RNNs, graph neural networks, and a variety of attention mod- els such as hierarchical attention networks, self- attention networks, and so on. The majority of previous efforts on Bloom’s taxonomy have either used traditional machine learning approaches or representative deep neural models such as RNNs, LSTMs, and so on. In this research, we propose a transformer-based approach for performing text classiﬁcation as per cognitive domains. Transform- ers, (Vaswani et al., 2017) provide signiﬁcantly better parallelization than RNNs, allowing for efﬁ- cient (pre-)training of very large language models and an enhanced performance rate. 3 Methodology In this section we discuss the methodology part of our research. Our model is inspired by (Gupta et al., 2021) and (Yang et al., 2016b). In BloomNet , we encapsulate the linguistic information along with generic input representation and we also explicitly model word level attention. In following sections we describe each component of our model (shown in Figure 1) in detail. Notation: We denote current input as set of to- kens x ∈X = {t0, t1, t2, ...tn} where n is the number of tokens in input. We deﬁne a model"
+  },
+  {
+    "paper_id": "2108.07249v1",
+    "title": "BloomNet: A Robust Transformer based model for Bloom's Learning Outcome Classification",
+    "page_num": 3,
+    "chunk_id": "2108.07249v1_page3_chunk4",
+    "text": "model word level attention. In following sections we describe each component of our model (shown in Figure 1) in detail. Notation: We denote current input as set of to- kens x ∈X = {t0, t1, t2, ...tn} where n is the number of tokens in input. We deﬁne a model as fmodel : x −→h where h ∈Rd. We deﬁne our ﬁnal classﬁeir as fc : x −→C where C is the softmax output and its size is equal to number of classes in our data. 3.1 Representation Model Representation model or language encoder is main component of BloomNet which gives contextual- ized embeddings (Devlin et al., 2019; Pennington et al., 2014) for the text input. and for this we use pretrained RoBERTa (Liu et al., 2019) model from huggingface model hub repository (Wolf et al., 2020). The reason we use RoBERTa instead of its other widely used counterparts such as BERT (De- vlin et al., 2019), DistilBERT (Sanh et al., 2019) is that it has seen much more data during its pretrain- ing compare to its predecessor which results in in- creased robustness for subpopulation as well distri- bution shift. We feed tokenized input to RoBERTa model and we"
+  },
+  {
+    "paper_id": "2108.07249v1",
+    "title": "BloomNet: A Robust Transformer based model for Bloom's Learning Outcome Classification",
+    "page_num": 3,
+    "chunk_id": "2108.07249v1_page3_chunk5",
+    "text": "as BERT (De- vlin et al., 2019), DistilBERT (Sanh et al., 2019) is that it has seen much more data during its pretrain- ing compare to its predecessor which results in in- creased robustness for subpopulation as well distri- bution shift. We feed tokenized input to RoBERTa model and we use CLS token as input representa- tion. It can be represented as : hrep = frep(x) (1) 3.2 Linguistic Encapsulation Work by (Gupta et al., 2021) shows that explicit en- capsulation of linguistic information increases the performance of the model for claim detection task, inspired by the same we also explicitly encapsulate linguistic information in modelling of BloomNet. We use POS (Part-Of-Speech) and NER (Named Entity Recognition) information coming from a trained model for POS and NER tasks respectively."
+  },
+  {
+    "paper_id": "2108.07249v1",
+    "title": "BloomNet: A Robust Transformer based model for Bloom's Learning Outcome Classification",
+    "page_num": 4,
+    "chunk_id": "2108.07249v1_page4_chunk1",
+    "text": "A POS GRU + WA RoBERTa NER About what proportion of the population of the US is living on farms? Fusion Softmax Output LE HWA Figure 1: A high level architectrue digram of the proposed model BloomNet . POS (Part of Speech Module. NER(Named Entity Recognition) Module. HWA (Hierarchical Word Attention) Module. LE (Linguistic Encapsulation). We freeze the POS and NER model during train- ing so that it’s weights do not change and hence it carries linguistic information. We use CLS token representation of the model and we deﬁne it as as follows: hPOS = fPOS(x) (2) hNER = fNER(x) (3) 3.3 Hierarchical Word Attention and Classiﬁcation Inspired by (Yang et al., 2016b) we use word level attention to get the better dense representation of the input. For this we use GRU Cho et al. (2014) and apply word level attention on its output. As result we get a vector from this module as input representation and we use this along with other information for classiﬁcation. We denote this as follows : hHWA = fHWA(x) (4) Finally, we get four different representation com- ing from different components and we fuse these information using concatenation and feed this to a linear"
+  },
+  {
+    "paper_id": "2108.07249v1",
+    "title": "BloomNet: A Robust Transformer based model for Bloom's Learning Outcome Classification",
+    "page_num": 4,
+    "chunk_id": "2108.07249v1_page4_chunk2",
+    "text": "from this module as input representation and we use this along with other information for classiﬁcation. We denote this as follows : hHWA = fHWA(x) (4) Finally, we get four different representation com- ing from different components and we fuse these information using concatenation and feed this to a linear classiﬁcation model. We write the concate- nation as: H = hRep ⊕hPOS ⊕hNER ⊕hHWA (5) Classiﬁcation module can be represented as: C = fc(H) (6) 4 Experiments and Results 4.1 Dataset We use two open domain datasets to evaluate the proposed approach. First dataset was proposed in (Yahya et al., 2012) which comprises 600 open- ended questions. The second dataset was compiled from a variety of websites, publications, and previ- ous research (Haris and Omar, 2015). It contains 141 open-ended questions. The datasets are anno- tated and classiﬁed into six categories (Knowledge, Comprehension, Application, Analysis, Synthesis, and Evaluation). Table 1 illustrates the label dis- tribution for both datasets. The questions in these two datasets come from a variety of ﬁelds of study, including chemical, literature, biological, artistic, and computer science, among others. 4.2 Baselines In this section, we describe the various baseline models that we used for comparative analysis. These"
+  },
+  {
+    "paper_id": "2108.07249v1",
+    "title": "BloomNet: A Robust Transformer based model for Bloom's Learning Outcome Classification",
+    "page_num": 4,
+    "chunk_id": "2108.07249v1_page4_chunk3",
+    "text": "illustrates the label dis- tribution for both datasets. The questions in these two datasets come from a variety of ﬁelds of study, including chemical, literature, biological, artistic, and computer science, among others. 4.2 Baselines In this section, we describe the various baseline models that we used for comparative analysis. These models are arranged in the order of their performance."
+  },
+  {
+    "paper_id": "2108.07249v1",
+    "title": "BloomNet: A Robust Transformer based model for Bloom's Learning Outcome Classification",
+    "page_num": 5,
+    "chunk_id": "2108.07249v1_page5_chunk1",
+    "text": "Cognitive Level Dataset 1 Dataset 2 Knowledge Level 100 26 Comprehension Level 100 23 Application Level 100 15 Analysis Level 100 23 Synthesis Level 100 30 Evaluation Level 100 24 Total 600 141 Table 1: Number of questions in each cognitive level 4.2.1 VDCNN Very Deep CNN (VDCNN) (Schwenk et al., 2017) learns a hierarchical representation of a sentence with the help of a deep stack of convolutions and max-pooling of size 3 and by operating at the char- acter level representation of the text. VDCNNs are substantially deeper than convolutional neural net- works published previously. This is the ﬁrst CNN model to present the \"advantage of depth\" in the ﬁeld of NLP. 4.2.2 LSTM Text is viewed as a sequence of words in RNN- based models, which are designed to capture word dependencies and text structures for text classiﬁca- tion. RNNs (Jain and Medsker, 1999) can mem- orise the local structure of a word sequence, but they struggle with long-range dependencies. Long- Short Term Memory (LSTM) (Sari et al., 2020) is the most popular variant of RNN, that is cre- ated to capture long term dependencies. Vanilla RNNs suffer from gradient vanishing problem and LSTMs resolve this issue by"
+  },
+  {
+    "paper_id": "2108.07249v1",
+    "title": "BloomNet: A Robust Transformer based model for Bloom's Learning Outcome Classification",
+    "page_num": 5,
+    "chunk_id": "2108.07249v1_page5_chunk2",
+    "text": "local structure of a word sequence, but they struggle with long-range dependencies. Long- Short Term Memory (LSTM) (Sari et al., 2020) is the most popular variant of RNN, that is cre- ated to capture long term dependencies. Vanilla RNNs suffer from gradient vanishing problem and LSTMs resolve this issue by using a memory cell that remember values across arbitrary time periods. 4.2.3 HAN Hierarchical Attention Networks (HAN) (Yang et al., 2016a) collects relevant tokens from sen- tences and aggregate their representation with the help of an attention mechanism. The same ap- proach is used to retrieve relevant sentence vectors that is used in the classiﬁcation task. 4.2.4 CNN RNNs are taught to detect patterns over time, while CNNs (Kim, 2014) are taught to recognise patterns over space. RNNs work for NLP tasks like POS tag- ging or QA that need understanding of long-range semantics, but CNNs are good for recognising local and position-invariant patterns (LeCun et al., 1998). These patterns could be key phrases expressing a speciﬁc emotion or a topic. As a result, CNNs have become one of the most common text classiﬁcation model. 4.2.5 RCNN In contrast to CNN, Recurrent CNN (Girshick et al., 2014) comprises of bi-directional"
+  },
+  {
+    "paper_id": "2108.07249v1",
+    "title": "BloomNet: A Robust Transformer based model for Bloom's Learning Outcome Classification",
+    "page_num": 5,
+    "chunk_id": "2108.07249v1_page5_chunk3",
+    "text": "local and position-invariant patterns (LeCun et al., 1998). These patterns could be key phrases expressing a speciﬁc emotion or a topic. As a result, CNNs have become one of the most common text classiﬁcation model. 4.2.5 RCNN In contrast to CNN, Recurrent CNN (Girshick et al., 2014) comprises of bi-directional recurrent struc- ture that captures greater contextual data from word representations. This is followed by a max pool- ing layer which is responsible for extracting key features for text classiﬁcation. 4.2.6 Seq2Seq-Attention Deep learning models known as sequence-to- sequence (Bahdanau et al., 2015) models have been deployed in tasks such as machine translation, text summarization, and image captioning. Seq2Seq comprises of encoder, decoder and attention layer where encoder is responsible for compiling data in the form of vector. Further this context is parsed to the decoder that produces desired output sequence. The primary idea behind the attention mechanism is to avoid learning a single vector representation for each sentence and instead be attentive to speciﬁc input vectors based on the attention weights. 4.2.7 Self-Attention Self-attention is a type of attention that allows us to learn the relationship between words in a sentence. Various NLP tasks and Transformers (Vaswani et al.,"
+  },
+  {
+    "paper_id": "2108.07249v1",
+    "title": "BloomNet: A Robust Transformer based model for Bloom's Learning Outcome Classification",
+    "page_num": 5,
+    "chunk_id": "2108.07249v1_page5_chunk4",
+    "text": "avoid learning a single vector representation for each sentence and instead be attentive to speciﬁc input vectors based on the attention weights. 4.2.7 Self-Attention Self-attention is a type of attention that allows us to learn the relationship between words in a sentence. Various NLP tasks and Transformers (Vaswani et al., 2017) use self-attention. Despite the fact that CNNs are less sequential than RNNs, the computing cost of capturing relationships be- tween words in a phrase increases with the length of the sentence, much like RNNs. Transformers get around this constraint by using self-attention to compute a \"attention score\" for each word in a sentence or document in parallel, modelling the inﬂuence each word has on the others. 4.2.8 TF-IDF Random Forest Random Forest (RF) models (Xue and Li, 2015) are made up of a collection of decision trees that were trained on random feature subsets. This model’s"
+  },
+  {
+    "paper_id": "2108.07249v1",
+    "title": "BloomNet: A Robust Transformer based model for Bloom's Learning Outcome Classification",
+    "page_num": 6,
+    "chunk_id": "2108.07249v1_page6_chunk1",
+    "text": "predictions are obtained via a majority vote of all forest tree projections. In addition, RF clas- siﬁers are simple to apply to text classiﬁcation of high-dimensional noisy data. Furthermore, TF-IDF (Term Frequency Inverse Document Frequency) (Sammut and Webb, 2010) is a commonly used ap- proach for converting text to a number representa- tion that may be employed by a machine algorithm. TﬁdfVectorizer weights word counts based on how frequently they appear in the sentence. 4.2.9 DistilRoBERTa DistilRoBERTa has been distilled from RoBERTa- base model (Liu et al., 2019; Sanh et al., 2019) that contains around half number of parameters as BERT model. It is based on same training process as that of DistilBERT. Moreover, Distil- RoBERTa maintains 95 percent of BERT’s per- formance on the GLUE language understanding benchmark (Wang et al., 2018). 4.2.10 RoBERTa RoBERTa (Robustly Optimized BERT Pretraining Accuracy) model (Liu et al., 2019) is a more robust version of BERT that is trained with a lot more data. It is based on ﬁne-tuning the hyper-parameters that has improved the results and performance of the model signiﬁcantly. To boost performance of BERT, RoBERTa also modiﬁed its training proce- dure and architecture. These modiﬁcations include removing next sentence prediction"
+  },
+  {
+    "paper_id": "2108.07249v1",
+    "title": "BloomNet: A Robust Transformer based model for Bloom's Learning Outcome Classification",
+    "page_num": 6,
+    "chunk_id": "2108.07249v1_page6_chunk2",
+    "text": "version of BERT that is trained with a lot more data. It is based on ﬁne-tuning the hyper-parameters that has improved the results and performance of the model signiﬁcantly. To boost performance of BERT, RoBERTa also modiﬁed its training proce- dure and architecture. These modiﬁcations include removing next sentence prediction and dynamically changing the masking pattern during pre-training. 4.3 Experimental Setup We use HuggingFace Transformers (Wolf et al., 2020), PyTorch (Paszke et al., 2019), PyTorch- Lightning (Falcon, 2019) and Scikit-learn (Pe- dregosa et al., 2011) for model implementation, training and evaluation. We train all of the models with KFold (k=5) cross validation and report mean and std values across the folds. We observe that the text in the dataset is rela- tively short, thus we use maximum sequence lengths = 128. For LSTM-like models, we employ hidden size = 768, number of layers = 4, and dropout = 0.10 through- out the experiments. We use Adam (Kingma and Ba, 2015) as the optimizer and cross-entropy as the objective function. We use different learning rates for different models depend- ing on how they are initialized, and for BloomNet we use learning rate = 2e-5 and train all models for 50 epochs"
+  },
+  {
+    "paper_id": "2108.07249v1",
+    "title": "BloomNet: A Robust Transformer based model for Bloom's Learning Outcome Classification",
+    "page_num": 6,
+    "chunk_id": "2108.07249v1_page6_chunk3",
+    "text": "out the experiments. We use Adam (Kingma and Ba, 2015) as the optimizer and cross-entropy as the objective function. We use different learning rates for different models depend- ing on how they are initialized, and for BloomNet we use learning rate = 2e-5 and train all models for 50 epochs with batch size = 32 and early stopping to prevent overﬁtting. We do not change the shared hyper-parameters across the models so that the comparison is as fair as possible. We do not conduct comprehensive hyper-parameter searches due to computational constraints. 4.4 Results We evaluate following baselines to compare the performance of our proposed model, BloomNet: VDCNN (Schwenk et al., 2017), LSTM (Sari et al., 2020), HAN(Yang et al., 2016a), CNN(Kim, 2014), RCNN (Girshick et al., 2014), Seq2Seq-Attention (Bahdanau et al., 2015), Self-Attention (Vaswani et al., 2017), Random Forest (Xue and Li, 2015), DistilRoBERTa (Liu et al., 2019), and RoBERTa (Liu et al., 2019). We ﬁnd that BloomNet out- performs all the considered baselines on the two datasets, demonstrating its higher performance for text classiﬁcation. Table 2 reports the performance of BloomNet and all the baselines. The model is trained on Dataset1 and evaluated for both the datasets. Dataset1 is"
+  },
+  {
+    "paper_id": "2108.07249v1",
+    "title": "BloomNet: A Robust Transformer based model for Bloom's Learning Outcome Classification",
+    "page_num": 6,
+    "chunk_id": "2108.07249v1_page6_chunk4",
+    "text": "(Liu et al., 2019). We ﬁnd that BloomNet out- performs all the considered baselines on the two datasets, demonstrating its higher performance for text classiﬁcation. Table 2 reports the performance of BloomNet and all the baselines. The model is trained on Dataset1 and evaluated for both the datasets. Dataset1 is used for evaluat- ing BloomNet’s IID performance while Dataset2 is used to test BloomNet’s generalisation capabilities (OOD performance) by assessing it on new distribu- tions that our model does not encounter during the training process. We observe that in comparison to the baseline models, BloomNet is less vulnerable to distribution shift. 4.4.1 Comparative Analysis As seen in Table 2 BloomNet outperforms the baseline models and achieves 87.50 ± 1.88 and 70.40 ± 2.52 and Macro-F1 score 87.23 ± 2.47 and 67.10 ± 2.43 on Dataset1(IID) and Dataset2(OOD) respectively. In addition, we also made some very in- depth observations while evaluating the base- lines. Surprisingly, the TF-IDF (Sammut and Webb, 2010) encoded text with random for- est performs better than several strong base- 1Very Deep Convolutional Networks for Text Classiﬁca- tion(VDCNN) 2Long Short-Term Memory (LSTM) 3Hierarchical Attention Networks (HAN) 4Convolutional Neural Network (CNN) 5Recurrent Convolutional Neural Network (RCNN) 6Sequential to Sequential"
+  },
+  {
+    "paper_id": "2108.07249v1",
+    "title": "BloomNet: A Robust Transformer based model for Bloom's Learning Outcome Classification",
+    "page_num": 6,
+    "chunk_id": "2108.07249v1_page6_chunk5",
+    "text": "the base- lines. Surprisingly, the TF-IDF (Sammut and Webb, 2010) encoded text with random for- est performs better than several strong base- 1Very Deep Convolutional Networks for Text Classiﬁca- tion(VDCNN) 2Long Short-Term Memory (LSTM) 3Hierarchical Attention Networks (HAN) 4Convolutional Neural Network (CNN) 5Recurrent Convolutional Neural Network (RCNN) 6Sequential to Sequential Model with Attention 7Term Frequency - Inverse Document Frequency(TF-IDF) 8Distilled from RoBERTa model 9Robustly Optimized BERT Pre-training Approach"
+  },
+  {
+    "paper_id": "2108.07249v1",
+    "title": "BloomNet: A Robust Transformer based model for Bloom's Learning Outcome Classification",
+    "page_num": 7,
+    "chunk_id": "2108.07249v1_page7_chunk1",
+    "text": "Model Dataset1 (IID) Dataset2(OOD) Accuracy Macro-F1 Accuracy Macro-F1 VDCNN1 32.00 ± 6.78 31.70 ± 6.71 28.79 ± 3.82 26.54 ± 4.12 LSTM2 58.50 ± 3.99 59.27 ± 3.55 47.09 ± 4.05 45.47 ± 2.71 HAN3 59.64 ± 3.72 58.90 ± 4.16 54.69 ± 3.39 50.61 ± 3.12 CNN4 60.67 ± 1.11 60.57 ± 1.36 49.79 ± 2.17 48.17 ± 2.00 RCNN5 66.33 ± 3.01 65.90 ± 3.51 54.04 ± 3.57 51.05 ± 3.09 Seq2Seq-Attention6 64.00 ± 3.09 63.79 ± 3.50 52.91 ± 2.22 50.92 ± 2.11 Self-Attention 70.17 ± 3.55 69.92 ± 3.80 55.46 ± 2.07 52.75 ± 1.81 Random Forest TF-IDF7 70.66 ± 2.52 70.50 ± 2.75 62.12 ± 1.38 58.04 ± 1.73 DistilRoBERTa8 80.50 ± 3.23 80.21 ± 3.49 67.80 ± 1.59 63.94 ± 1.48 RoBERTa9 82.00 ± 2.01 81.67 ± 2.20 68.65 ± 2.74 65.65 ± 2.82 BloomNet 87.50 ± 1.88 87.23 ± 2.47 70.40 ± 2.52 67.10 ± 2.43 Table 2: Mean and Standard deviation of the results obtained over 5 folds. BloomNet performs signiﬁcantly better (p < 0.004) than the RoBERTa. Bold shows best performance. All models are trained and evaluation on Dataset1 hence IID, and OOD evaluation is performed on Dataset2. lines like LSTM,"
+  },
+  {
+    "paper_id": "2108.07249v1",
+    "title": "BloomNet: A Robust Transformer based model for Bloom's Learning Outcome Classification",
+    "page_num": 7,
+    "chunk_id": "2108.07249v1_page7_chunk2",
+    "text": "67.10 ± 2.43 Table 2: Mean and Standard deviation of the results obtained over 5 folds. BloomNet performs signiﬁcantly better (p < 0.004) than the RoBERTa. Bold shows best performance. All models are trained and evaluation on Dataset1 hence IID, and OOD evaluation is performed on Dataset2. lines like LSTM, HAN, CNN, and RCNN. It is the third best performing baseline model that achieves 70.66 ± 2.52 and 62.12 ± 1.38 accuracy and Macro-F1 70.50 ± 2.75 and 58.04 ± 1.73 on Dataset1(IID) and Dataset2(OOD) respectively. We also observe that Attention based models like Seq2Seq-Attention and Self-Attention show better classiﬁcation performance than vanilla mod- els (like VDCNN, CNN, LSTM, and RCNN). Further, we investigate BERT-based models DistilRoBERTa and RoBERTa (which are pre- trained Transformers) that achieve superior per- formanc over all the other considered baselines. RoBERTa is the best performing model with accuracy of 82.00 ± 2.01 and 68.65 ± 2.74 and Macro-F1 score 81.67 ± 2.20 and 65.65 ± 2.82 on Dataset1(IID) and Dataset2(OOD) respectively. 4.4.2 Out-of-distribution Generalisation We evaluate models on new data which is not seen during training to evaluate the OOD robustness. We observe that OOD and IID performance is lin- early correlated. The models that"
+  },
+  {
+    "paper_id": "2108.07249v1",
+    "title": "BloomNet: A Robust Transformer based model for Bloom's Learning Outcome Classification",
+    "page_num": 7,
+    "chunk_id": "2108.07249v1_page7_chunk3",
+    "text": "2.74 and Macro-F1 score 81.67 ± 2.20 and 65.65 ± 2.82 on Dataset1(IID) and Dataset2(OOD) respectively. 4.4.2 Out-of-distribution Generalisation We evaluate models on new data which is not seen during training to evaluate the OOD robustness. We observe that OOD and IID performance is lin- early correlated. The models that do not perform well on IID data such as VDCNN, LSTM, etc also perform poor on OOD data. Pretrained transform- ers have been proven robust to distribution shift (Hendrycks et al., 2020; Ramesh Kashyap et al., 2021) but in our case we notice signiﬁcant perfor- mance drop ( 20%) between IID and OOD data across all the pretrained transformer based models in our experiment which is same for other models as well. We hypothesise that this might be caused by large discrepancy between IID and OOD data. Component Accuracy Macro-F1 RoBERTa 82.00 81.67 + WA 84.11 84.10 + POS-NER 84.64 84.48 + WA + POS-NER 87.50 87.23 Table 3: Ablation results for BloomNet . Mean of IID Accuracy and Macro-F1 is reported. Linguistic Encap- sulation along with Word level attention yields signiﬁ- cantly better (p <0.004) results. WA: Word Attention. POS: Part-of-speech. NER: Named-Entity Recogni- tion. 4.5 Ablation Study Our"
+  },
+  {
+    "paper_id": "2108.07249v1",
+    "title": "BloomNet: A Robust Transformer based model for Bloom's Learning Outcome Classification",
+    "page_num": 7,
+    "chunk_id": "2108.07249v1_page7_chunk4",
+    "text": "84.48 + WA + POS-NER 87.50 87.23 Table 3: Ablation results for BloomNet . Mean of IID Accuracy and Macro-F1 is reported. Linguistic Encap- sulation along with Word level attention yields signiﬁ- cantly better (p <0.004) results. WA: Word Attention. POS: Part-of-speech. NER: Named-Entity Recogni- tion. 4.5 Ablation Study Our proposed model BloomNet has three main component: 1. Representation model or Language Encoder 2. Linguistic Encapsulation Module and 3. Hierarchical Word Attention Model. We conduct an ablation study to assess the contribution of dif- ferent components in our model. First we remove the word attention module from BloomNet and train it like other models with same conﬁguration. We observe the BloomNet without word attention yields ≈84 and ≈65 accuracy for IID and OOD data respectively. Then we remove the linguistic encapsulation block and train the model like previ- ously. BloomNet without linguistic encapsulation yeilds similar IID performance (≈84 accuracy) but performs better on OOD data. If we remove the both components word attention as well as linguis- tic encapsulation BloomNet is same as RoBERTa"
+  },
+  {
+    "paper_id": "2108.07249v1",
+    "title": "BloomNet: A Robust Transformer based model for Bloom's Learning Outcome Classification",
+    "page_num": 7,
+    "chunk_id": "2108.07249v1_page7_chunk5",
+    "text": "performs better on OOD data. If we remove the both components word attention as well as linguis- tic encapsulation BloomNet is same as RoBERTa"
+  },
+  {
+    "paper_id": "2108.07249v1",
+    "title": "BloomNet: A Robust Transformer based model for Bloom's Learning Outcome Classification",
+    "page_num": 8,
+    "chunk_id": "2108.07249v1_page8_chunk1",
+    "text": "(Liu et al., 2019) baseline. The result of ablation is stated in the table 3. 5 Discussion Limitations: We propose a novel transformer based model named BloomNet which has three language encoder (we use RoBERTa), two for linguistic encoding named as POS Encoder and NER Encoder, and one generic encoder. Due to three large transformer based language encoder proposed model is compute and memory heavy hence it becomes very cumbersome to deploy it in production. To asses the generalization capability of models we evaluate them on a different distribution which they do not see during training. We do not quantify the shift between IID and OOD and we restrict ourselves to only evaluation as investing the cause of performance drop on OOD data is beyond scope of this study. The datasets used in our work is relatively small having 600 and 141 samples respectively in both Dataset1 and Dataset2. Although we do cross validation and report mean and standard-deviation but we expect change in performance on bigger dataset. For same reason we do not train models on Dataset2. Ethical Considerations: We are well aware of the societal implication of deploying large language models it could have unintended bias against marginalized"
+  },
+  {
+    "paper_id": "2108.07249v1",
+    "title": "BloomNet: A Robust Transformer based model for Bloom's Learning Outcome Classification",
+    "page_num": 8,
+    "chunk_id": "2108.07249v1_page8_chunk2",
+    "text": "we do cross validation and report mean and standard-deviation but we expect change in performance on bigger dataset. For same reason we do not train models on Dataset2. Ethical Considerations: We are well aware of the societal implication of deploying large language models it could have unintended bias against marginalized groups and model itself plays signiﬁcant role in amplifying those biases. We do not see any immediate misuse of our work, but more research in this area could lead to the development of systems such as automated scoring, which can have a disproportionately detrimental impact on marginalized groups. 6 Conclusion and Future Work We propose a novel transformer-based model, BloomNet, that captures the linguistic and seman- tic information to classify the course learning out- comes according to the different cognitive domains of Bloom’s Taxonomy. BloomNet outperforms the considered baseline models analyzed in this study in terms of performance and generalization capability. Interestingly, we observe that care- fully processed text with TF-IDF encoding out- performs numerous strong baselines like CNN, RNN, and attention based models. We also ob- serve that pretrained Transformers generalize to OOD examples surprisingly well. Overall, we use a state-of-the-art Natural Language Process- ing (NLP) model for a"
+  },
+  {
+    "paper_id": "2108.07249v1",
+    "title": "BloomNet: A Robust Transformer based model for Bloom's Learning Outcome Classification",
+    "page_num": 8,
+    "chunk_id": "2108.07249v1_page8_chunk3",
+    "text": "capability. Interestingly, we observe that care- fully processed text with TF-IDF encoding out- performs numerous strong baselines like CNN, RNN, and attention based models. We also ob- serve that pretrained Transformers generalize to OOD examples surprisingly well. Overall, we use a state-of-the-art Natural Language Process- ing (NLP) model for a relatively new task, and we believe it opens up new research directions for NLP in the education domain. We believe that, similar to previous domain-oriented NLP studies, such as NLP4Health, NLP4Programming, LegalNLP, and so on, NLP4Education has the potential to improve existing systems for the mutual beneﬁt of the com- munity and society in general. This is a novel task employing the state-of-the-art Natural Language Processing(NLP) system into education which is relatively new and we believe that it will open a new direction for NLP research. References D. Abduljabbar and N. Omar. 2015. Exam ques- tions classiﬁcation based on bloom’s taxonomy cog- nitive level using classiﬁers combination. Journal of theoretical and applied information technology, 78:447–455. F. Adesoji. 2018. Bloom taxonomy of educational objectives and the modiﬁcation of cognitive levels. Advances in Social Sciences Research Journal, 5. L. Anderson, D. Krathwohl, and B. Bloom. 2000. A taxonomy for learning, teaching, and"
+  },
+  {
+    "paper_id": "2108.07249v1",
+    "title": "BloomNet: A Robust Transformer based model for Bloom's Learning Outcome Classification",
+    "page_num": 8,
+    "chunk_id": "2108.07249v1_page8_chunk4",
+    "text": "taxonomy cog- nitive level using classiﬁers combination. Journal of theoretical and applied information technology, 78:447–455. F. Adesoji. 2018. Bloom taxonomy of educational objectives and the modiﬁcation of cognitive levels. Advances in Social Sciences Research Journal, 5. L. Anderson, D. Krathwohl, and B. Bloom. 2000. A taxonomy for learning, teaching, and assessing: A revision of bloom’s taxonomy of educational objec- tives. A. S. Attia. 2021. Bloom’s taxonomy as a tool to op- timize course learning outcomes and assessments in architecture programs. Dzmitry Bahdanau, Kyunghyun Cho, and Yoshua Bengio. 2015. Neural machine translation by jointly learning to align and translate. CoRR, abs/1409.0473. Zheng Cai, Lifu Tu, and Kevin Gimpel. 2017. Pay at- tention to the ending: Strong neural baselines for the roc story cloze task. In ACL. Wen-Chih Chang and Ming-Shun Chung. 2009. Au- tomatic applying bloom’s taxonomy to classify and analysis the cognition level of english question items. 2009 Joint Conferences on Pervasive Computing (JCPC), pages 727–734. Kyunghyun Cho, Bart van Merriënboer, Caglar Gul- cehre, Dzmitry Bahdanau, Fethi Bougares, Holger Schwenk, and Yoshua Bengio. 2014. Learning phrase representations using RNN encoder–decoder for statistical machine translation. In Proceedings of the 2014 Conference on Empirical Methods in Natural Language Processing (EMNLP), pages 1724–1734,"
+  },
+  {
+    "paper_id": "2108.07249v1",
+    "title": "BloomNet: A Robust Transformer based model for Bloom's Learning Outcome Classification",
+    "page_num": 8,
+    "chunk_id": "2108.07249v1_page8_chunk5",
+    "text": "on Pervasive Computing (JCPC), pages 727–734. Kyunghyun Cho, Bart van Merriënboer, Caglar Gul- cehre, Dzmitry Bahdanau, Fethi Bougares, Holger Schwenk, and Yoshua Bengio. 2014. Learning phrase representations using RNN encoder–decoder for statistical machine translation. In Proceedings of the 2014 Conference on Empirical Methods in Natural Language Processing (EMNLP), pages 1724–1734, Doha, Qatar. Association for Computa- tional Linguistics."
+  },
+  {
+    "paper_id": "2108.07249v1",
+    "title": "BloomNet: A Robust Transformer based model for Bloom's Learning Outcome Classification",
+    "page_num": 9,
+    "chunk_id": "2108.07249v1_page9_chunk1",
+    "text": "Jacob Devlin, Ming-Wei Chang, Kenton Lee, and Kristina Toutanova. 2019. BERT: Pre-training of deep bidirectional transformers for language under- standing. In Proceedings of the 2019 Conference of the North American Chapter of the Association for Computational Linguistics: Human Language Technologies, Volume 1 (Long and Short Papers), pages 4171–4186, Minneapolis, Minnesota. Associ- ation for Computational Linguistics. et al. Falcon, WA. 2019. Py- torch lightning. GitHub. Note: https://github.com/PyTorchLightning/pytorch-lightning, 3. Ross B. Girshick, Jeff Donahue, Trevor Darrell, and J. Malik. 2014. Rich feature hierarchies for accurate object detection and semantic segmentation. 2014 IEEE Conference on Computer Vision and Pattern Recognition, pages 580–587. Shreya Gupta, Parantak Singh, Megha Sundriyal, Md. Shad Akhtar, and Tanmoy Chakraborty. 2021. LESA: Linguistic encapsulation and semantic amal- gamation based generalised claim detection from on- line content. In Proceedings of the 16th Conference of the European Chapter of the Association for Computational Linguistics: Main Volume, pages 3178–3188, Online. Association for Computational Linguistics. Suchin Gururangan, Swabha Swayamdipta, Omer Levy, Roy Schwartz, Samuel R. Bowman, and Noah A. Smith. 2018. Annotation artifacts in nat- ural language inference data. In NAACL-HLT. S. S. Haris and N. Omar. 2012. A rule-based ap- proach in bloom’s taxonomy question classiﬁca- tion through natural language processing. 2012"
+  },
+  {
+    "paper_id": "2108.07249v1",
+    "title": "BloomNet: A Robust Transformer based model for Bloom's Learning Outcome Classification",
+    "page_num": 9,
+    "chunk_id": "2108.07249v1_page9_chunk2",
+    "text": "Computational Linguistics. Suchin Gururangan, Swabha Swayamdipta, Omer Levy, Roy Schwartz, Samuel R. Bowman, and Noah A. Smith. 2018. Annotation artifacts in nat- ural language inference data. In NAACL-HLT. S. S. Haris and N. Omar. 2012. A rule-based ap- proach in bloom’s taxonomy question classiﬁca- tion through natural language processing. 2012 7th International Conference on Computing and Convergence Technology (ICCCT), pages 410–414. S. S. Haris and N. Omar. 2015. Bloom’s taxon- omy question categorization using rules and n- gram approach. Journal of theoretical and applied information technology, 76:401–407. Dan Hendrycks, Xiaoyuan Liu, Eric Wallace, Adam Dziedzic, Rishabh Krishnan, and Dawn Song. 2020. Pretrained transformers improve out-of-distribution robustness. In Proceedings of the 58th Annual Meeting of the Association for Computational Linguistics, pages 2744–2751, Online. Association for Computational Linguistics. L. C. Jain and L. R. Medsker. 1999. Recurrent Neural Networks: Design and Applications, 1st edition. CRC Press, Inc., USA. K. Jayakodi, M. Bandara, and I. Perera. 2015. An automatic classiﬁer for exam questions in engineer- ing: A process for bloom’s taxonomy. 2015 IEEE International Conference on Teaching, Assessment, and Learning for Engineering (TALE), pages 195– 202. Yoon Kim. 2014. Convolutional neural networks for sentence classiﬁcation. In EMNLP. Diederik P. Kingma and Jimmy Ba."
+  },
+  {
+    "paper_id": "2108.07249v1",
+    "title": "BloomNet: A Robust Transformer based model for Bloom's Learning Outcome Classification",
+    "page_num": 9,
+    "chunk_id": "2108.07249v1_page9_chunk3",
+    "text": "and I. Perera. 2015. An automatic classiﬁer for exam questions in engineer- ing: A process for bloom’s taxonomy. 2015 IEEE International Conference on Teaching, Assessment, and Learning for Engineering (TALE), pages 195– 202. Yoon Kim. 2014. Convolutional neural networks for sentence classiﬁcation. In EMNLP. Diederik P. Kingma and Jimmy Ba. 2015. Adam: A method for stochastic optimization. CoRR, abs/1412.6980. Kamran Kowsari, K. Meimandi, Mojtaba Heidarysafa, Sanjana Mendu, Laura E. Barnes, and D. Brown. 2019. Text classiﬁcation algorithms: A survey. Inf., 10:150. Adidah Lajis, H. Nasir, and N. A. Aziz. 2018. Proposed assessment framework based on bloom taxonomy cognitive competency: Introduction to programming. Proceedings of the 2018 7th International Conference on Software and Computer Applications. Y. LeCun, L. Bottou, Yoshua Bengio, and P. Haffner. 1998. Gradient-based learning applied to document recognition. Yinhan Liu, Myle Ott, Naman Goyal, Jingfei Du, Man- dar Joshi, Danqi Chen, Omer Levy, M. Lewis, Luke Zettlemoyer, and Veselin Stoyanov. 2019. Roberta: A robustly optimized bert pretraining approach. ArXiv, abs/1907.11692. Shervin Minaee, Nal Kalchbrenner, E. Cambria, Nar- jes Nikzad, M. Chenaghlu, and Jianfeng Gao. 2020. Deep learning–based text classiﬁcation. ACM Computing Surveys (CSUR), 54:1 – 40. Manal Mohammed and N. Omar. 2018. Question classiﬁcation based on bloom’s taxonomy"
+  },
+  {
+    "paper_id": "2108.07249v1",
+    "title": "BloomNet: A Robust Transformer based model for Bloom's Learning Outcome Classification",
+    "page_num": 9,
+    "chunk_id": "2108.07249v1_page9_chunk4",
+    "text": "Veselin Stoyanov. 2019. Roberta: A robustly optimized bert pretraining approach. ArXiv, abs/1907.11692. Shervin Minaee, Nal Kalchbrenner, E. Cambria, Nar- jes Nikzad, M. Chenaghlu, and Jianfeng Gao. 2020. Deep learning–based text classiﬁcation. ACM Computing Surveys (CSUR), 54:1 – 40. Manal Mohammed and N. Omar. 2018. Question classiﬁcation based on bloom’s taxonomy using en- hanced tf-idf. International Journal on Advanced Science, Engineering and Information Technology, 8:1679–1685. Manal Mohammed and N. Omar. 2020. Question clas- siﬁcation based on bloom’s taxonomy cognitive do- main using modiﬁed tf-idf and word2vec. PLoS ONE, 15. K. A. Osadi, Mgnas Fernando, and W. V. Welgama. 2017. Ensemble classiﬁer based approach for clas- siﬁcation of examination questions into bloom’s tax- onomy cognitive levels. International Journal of Computer Applications, 162:1–6. Adam Paszke, Sam Gross, Francisco Massa, Adam Lerer, James Bradbury, Gregory Chanan, Trevor Killeen, Zeming Lin, Natalia Gimelshein, Luca Antiga, Alban Desmaison, Andreas Kopf, Edward Yang, Zachary DeVito, Martin Raison, Alykhan Te- jani, Sasank Chilamkurthy, Benoit Steiner, Lu Fang, Junjie Bai, and Soumith Chintala. 2019. Pytorch: An imperative style, high-performance deep learn- ing library. In Advances in Neural Information Processing Systems, volume 32. Curran Associates, Inc. Fabian Pedregosa, Gaël Varoquaux, Alexandre Gram- fort, Vincent Michel, Bertrand Thirion, Olivier Grisel, Mathieu"
+  },
+  {
+    "paper_id": "2108.07249v1",
+    "title": "BloomNet: A Robust Transformer based model for Bloom's Learning Outcome Classification",
+    "page_num": 9,
+    "chunk_id": "2108.07249v1_page9_chunk5",
+    "text": "Alykhan Te- jani, Sasank Chilamkurthy, Benoit Steiner, Lu Fang, Junjie Bai, and Soumith Chintala. 2019. Pytorch: An imperative style, high-performance deep learn- ing library. In Advances in Neural Information Processing Systems, volume 32. Curran Associates, Inc. Fabian Pedregosa, Gaël Varoquaux, Alexandre Gram- fort, Vincent Michel, Bertrand Thirion, Olivier Grisel, Mathieu Blondel, Peter Prettenhofer, Ron"
+  },
+  {
+    "paper_id": "2108.07249v1",
+    "title": "BloomNet: A Robust Transformer based model for Bloom's Learning Outcome Classification",
+    "page_num": 10,
+    "chunk_id": "2108.07249v1_page10_chunk1",
+    "text": "Weiss, Vincent Dubourg, Jake Vanderplas, Alexan- dre Passos, David Cournapeau, Matthieu Brucher, Matthieu Perrot, and Édouard Duchesnay. 2011. Scikit-learn: Machine learning in python. Journal of Machine Learning Research, 12(85):2825–2830. Jeffrey Pennington, R. Socher, and Christopher D. Manning. 2014. Glove: Global vectors for word rep- resentation. In EMNLP. Joaquin Quionero-Candela, Masashi Sugiyama, Anton Schwaighofer, and Neil Lawrence. 2009. Dataset shift in machine learning. Abhinav Ramesh Kashyap, Laiba Mehnaz, Bhavitvya Malik, Abdul Waheed, Devamanyu Hazarika, Min- Yen Kan, and Rajiv Ratn Shah. 2021. Analyzing the domain robustness of pretrained language mod- els, layer by layer. In Proceedings of the Second Workshop on Domain Adaptation for NLP, pages 222–244, Kyiv, Ukraine. Association for Computa- tional Linguistics. Claude Sammut and Geoffrey I. Webb, editors. 2010. TF–IDF, pages 986–987. Springer US, Boston, MA. A. Sangodiah, Rohiza Ahmad, and W. Ahmad. 2017. Taxonomy based features in question classiﬁcation using support vector machine 1. Victor Sanh, Lysandre Debut, Julien Chaumond, and Thomas Wolf. 2019. Distilbert, a distilled version of bert: smaller, faster, cheaper and lighter. ArXiv, abs/1910.01108. Winda Kurnia Sari, Dian Palupi Rini, and R. F. Ma- lik. 2020. Text classiﬁcation using long short-term memory with glove features. Holger Schwenk, Loïc Barrault, Alexis Conneau, and Y. LeCun."
+  },
+  {
+    "paper_id": "2108.07249v1",
+    "title": "BloomNet: A Robust Transformer based model for Bloom's Learning Outcome Classification",
+    "page_num": 10,
+    "chunk_id": "2108.07249v1_page10_chunk2",
+    "text": "Debut, Julien Chaumond, and Thomas Wolf. 2019. Distilbert, a distilled version of bert: smaller, faster, cheaper and lighter. ArXiv, abs/1910.01108. Winda Kurnia Sari, Dian Palupi Rini, and R. F. Ma- lik. 2020. Text classiﬁcation using long short-term memory with glove features. Holger Schwenk, Loïc Barrault, Alexis Conneau, and Y. LeCun. 2017. Very deep convolutional networks for text classiﬁcation. In EACL. A. Swart and M. Daneti. 2019. Analyzing learn- ing outcomes for electronic fundamentals using bloom’s taxonomy. 2019 IEEE Global Engineering Education Conference (EDUCON), pages 39–44. Ashish Vaswani, Noam M. Shazeer, Niki Parmar, Jakob Uszkoreit, Llion Jones, Aidan N. Gomez, Lukasz Kaiser, and Illia Polosukhin. 2017. Atten- tion is all you need. ArXiv, abs/1706.03762. Alex Wang, Amanpreet Singh, Julian Michael, Fe- lix Hill, Omer Levy, and Samuel R. Bowman. 2018. Glue: A multi-task benchmark and analy- sis platform for natural language understanding. In BlackboxNLP@EMNLP. Thomas Wolf, Lysandre Debut, Victor Sanh, Julien Chaumond, Clement Delangue, Anthony Moi, Pier- ric Cistac, Tim Rault, Remi Louf, Morgan Funtow- icz, Joe Davison, Sam Shleifer, Patrick von Platen, Clara Ma, Yacine Jernite, Julien Plu, Canwen Xu, Teven Le Scao, Sylvain Gugger, Mariama Drame, Quentin Lhoest, and Alexander Rush. 2020. Trans- formers: State-of-the-art natural language process- ing."
+  },
+  {
+    "paper_id": "2108.07249v1",
+    "title": "BloomNet: A Robust Transformer based model for Bloom's Learning Outcome Classification",
+    "page_num": 10,
+    "chunk_id": "2108.07249v1_page10_chunk3",
+    "text": "Chaumond, Clement Delangue, Anthony Moi, Pier- ric Cistac, Tim Rault, Remi Louf, Morgan Funtow- icz, Joe Davison, Sam Shleifer, Patrick von Platen, Clara Ma, Yacine Jernite, Julien Plu, Canwen Xu, Teven Le Scao, Sylvain Gugger, Mariama Drame, Quentin Lhoest, and Alexander Rush. 2020. Trans- formers: State-of-the-art natural language process- ing. In Proceedings of the 2020 Conference on Empirical Methods in Natural Language Processing: System Demonstrations, pages 38–45, Online. Asso- ciation for Computational Linguistics. Dashen Xue and Fengxin Li. 2015. Research of text categorization model based on random forests. 2015 IEEE International Conference on Computational Intelligence & Communication Technology, pages 173–176. Anwar Ali Yahya. 2019. Swarm intelligence-based ap- proach for educational data classiﬁcation. J. King Saud Univ. Comput. Inf. Sci., 31:35–51. Anwar Ali Yahya, Z. Toukal, and A. Osman. 2012. Bloom’s taxonomy-based classiﬁcation for item bank questions using support vector machines. In Modern Advances in Intelligent Systems and Tools. Zichao Yang, Diyi Yang, Chris Dyer, X. He, Alex Smola, and E. Hovy. 2016a. Hierarchical at- tention networks for document classiﬁcation. In HLT-NAACL. Zichao Yang, Diyi Yang, Chris Dyer, Xiaodong He, Alex Smola, and Eduard Hovy. 2016b. Hierar- chical attention networks for document classiﬁca- tion. In Proceedings of the 2016 Conference of"
+  },
+  {
+    "paper_id": "2108.07249v1",
+    "title": "BloomNet: A Robust Transformer based model for Bloom's Learning Outcome Classification",
+    "page_num": 10,
+    "chunk_id": "2108.07249v1_page10_chunk4",
+    "text": "Diyi Yang, Chris Dyer, X. He, Alex Smola, and E. Hovy. 2016a. Hierarchical at- tention networks for document classiﬁcation. In HLT-NAACL. Zichao Yang, Diyi Yang, Chris Dyer, Xiaodong He, Alex Smola, and Eduard Hovy. 2016b. Hierar- chical attention networks for document classiﬁca- tion. In Proceedings of the 2016 Conference of the North American Chapter of the Association for Computational Linguistics: Human Language Technologies, pages 1480–1489, San Diego, Califor- nia. Association for Computational Linguistics. S. L. Zorluo˘glu, Kübra Elif Ba˘grıyanık, and Ay¸se ¸Sahintürk. 2019. Analyze of the science and technology course teog questions based on the revised bloom taxonomy and their relation be- tween the learning outcomes of the curriculum. The International Journal of Progressive Education, 15:104–117."
+  }
+]
